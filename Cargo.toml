@@ -1,0 +1,14 @@
+[workspace]
+resolver = "3"
+members = ["crates/astro_ephem_core"]
+
+[workspace.package]
+edition = "2024"
+license = "MIT"
+authors = ["Neil Gardner"]
+
+[workspace.dependencies]
+chrono = "0.4"
+julian_day_converter = "0.4.6"
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"

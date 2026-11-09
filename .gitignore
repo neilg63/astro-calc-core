@@ -1,0 +1,4 @@
+/target
+/data/
+*.bsp
+.DS_Store
