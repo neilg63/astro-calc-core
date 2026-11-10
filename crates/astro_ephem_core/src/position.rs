@@ -39,7 +39,7 @@ pub enum CoordSystem {
     Ecliptic,
     /// Right ascension/declination of date.
     Equatorial,
-    /// Azimuth/altitude (not yet implemented).
+    /// Azimuth (from south, westwards) and geometric altitude.
     Horizontal,
 }
 
@@ -104,8 +104,12 @@ fn naif_id(body: Body) -> Option<i32> {
 
 /// Everything about one instant and observer that every body shares.
 pub(crate) struct Frame {
+    pub(crate) tt: f64,
     pub(crate) tdb: f64,
     pub(crate) eo: EarthOrientation,
+    /// Observer latitude and longitude (radians), used for horizontal coordinates.
+    obs_lat: f64,
+    obs_lng: f64,
     /// Observer barycentric position (AU) and velocity (AU/day).
     obs_pos: Vec3,
     obs_vel: Vec3,
@@ -130,7 +134,16 @@ impl Frame {
             obs_vel = add(obs_vel, mat_t_vec(&eo.npb, v_tod));
         }
         let (sun_pos, _) = eph.barycentric(NAIF_SUN, tdb)?;
-        Ok(Self { tdb, eo, obs_pos, obs_vel, sun_pos })
+        Ok(Self {
+            tt,
+            tdb,
+            eo,
+            obs_lat: geo.lat.to_radians(),
+            obs_lng: geo.lng.to_radians(),
+            obs_pos,
+            obs_vel,
+            sun_pos,
+        })
     }
 
     /// Apparent direction (unit vector, true equator of date) and light-time-corrected distance.
@@ -195,20 +208,98 @@ impl Frame {
         lng.to_degrees()
     }
 
+    /// Ecliptic longitude (degrees, true ecliptic and equinox of date) of a lunar node.
+    fn node_lng(&self, eph: &Ephemeris, kind: Source) -> Result<f64, CalcError> {
+        Ok(match kind {
+            Source::MeanNode => crate::models::mean_lunar_node(self.tt) + self.eo.dpsi.to_degrees(),
+            _ => {
+                // Osculating node: direction of k × h for the geometric geocentric lunar orbit,
+                // h = r × v, in the true ecliptic of date.
+                let (r, v) = eph.relative(301, NAIF_EARTH, self.tdb)?;
+                let to_ecl = |x: Vec3| {
+                    let u = mat_vec(&self.eo.npb, x);
+                    let (s, c) = self.eo.eps_true.sin_cos();
+                    [u[0], c * u[1] + s * u[2], -s * u[1] + c * u[2]]
+                };
+                let h = cross(to_ecl(r), to_ecl(v));
+                h[0].atan2(-h[1]).to_degrees()
+            }
+        })
+    }
+
+    /// Apparent direction in the true equator of date (unit vector) and distance (AU; 0 for
+    /// the lunar nodes).
+    fn direction(&self, eph: &Ephemeris, src: Source, opposite: bool) -> Result<(Vec3, f64), CalcError> {
+        let (u, dist) = match src {
+            Source::Naif(target) => self.apparent(eph, target)?,
+            Source::MeanNode | Source::TrueNode => {
+                let l = self.node_lng(eph, src)?.to_radians();
+                let (s, c) = self.eo.eps_true.sin_cos();
+                let (sl, cl) = l.sin_cos();
+                ([cl, c * sl, s * sl], 0.0)
+            }
+        };
+        Ok((if opposite { scale(u, -1.0) } else { u }, dist))
+    }
+
+    /// Geometric altitude and hour angle (radians) of a body's centre, plus distance (AU).
+    pub(crate) fn alt_ha_dist(&self, eph: &Ephemeris, body: Body) -> Result<(f64, f64, f64), CalcError> {
+        let (src, opp) = source(body).ok_or(CalcError::UnsupportedBody(body))?;
+        let (u, dist) = self.direction(eph, src, opp)?;
+        let (ra, dec) = to_spherical(u);
+        let ha = (self.eo.gast + self.obs_lng - ra).rem_euclid(std::f64::consts::TAU);
+        let (_, alt) = equatorial_to_horizontal(ha, dec, self.obs_lat);
+        Ok((alt, ha, dist))
+    }
+
     /// Spherical coordinates in degrees plus distance.
-    fn coords(&self, eph: &Ephemeris, target: i32, cs: CoordSystem) -> Result<(f64, f64, f64), CalcError> {
-        let (u, dist) = self.apparent(eph, target)?;
-        let v = match cs {
-            CoordSystem::Equatorial => u,
+    fn coords(&self, eph: &Ephemeris, src: Source, opposite: bool, cs: CoordSystem) -> Result<(f64, f64, f64), CalcError> {
+        let (u, dist) = self.direction(eph, src, opposite)?;
+        let (lng, lat) = match cs {
+            CoordSystem::Equatorial => to_spherical(u),
             CoordSystem::Ecliptic => {
                 let (s, c) = self.eo.eps_true.sin_cos();
-                [u[0], c * u[1] + s * u[2], -s * u[1] + c * u[2]]
+                to_spherical([u[0], c * u[1] + s * u[2], -s * u[1] + c * u[2]])
             }
-            CoordSystem::Horizontal => return Err(CalcError::UnsupportedCoordSystem(cs)),
+            CoordSystem::Horizontal => {
+                let (ra, dec) = to_spherical(u);
+                let (az, alt) = equatorial_to_horizontal(self.eo.gast + self.obs_lng - ra, dec, self.obs_lat);
+                (az, alt)
+            }
         };
-        let (lng, lat) = to_spherical(v);
         Ok((lng.to_degrees(), lat.to_degrees(), dist))
     }
+}
+
+/// Hour angle and declination → (azimuth, altitude), radians. Azimuth is measured from the
+/// south point westwards (0 = south, 90° = west), the convention of the reference API;
+/// altitude is geometric (no refraction).
+pub fn equatorial_to_horizontal(hour_angle: f64, dec: f64, lat: f64) -> (f64, f64) {
+    let (sh, ch) = hour_angle.sin_cos();
+    let (sd, cd) = dec.sin_cos();
+    let (sp, cp) = lat.sin_cos();
+    let az = sh.atan2(ch * sp - sd / cd * cp).rem_euclid(std::f64::consts::TAU);
+    let alt = (sp * sd + cp * cd * ch).clamp(-1.0, 1.0).asin();
+    (az, alt)
+}
+
+/// Where a body's position comes from.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Source {
+    Naif(i32),
+    MeanNode,
+    TrueNode,
+}
+
+/// Data source for a body and whether to take the diametrically opposite point.
+fn source(body: Body) -> Option<(Source, bool)> {
+    Some(match body {
+        Body::MeanNode => (Source::MeanNode, false),
+        Body::MeanSouthNode => (Source::MeanNode, true),
+        Body::TrueNode => (Source::TrueNode, false),
+        Body::SouthNode => (Source::TrueNode, true),
+        b => (Source::Naif(naif_id(b)?), false),
+    })
 }
 
 /// Frames at t − h, t and t + h, shared by every body at one time.
@@ -224,11 +315,11 @@ impl FrameTriple {
     }
 
     fn body_pos(&self, eph: &Ephemeris, body: Body, cs: CoordSystem) -> Result<BodyPos, CalcError> {
-        let target = naif_id(body).ok_or(CalcError::UnsupportedBody(body))?;
+        let (src, opp) = source(body).ok_or(CalcError::UnsupportedBody(body))?;
         let [a, m, b] = &self.0;
-        let (l0, b0, d0) = a.coords(eph, target, cs)?;
-        let (l1, b1, d1) = m.coords(eph, target, cs)?;
-        let (l2, b2, d2) = b.coords(eph, target, cs)?;
+        let (l0, b0, d0) = a.coords(eph, src, opp, cs)?;
+        let (l1, b1, d1) = m.coords(eph, src, opp, cs)?;
+        let (l2, b2, d2) = b.coords(eph, src, opp, cs)?;
         let h2 = 2.0 * SPEED_STEP;
         Ok(BodyPos {
             body,
@@ -239,14 +330,6 @@ impl FrameTriple {
             dist: d1,
             dist_speed: (d2 - d0) / h2,
         })
-    }
-}
-
-fn check_cs(cs: CoordSystem) -> Result<(), CalcError> {
-    if cs == CoordSystem::Horizontal {
-        Err(CalcError::UnsupportedCoordSystem(cs))
-    } else {
-        Ok(())
     }
 }
 
@@ -269,7 +352,6 @@ impl Ephemeris {
         cs: CoordSystem,
         perspective: Perspective,
     ) -> Result<BodyPos, CalcError> {
-        check_cs(cs)?;
         let frames = FrameTriple::new(self, jd.into().value(), &geo, perspective)?;
         frames.body_pos(self, body, cs)
     }
@@ -284,7 +366,6 @@ impl Ephemeris {
         cs: CoordSystem,
         perspective: Perspective,
     ) -> Result<Vec<BodyPos>, CalcError> {
-        check_cs(cs)?;
         let frames = FrameTriple::new(self, jd.into().value(), &geo, perspective)?;
         bodies.iter().map(|&b| frames.body_pos(self, b, cs)).collect()
     }
@@ -318,7 +399,6 @@ impl Ephemeris {
         cs: CoordSystem,
         perspective: Perspective,
     ) -> Result<Vec<BodyPosSet>, CalcError> {
-        check_cs(cs)?;
         let times = sample_times(start.into().value(), days, interval)?;
         let mut sets: Vec<BodyPosSet> = bodies
             .iter()

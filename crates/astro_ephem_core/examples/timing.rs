@@ -9,4 +9,10 @@ fn main() {
     let n = sets.len() * sets[0].items.len();
     let e = t.elapsed();
     println!("{n} topocentric positions with speeds in {:?} ({:.2} µs each, single thread)", e, e.as_secs_f64() * 1e6 / n as f64);
+    let t = Instant::now();
+    let days = 365;
+    for i in 0..days {
+        eph.day_transits(Body::Moon, 2451545.0 + i as f64, geo, RiseSetOptions::default()).unwrap();
+    }
+    println!("{days} lunar day_transits (6 events + 2 altitudes each) in {:?} ({:.0} µs each)", t.elapsed(), t.elapsed().as_secs_f64() * 1e6 / days as f64);
 }

@@ -64,8 +64,6 @@ pub enum CalcError {
     Ephem(#[from] EphemError),
     #[error("body not supported yet: {0}")]
     UnsupportedBody(crate::Body),
-    #[error("coordinate system not supported yet: {0:?}")]
-    UnsupportedCoordSystem(crate::position::CoordSystem),
     #[error("invalid sampling: days {days}, interval {interval}")]
     InvalidInterval { days: f64, interval: f64 },
 }

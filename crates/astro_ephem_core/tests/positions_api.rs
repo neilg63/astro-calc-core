@@ -45,12 +45,8 @@ fn progress_sampling() {
 fn unsupported_inputs_are_errors() {
     let Some(eph) = eph() else { return };
     assert!(matches!(
-        eph.calc_position(Body::MeanNode, 2451545.0, ROME, CoordSystem::Ecliptic, Perspective::Geocentric),
-        Err(CalcError::UnsupportedBody(Body::MeanNode))
-    ));
-    assert!(matches!(
-        eph.calc_position(Body::Sun, 2451545.0, ROME, CoordSystem::Horizontal, Perspective::Geocentric),
-        Err(CalcError::UnsupportedCoordSystem(CoordSystem::Horizontal))
+        eph.calc_position(Body::Chiron, 2451545.0, ROME, CoordSystem::Ecliptic, Perspective::Geocentric),
+        Err(CalcError::UnsupportedBody(Body::Chiron))
     ));
     assert!(matches!(
         eph.calc_position(Body::Sun, 2200000.0, ROME, CoordSystem::Ecliptic, Perspective::Geocentric),

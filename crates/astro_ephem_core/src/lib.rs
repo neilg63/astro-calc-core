@@ -23,6 +23,7 @@ pub mod houses;
 pub mod math;
 pub mod models;
 pub mod position;
+pub mod rise_set;
 pub mod spk;
 pub mod time;
 
@@ -34,6 +35,7 @@ pub use geo::GeoPos;
 pub use houses::{Angles, HouseSystem, Houses, angles, ascendant, house_sets, houses};
 pub use models::DeltaTModel;
 pub use position::{BodyJdPos, BodyPos, BodyPosSet, CoordSystem, Perspective};
+pub use rise_set::{DayTransits, DiscAlignment, RiseSetOptions, TransitEvent, local_day_start};
 pub use spk::Ephemeris;
 pub use time::{J2000, JdTt, JdUt};
 
