@@ -14,16 +14,27 @@
 //! * Synchronous and CPU-bound. Callable from async code: short calls inline, bulk calls via
 //!   `spawn_blocking` (optional `tokio` wrappers to follow behind a feature flag).
 
+pub mod ayanamsha;
 pub mod body;
 pub mod derived;
 pub mod error;
 pub mod geo;
+pub mod houses;
+pub mod math;
+pub mod models;
+pub mod position;
+pub mod spk;
 pub mod time;
 
+pub use ayanamsha::{Ayanamsha, to_sidereal};
 pub use body::{Body, BodyKind, Catalog, parse_body_list};
 pub use derived::{Angle, Derived, DerivedId, DerivedRegistry, Ref};
-pub use error::{BodyParseError, DerivedError, GeoError, TimeError};
+pub use error::{BodyParseError, CalcError, DerivedError, EphemError, GeoError, TimeError};
 pub use geo::GeoPos;
+pub use houses::{Angles, HouseSystem, Houses, angles, ascendant, house_sets, houses};
+pub use models::DeltaTModel;
+pub use position::{BodyJdPos, BodyPos, BodyPosSet, CoordSystem, Perspective};
+pub use spk::Ephemeris;
 pub use time::{J2000, JdTt, JdUt};
 
 #[cfg(test)]

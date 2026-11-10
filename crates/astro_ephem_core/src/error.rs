@@ -45,3 +45,27 @@ pub enum TimeError {
     #[error("Julian Day {0} is outside the supported calendar range")]
     OutOfRange(f64),
 }
+
+/// Failure to read or evaluate an SPK ephemeris.
+#[derive(Debug, Clone, PartialEq, Error)]
+pub enum EphemError {
+    #[error("cannot open {0}: {1}")]
+    Io(String, String),
+    #[error("invalid SPK file {0}: {1}")]
+    Format(String, String),
+    #[error("no ephemeris data for NAIF id {target} at JD {jd}")]
+    NoData { target: i32, jd: f64 },
+}
+
+/// Failure to calculate a position.
+#[derive(Debug, Clone, PartialEq, Error)]
+pub enum CalcError {
+    #[error(transparent)]
+    Ephem(#[from] EphemError),
+    #[error("body not supported yet: {0}")]
+    UnsupportedBody(crate::Body),
+    #[error("coordinate system not supported yet: {0:?}")]
+    UnsupportedCoordSystem(crate::position::CoordSystem),
+    #[error("invalid sampling: days {days}, interval {interval}")]
+    InvalidInterval { days: f64, interval: f64 },
+}

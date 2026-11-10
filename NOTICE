@@ -1,0 +1,18 @@
+astro_ephem includes coefficient tables and formulae transcribed from ERFA
+(Essential Routines for Fundamental Astronomy), https://github.com/liberfa/erfa,
+used under the following licence:
+
+  Copyright (C) 2013-2021, NumFOCUS Foundation. All rights reserved.
+  ERFA is derived, with permission, from the IAU SOFA library.
+  Redistribution and use in source and binary forms, with or without modification,
+  are permitted under the 3-clause BSD licence; see https://github.com/liberfa/erfa/blob/master/LICENSE.
+
+Affected files: crates/astro_ephem_core/src/models/mod.rs (IAU 2006 precession, IAU 2000B
+nutation arguments, ERA/GMST, WGS84), models/nut00b_table.rs, position.rs (light deflection and
+aberration formulae).
+
+ΔT data: US Naval Observatory (public domain), models/delta_t_table.rs.
+Planetary ephemeris: JPL DE440 (public domain), not redistributed; see data/README.
+
+Star positions for star-based ayanamshas: Hipparcos new reduction (van Leeuwen 2007, ESA),
+retrieved via NASA HEASARC (hipnewcat). Galactic Centre: Sgr A* (Reid & Brunthaler 2004).

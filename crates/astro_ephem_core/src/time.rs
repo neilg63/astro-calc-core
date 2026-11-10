@@ -99,6 +99,12 @@ impl JdTt {
     }
 }
 
+impl From<f64> for JdUt {
+    fn from(jd: f64) -> Self {
+        Self(jd)
+    }
+}
+
 impl From<NaiveDateTime> for JdUt {
     fn from(dt: NaiveDateTime) -> Self {
         Self::from_naive(&dt)
