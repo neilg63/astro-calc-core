@@ -56,7 +56,7 @@ pub enum DeltaTModel {
     /// acceleration beyond the table. Best estimate of the real Earth rotation.
     #[default]
     Observed,
-    /// Values implied by the AstroCalc reference API (Swiss Ephemeris 2.08) for 1850–2149,
+    /// Values implied by the AstroCalc reference API for 1850–2149,
     /// falling back to `Observed` outside that range. For regression tests against the API:
     /// they differ from observed values by up to ~3 s before 1950, and from 2020 on follow the
     /// 2019 forecast (about 3.4 s more than observed in 2026).

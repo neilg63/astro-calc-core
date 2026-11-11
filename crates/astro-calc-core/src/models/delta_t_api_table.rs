@@ -1,4 +1,4 @@
-// ΔT (s) implied by the AstroCalc reference API (Swiss Ephemeris 2.08), by TT-free UT Julian Day.
+// ΔT (s) implied by the AstroCalc reference API, by TT-free UT Julian Day.
 // Inferred black-box: for each sample the API's geocentric Moon longitude was compared with
 // this crate's at the same JD, and the difference converted to a time offset (tools/harvest_moon_series.py,
 // examples/implied_dt.rs). Precision about ±0.03 s. Used only by DeltaTModel::AstroCalcApi.

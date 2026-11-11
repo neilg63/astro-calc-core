@@ -1,5 +1,5 @@
-//! Compares calc_positions against reference values harvested from the AstroCalc API
-//! (Swiss Ephemeris 2.08). Run with `--nocapture` to see the per-body report.
+//! Compares calc_positions against reference values harvested from the AstroCalc API.
+//! Run with `--nocapture` to see the per-body report.
 //! Needs `data/de440s.bsp`; skipped otherwise.
 
 use std::collections::BTreeMap;

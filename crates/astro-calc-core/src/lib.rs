@@ -2,10 +2,11 @@
 //!
 //! Pure-Rust ephemeris core, built from published standards and JPL data files.
 //!
-//! **Cleanroom rule:** nothing in this crate may be derived from Swiss Ephemeris source code.
-//! Sources are public specifications only (NAIF SPK documentation, IAU SOFA/ERFA documentation,
-//! the Explanatory Supplement, IERS conventions, published Swiss Ephemeris manuals used as a
-//! behavioural spec). Cite the reference in each algorithm's doc comment.
+//! **Cleanroom rule:** this is an independent implementation. Nothing in this crate may be
+//! derived from the source code of any other ephemeris library. Sources are public
+//! specifications only (NAIF SPK documentation, IAU SOFA/ERFA documentation, the Explanatory
+//! Supplement, IERS conventions) and published results used as a behavioural reference.
+//! Cite the reference in each algorithm's doc comment.
 //!
 //! Design rules:
 //! * All times are Julian Days as `f64`, typed as [`JdUt`] or [`JdTt`].

@@ -184,7 +184,7 @@ impl Ayanamsha {
         }
     }
 
-    /// Swiss Ephemeris `SE_SIDM_*` number, for compatibility with existing API parameters only.
+    /// Conventional sidereal-mode number, for compatibility with existing API parameters only.
     pub const fn legacy_num(self) -> u8 {
         use Ayanamsha::*;
         match self {
