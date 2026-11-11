@@ -52,8 +52,8 @@ fn stations_match_reference_table() {
                 }
                 let nearest = ours
                     .iter()
-                    .filter(|o| o.kind.key() == kind)
-                    .map(|o| (o.jd.value() - jd).abs() * 1440.0)
+                    .filter(|o| o.kind().key() == kind)
+                    .map(|o| (o.jd() - jd).abs() * 1440.0)
                     .fold(f64::INFINITY, f64::min);
                 assert!(nearest < tol_min, "{key} {kind} at {jd}: nearest ours {nearest:.1} min away");
                 checked += 1;
@@ -61,11 +61,17 @@ fn stations_match_reference_table() {
             assert!(checked >= 8, "{key}: only {checked} stations checked");
             // every station of ours is a genuine zero or extreme of speed, in cycle order
             for w in ours.windows(2) {
-                assert!(w[0].jd.value() < w[1].jd.value());
-                assert_ne!(w[0].kind, w[1].kind);
+                assert!(w[0].jd() < w[1].jd());
+                assert_ne!(w[0].kind(), w[1].kind());
             }
-            for s in ours.iter().filter(|s| matches!(s.kind, StationKind::RetroStart | StationKind::RetroEnd)) {
-                assert!(s.speed.abs() < 1e-6, "{key} {:?} speed {}", s.kind, s.speed);
+            for s in &ours {
+                let p = eph.calc_position(body, s.jd(), GeoPos::default(), CoordSystem::Ecliptic, Perspective::Geocentric).unwrap();
+                assert!((p.lng_speed - s.speed()).abs() < 1e-6, "{key} {s:?}: speed {}", p.lng_speed);
+                match s {
+                    Station::Peak(p) => assert!(p.speed() > 0.0),
+                    Station::RetroPeak(p) => assert!(p.speed() < 0.0),
+                    _ => {}
+                }
             }
         }
     }
@@ -81,8 +87,8 @@ fn mercury_station_matches_almanac() {
     let eph = Ephemeris::open(bsp).unwrap();
     let st = eph.stations(Body::Mercury, JdUt::from_iso("2023-12-28").unwrap(), JdUt::from_iso("2024-01-05").unwrap()).unwrap();
     assert_eq!(st.len(), 1);
-    assert_eq!(st[0].kind, StationKind::RetroEnd);
-    assert_eq!(&st[0].jd.to_iso().unwrap()[..16], "2024-01-02T03:07");
+    assert_eq!(st[0].kind(), StationKind::RetroEnd);
+    assert_eq!(&JdUt(st[0].jd()).to_iso().unwrap()[..16], "2024-01-02T03:07");
     // geocentric new moon of 2024-01-11 at 11:57 UTC
     let nm = eph.next_moon_phase(JdUt::from_iso("2024-01-10").unwrap()).unwrap();
     assert_eq!(nm.phase, MoonPhase::New);
@@ -241,4 +247,53 @@ fn phenomena_match_reference() {
             assert!(p.diameter > 0.0);
         }
     }
+}
+
+#[test]
+fn station_sets_report_motion_and_surrounding_stations() {
+    let bsp = data().join("de440s.bsp");
+    if !bsp.exists() {
+        return;
+    }
+    let eph = Ephemeris::open(bsp).unwrap();
+    // Mercury was retrograde from 2023-12-13 until 2024-01-02.
+    let jd = JdUt::from_iso("2023-12-25T12:00:00").unwrap().value();
+    let set = eph.next_stations(Body::Mercury, jd, 8, 3).unwrap();
+    assert!(set.is_retrograde() && set.speed < 0.0);
+    assert_eq!(set.stations.len(), 11);
+    assert_eq!(set.previous().count(), 3);
+    assert_eq!(set.upcoming().count(), 8);
+    let kinds: Vec<_> = set.stations.iter().map(|s| s.kind()).collect();
+    use StationKind::*;
+    assert_eq!(kinds[..5], [Peak, RetroStart, RetroPeak, RetroEnd, Peak]);
+    for w in set.stations.windows(2) {
+        assert!(w[0].jd() < w[1].jd());
+    }
+    assert_eq!(&JdUt(set.next(RetroEnd).unwrap().jd()).to_iso().unwrap()[..16], "2024-01-02T03:07");
+    assert_eq!(&JdUt(set.stations[1].jd()).to_iso().unwrap()[..10], "2023-12-13");
+    assert_eq!(set.next(RetroEnd).unwrap().speed(), 0.0);
+
+    // The same stations whichever way they are asked for.
+    let last = set.stations.last().unwrap().jd();
+    let by_days = eph.planetary_stations(Body::Mercury, jd, last - jd + 0.01, 3).unwrap();
+    assert_eq!(by_days.stations.len(), set.stations.len());
+    for (a, b) in by_days.stations.iter().zip(&set.stations) {
+        assert!(a.kind() == b.kind() && (a.jd() - b.jd()).abs() < 1e-4, "{a:?} vs {b:?}");
+    }
+    let ranged = eph.stations(Body::Mercury, jd, last + 0.01).unwrap();
+    assert_eq!(ranged.len(), 8);
+
+    // Direct motion, slow bodies and bodies that never turn back.
+    let mars = eph.next_stations(Body::Mars, jd, 4, 0).unwrap();
+    assert!(!mars.is_retrograde());
+    assert_eq!(mars.stations.len(), 4);
+    assert_eq!(mars.stations[0].kind(), Peak);
+    assert_eq!(eph.next_stations(Body::Pluto, jd, 12, 4).unwrap().stations.len(), 16);
+    let sun = eph.next_stations(Body::Sun, jd, 4, 2).unwrap();
+    assert!(sun.stations.is_empty() && sun.speed > 0.9);
+    // Close to the end of the data the search returns what there is; outside it, an error.
+    let late = eph.next_stations(Body::Mercury, 2_506_300.0, 40, 1).unwrap();
+    assert!(!late.stations.is_empty() && late.stations.len() < 41);
+    assert!(eph.next_stations(Body::Mercury, 2_600_000.0, 4, 0).is_err());
+    assert!(eph.planetary_stations(Body::Mercury, jd, -1.0, 0).is_err());
 }

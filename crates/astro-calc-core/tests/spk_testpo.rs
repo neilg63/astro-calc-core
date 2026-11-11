@@ -57,3 +57,22 @@ fn de440s_matches_testpo() {
     eprintln!("checked {checked} testpo values, worst error {worst:e} AU");
     assert!(checked > 1000);
 }
+
+/// Data passed in as bytes (as on WebAssembly) gives the same results as an opened file.
+#[test]
+fn from_bytes_matches_opened_file() {
+    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/de440s.bsp");
+    if !path.exists() {
+        return;
+    }
+    let opened = Ephemeris::open(&path).unwrap();
+    let loaded = Ephemeris::from_bytes(std::fs::read(&path).unwrap()).unwrap();
+    assert_eq!(opened.targets(), loaded.targets());
+    for target in opened.targets() {
+        assert_eq!(opened.coverage(target), loaded.coverage(target));
+        let jd = 2_451_545.0 + target as f64 * 0.37;
+        assert_eq!(opened.barycentric(target, jd).unwrap(), loaded.barycentric(target, jd).unwrap());
+    }
+    assert!(Ephemeris::from_bytes(vec![0u8; 2048]).is_err());
+    assert!(Ephemeris::from_bytes(Vec::new()).is_err());
+}

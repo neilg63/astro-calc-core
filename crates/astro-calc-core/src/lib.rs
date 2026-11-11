@@ -13,6 +13,8 @@
 //!   calculate at once.
 //! * Synchronous and CPU-bound. Callable from async code: short calls inline, bulk calls via
 //!   `spawn_blocking` (optional `tokio` wrappers to follow behind a feature flag).
+//! * Builds for WebAssembly: turn off the default `mmap` feature and load data with
+//!   [`Ephemeris::from_bytes`].
 
 pub mod aspects;
 pub mod ayanamsha;
@@ -29,6 +31,7 @@ pub mod pheno;
 pub mod position;
 pub mod rise_set;
 pub mod spk;
+pub mod station_table;
 pub mod time;
 
 pub use aspects::{
@@ -39,7 +42,7 @@ pub use ayanamsha::{Ayanamsha, to_sidereal};
 pub use body::{Body, BodyKind, Catalog, parse_body_list};
 pub use derived::{Angle, Derived, DerivedId, DerivedRegistry, Ref};
 pub use error::{BodyParseError, CalcError, DerivedError, EphemError, GeoError, TimeError};
-pub use events::{MoonPhase, MoonPhaseEvent, Station, StationKind};
+pub use events::{JdSpeed, MoonPhase, MoonPhaseEvent, Station, StationKind, StationSet};
 pub use geo::GeoPos;
 pub use houses::{Angles, HouseSystem, Houses, angles, ascendant, house_sets, houses};
 pub use indian_time::{IndianDay, SolarDayKind};
@@ -48,6 +51,7 @@ pub use pheno::Phenomena;
 pub use position::{BodyJdPos, BodyPos, BodyPosSet, CoordSystem, Perspective};
 pub use rise_set::{DayTransits, DiscAlignment, RiseSetOptions, TransitEvent, local_day_start};
 pub use spk::Ephemeris;
+pub use station_table::StationTable;
 pub use time::{J2000, JdTt, JdUt};
 
 #[cfg(test)]

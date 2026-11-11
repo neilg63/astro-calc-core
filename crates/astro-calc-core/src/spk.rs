@@ -1,14 +1,13 @@
 //! JPL SPK ephemeris reader (DAF container, segment types 2 and 3).
 //!
 //! Spec: NAIF "DAF Required Reading" and "SPK Required Reading" (public NAIF documentation).
-//! Files are memory-mapped, so opening is cheap and lookups never block on I/O after the
-//! pages are resident. [`Ephemeris`] is `Send + Sync` and is meant to be shared via `Arc`.
+//! With the default `mmap` feature files are memory-mapped, so opening is cheap and lookups
+//! never block on I/O after the pages are resident. Without it files are read into memory.
+//! Where there is no file system (WebAssembly in a browser), pass the file contents to
+//! [`Ephemeris::from_bytes`]. [`Ephemeris`] is `Send + Sync` and is meant to be shared via `Arc`.
 
 use std::collections::HashMap;
-use std::fs::File;
 use std::path::Path;
-
-use memmap2::Mmap;
 
 use crate::error::EphemError;
 use crate::math::{Vec3, add, scale, sub};
@@ -42,20 +41,36 @@ struct Segment {
     n_records: usize,
 }
 
+/// The contents of one SPK file.
+enum Data {
+    #[cfg(feature = "mmap")]
+    Mapped(memmap2::Mmap),
+    Owned(Vec<u8>),
+}
+
 struct SpkFile {
-    map: Mmap,
+    data: Data,
 }
 
 impl SpkFile {
     #[inline]
+    fn bytes(&self) -> &[u8] {
+        match &self.data {
+            #[cfg(feature = "mmap")]
+            Data::Mapped(m) => m,
+            Data::Owned(v) => v,
+        }
+    }
+
+    #[inline]
     fn word(&self, idx: usize) -> f64 {
-        let b = &self.map[idx * 8..idx * 8 + 8];
+        let b = &self.bytes()[idx * 8..idx * 8 + 8];
         f64::from_le_bytes(b.try_into().expect("8 bytes"))
     }
 
     #[inline]
     fn i32_at(&self, byte: usize) -> i32 {
-        i32::from_le_bytes(self.map[byte..byte + 4].try_into().expect("4 bytes"))
+        i32::from_le_bytes(self.bytes()[byte..byte + 4].try_into().expect("4 bytes"))
     }
 }
 
@@ -79,13 +94,37 @@ impl std::fmt::Debug for Ephemeris {
 impl Ephemeris {
     /// Opens a single SPK file.
     pub fn open(path: impl AsRef<Path>) -> Result<Self, EphemError> {
-        let mut e = Ephemeris {
-            files: Vec::new(),
-            delta_t_model: DeltaTModel::default(),
-            by_target: HashMap::new(),
-        };
+        let mut e = Self::empty();
         e.add_file(path)?;
         Ok(e)
+    }
+
+    fn empty() -> Self {
+        Ephemeris { files: Vec::new(), delta_t_model: DeltaTModel::default(), by_target: HashMap::new() }
+    }
+
+    /// Builds an ephemeris from the contents of an SPK file already in memory, for platforms
+    /// without a file system (for example a `.bsp` file fetched by a browser).
+    pub fn from_bytes(bytes: impl Into<Vec<u8>>) -> Result<Self, EphemError> {
+        let mut e = Self::empty();
+        e.add_bytes("bytes", bytes)?;
+        Ok(e)
+    }
+
+    /// Adds the contents of another SPK file; its segments take precedence over earlier
+    /// files. `name` only labels error messages.
+    pub fn add_bytes(&mut self, name: &str, bytes: impl Into<Vec<u8>>) -> Result<(), EphemError> {
+        self.add_data(name, Data::Owned(bytes.into()))
+    }
+
+    fn add_data(&mut self, name: &str, data: Data) -> Result<(), EphemError> {
+        let spk = SpkFile { data };
+        let segments = read_segments(&spk, self.files.len(), name)?;
+        self.files.push(spk);
+        for seg in segments {
+            self.by_target.entry(seg.target).or_default().insert(0, seg);
+        }
+        Ok(())
     }
 
     /// Opens every `.bsp` file in a directory: the planetary file(s) plus any small-body files
@@ -99,7 +138,7 @@ impl Ephemeris {
             .filter(|p| p.extension().is_some_and(|x| x.eq_ignore_ascii_case("bsp")))
             .collect();
         paths.sort();
-        let mut e = Ephemeris { files: Vec::new(), delta_t_model: DeltaTModel::default(), by_target: HashMap::new() };
+        let mut e = Self::empty();
         for p in &paths {
             e.add_file(p)?;
         }
@@ -112,19 +151,18 @@ impl Ephemeris {
     /// Adds another SPK file; its segments take precedence over earlier files.
     pub fn add_file(&mut self, path: impl AsRef<Path>) -> Result<(), EphemError> {
         let path = path.as_ref();
-        let file = File::open(path).map_err(|e| EphemError::Io(path.display().to_string(), e.to_string()))?;
-        // SAFETY: the file is opened read-only and treated as immutable for the lifetime of the
-        // map. Modifying an SPK file while it is mapped is unsupported.
-        let map = unsafe { Mmap::map(&file) }
-            .map_err(|e| EphemError::Io(path.display().to_string(), e.to_string()))?;
-        let spk = SpkFile { map };
-        let file_idx = self.files.len();
-        let segments = read_segments(&spk, file_idx, path)?;
-        self.files.push(spk);
-        for seg in segments {
-            self.by_target.entry(seg.target).or_default().insert(0, seg);
-        }
-        Ok(())
+        let name = path.display().to_string();
+        let io = |e: std::io::Error| EphemError::Io(name.clone(), e.to_string());
+        #[cfg(feature = "mmap")]
+        let data = {
+            let file = std::fs::File::open(path).map_err(io)?;
+            // SAFETY: the file is opened read-only and treated as immutable for the lifetime of
+            // the map. Modifying an SPK file while it is mapped is unsupported.
+            Data::Mapped(unsafe { memmap2::Mmap::map(&file) }.map_err(io)?)
+        };
+        #[cfg(not(feature = "mmap"))]
+        let data = Data::Owned(std::fs::read(path).map_err(io)?);
+        self.add_data(&name, data)
     }
 
     /// Chooses the ΔT model used to convert UT to TT (default: observed values).
@@ -198,15 +236,15 @@ impl Ephemeris {
     }
 }
 
-fn read_segments(spk: &SpkFile, file_idx: usize, path: &Path) -> Result<Vec<Segment>, EphemError> {
-    let bad = |why: &str| EphemError::Format(path.display().to_string(), why.to_string());
-    if spk.map.len() < RECORD_BYTES {
+fn read_segments(spk: &SpkFile, file_idx: usize, name: &str) -> Result<Vec<Segment>, EphemError> {
+    let bad = |why: &str| EphemError::Format(name.to_string(), why.to_string());
+    if spk.bytes().len() < RECORD_BYTES {
         return Err(bad("file shorter than one record"));
     }
-    if &spk.map[0..7] != b"DAF/SPK" {
+    if &spk.bytes()[0..7] != b"DAF/SPK" {
         return Err(bad("not a DAF/SPK file"));
     }
-    if &spk.map[88..96] != b"LTL-IEEE" {
+    if &spk.bytes()[88..96] != b"LTL-IEEE" {
         return Err(bad("only little-endian IEEE SPK files are supported"));
     }
     let nd = spk.i32_at(8) as usize;
@@ -219,7 +257,7 @@ fn read_segments(spk: &SpkFile, file_idx: usize, path: &Path) -> Result<Vec<Segm
     let mut record = spk.i32_at(76) as usize; // FWARD
     while record != 0 {
         let base_word = (record - 1) * RECORD_BYTES / 8;
-        if (base_word + 128) * 8 > spk.map.len() {
+        if (base_word + 128) * 8 > spk.bytes().len() {
             return Err(bad("summary record out of range"));
         }
         let next = spk.word(base_word) as usize;

@@ -86,7 +86,7 @@ pub struct BodyPosSet {
 }
 
 /// NAIF id of the ephemeris target for a body, if it comes straight from the DE files.
-fn naif_id(body: Body) -> Option<i32> {
+pub(crate) fn naif_id(body: Body) -> Option<i32> {
     Some(match body {
         Body::Sun => NAIF_SUN,
         Body::Moon => 301,

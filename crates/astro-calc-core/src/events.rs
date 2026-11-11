@@ -35,15 +35,96 @@ impl StationKind {
     }
 }
 
-/// One station: when, where and how fast (degrees per day).
+/// A moment (UT Julian Day) and the longitude speed at it (degrees per day).
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Station {
+pub struct JdSpeed(pub f64, pub f64);
+
+impl JdSpeed {
+    pub const fn jd(&self) -> f64 {
+        self.0
+    }
+
+    pub const fn speed(&self) -> f64 {
+        self.1
+    }
+}
+
+/// One station of a body's retrograde cycle. The two turning points carry only their time,
+/// since the speed there is zero; the two peaks carry the speed reached.
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum Station {
+    /// Fastest direct motion.
+    Peak(JdSpeed),
+    /// Retrograde motion begins.
+    RetroStart(f64),
+    /// Fastest retrograde motion (a negative speed).
+    RetroPeak(JdSpeed),
+    /// Retrograde motion ends.
+    RetroEnd(f64),
+}
+
+impl Station {
+    /// When the station occurs (UT Julian Day).
+    pub const fn jd(&self) -> f64 {
+        match self {
+            Station::Peak(p) | Station::RetroPeak(p) => p.0,
+            Station::RetroStart(jd) | Station::RetroEnd(jd) => *jd,
+        }
+    }
+
+    /// Longitude speed at the station in degrees per day: zero at the turning points.
+    pub const fn speed(&self) -> f64 {
+        match self {
+            Station::Peak(p) | Station::RetroPeak(p) => p.1,
+            Station::RetroStart(_) | Station::RetroEnd(_) => 0.0,
+        }
+    }
+
+    pub const fn kind(&self) -> StationKind {
+        match self {
+            Station::Peak(_) => StationKind::Peak,
+            Station::RetroStart(_) => StationKind::RetroStart,
+            Station::RetroPeak(_) => StationKind::RetroPeak,
+            Station::RetroEnd(_) => StationKind::RetroEnd,
+        }
+    }
+}
+
+/// A body's motion at a moment, with the stations around it.
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct StationSet {
     pub body: Body,
-    pub kind: StationKind,
-    pub jd: JdUt,
-    pub lng: f64,
+    /// The moment asked about (UT Julian Day).
+    pub jd: f64,
+    /// Longitude speed at `jd` in degrees per day; negative when retrograde.
     pub speed: f64,
+    /// Stations in chronological order: any requested ones before `jd`, then those after.
+    pub stations: Vec<Station>,
+}
+
+impl StationSet {
+    /// Whether the body is moving backwards at `jd`.
+    pub fn is_retrograde(&self) -> bool {
+        self.speed < 0.0
+    }
+
+    /// Stations after `jd`.
+    pub fn upcoming(&self) -> impl Iterator<Item = &Station> {
+        self.stations.iter().filter(|s| s.jd() > self.jd)
+    }
+
+    /// Stations at or before `jd`.
+    pub fn previous(&self) -> impl Iterator<Item = &Station> {
+        self.stations.iter().filter(|s| s.jd() <= self.jd)
+    }
+
+    /// The next station of a given kind after `jd`, if within the set.
+    pub fn next(&self, kind: StationKind) -> Option<&Station> {
+        self.upcoming().find(|s| s.kind() == kind)
+    }
 }
 
 /// The four principal lunar phases.
@@ -99,20 +180,23 @@ fn station_step(body: Body) -> f64 {
     }
 }
 
-/// Padding (days) longer than the body's longest direct period.
+/// Padding (days) longer than the body's longest retrograde cycle (four stations).
 fn station_pad(body: Body) -> f64 {
     match body {
         Body::Mercury => 130.0,
         Body::Venus => 600.0,
-        Body::Mars => 800.0,
-        _ => 420.0,
+        Body::Jupiter | Body::Saturn | Body::Uranus | Body::Neptune | Body::Pluto | Body::Chiron | Body::Pholus => 420.0,
+        // Mars, the main-belt asteroids and anything unknown.
+        _ => 800.0,
     }
 }
 
 const GOLD: f64 = 0.381_966_011_250_105;
+/// Days in a sidereal month.
+const SIDEREAL_MONTH: f64 = 27.321_66;
 
 impl Ephemeris {
-    fn lng_speed(&self, body: Body, t: f64) -> Result<(f64, f64), CalcError> {
+    pub(crate) fn lng_speed(&self, body: Body, t: f64) -> Result<(f64, f64), CalcError> {
         let p = self.calc_position(body, t, GeoPos::default(), CoordSystem::Ecliptic, Perspective::Geocentric)?;
         Ok((p.lng, p.lng_speed))
     }
@@ -120,10 +204,53 @@ impl Ephemeris {
     /// Stations of a body between two times, in chronological order.
     ///
     /// `RetroStart` / `RetroEnd` are the zero crossings of the apparent geocentric longitude
-    /// speed; `RetroPeak` is the fastest retrograde speed of each retrograde period and `Peak`
-    /// the fastest direct speed of each direct period (one of each per cycle).
+    /// speed. `RetroPeak` and `Peak` mark the fastest retrograde and direct motion of each
+    /// period (one of each per cycle), placed at the top of the smooth speed curve: small
+    /// monthly ripples can make the instantaneous speed a day or two away fractionally higher.
     pub fn stations(&self, body: Body, from: impl Into<JdUt>, to: impl Into<JdUt>) -> Result<Vec<Station>, CalcError> {
-        let (from, to) = (from.into().value(), to.into().value());
+        self.stations_in(body, from.into().value(), to.into().value(), true)
+    }
+
+    /// A body's speed at `jd` with its stations over the following `days`, preceded by the
+    /// last `stations_before` stations before `jd`.
+    pub fn planetary_stations(&self, body: Body, jd: impl Into<JdUt>, days: f64, stations_before: u8) -> Result<StationSet, CalcError> {
+        let jd = jd.into().value();
+        if !(days >= 0.0 && days.is_finite()) {
+            return Err(CalcError::InvalidInterval { days, interval: station_step(body) });
+        }
+        let speed = self.lng_speed(body, jd)?.1;
+        let mut stations = self.stations_before(body, jd, stations_before as usize)?;
+        stations.extend(self.stations_in(body, jd, jd + days, false)?.into_iter().filter(|s| s.jd() > jd));
+        Ok(StationSet { body, jd, speed, stations })
+    }
+
+    /// A body's speed at `jd` with its next `count` stations, preceded by the last
+    /// `stations_before` stations before `jd`. Fewer are returned for a body that never
+    /// turns retrograde (the Sun and Moon) or where the ephemeris ends first.
+    pub fn next_stations(&self, body: Body, jd: impl Into<JdUt>, count: usize, stations_before: u8) -> Result<StationSet, CalcError> {
+        let jd = jd.into().value();
+        let speed = self.lng_speed(body, jd)?.1;
+        let mut stations = self.stations_before(body, jd, stations_before as usize)?;
+        // A cycle has four stations and is shorter than the padding length.
+        let span = (count / 4 + 1) as f64 * station_pad(body);
+        let ahead = self.stations_in(body, jd, jd + span, false)?;
+        stations.extend(ahead.into_iter().filter(|s| s.jd() > jd).take(count));
+        Ok(StationSet { body, jd, speed, stations })
+    }
+
+    /// The last `count` stations at or before `jd`.
+    fn stations_before(&self, body: Body, jd: f64, count: usize) -> Result<Vec<Station>, CalcError> {
+        if count == 0 {
+            return Ok(Vec::new());
+        }
+        let span = (count / 4 + 1) as f64 * station_pad(body);
+        let mut before = self.stations_in(body, jd - span, jd, false)?;
+        Ok(before.split_off(before.len().saturating_sub(count)))
+    }
+
+    /// `strict`: fail if any part of `from..to` lies outside the ephemeris; otherwise search
+    /// only the part that is covered.
+    pub(crate) fn stations_in(&self, body: Body, from: f64, to: f64, strict: bool) -> Result<Vec<Station>, CalcError> {
         let step = station_step(body);
         // Search a padded range so the direct/retrograde periods overlapping the edges are complete.
         let pad = station_pad(body);
@@ -135,7 +262,7 @@ impl Ephemeris {
             match speed(t_at(i)) {
                 Ok(s) => samples.push(s),
                 // the padding may run past the ephemeris; the requested range itself must not
-                Err(e) if t_at(i) >= from && t_at(i) <= to => return Err(e),
+                Err(e) if strict && t_at(i) >= from && t_at(i) <= to => return Err(e),
                 Err(_) => samples.push(f64::NAN),
             }
         }
@@ -162,8 +289,12 @@ impl Ephemeris {
         let mut out = Vec::new();
         let mut push = |kind, t: f64| -> Result<(), CalcError> {
             if t >= from && t <= to {
-                let (lng, speed) = self.lng_speed(body, t)?;
-                out.push(Station { body, kind, jd: JdUt(t), lng, speed });
+                out.push(match kind {
+                    StationKind::RetroStart => Station::RetroStart(t),
+                    StationKind::RetroEnd => Station::RetroEnd(t),
+                    StationKind::Peak => Station::Peak(JdSpeed(t, self.lng_speed(body, t)?.1)),
+                    StationKind::RetroPeak => Station::RetroPeak(JdSpeed(t, self.lng_speed(body, t)?.1)),
+                });
             }
             Ok(())
         };
@@ -189,9 +320,43 @@ impl Ephemeris {
                     f2 = sign * speed(x2)?;
                 }
             }
-            push(if falling { StationKind::RetroPeak } else { StationKind::Peak }, 0.5 * (a + b))?;
+            // Speed is almost flat at its extreme, and for all but Mercury it carries small
+            // monthly ripples (the Earth circling the Earth–Moon barycentre, and nutation), so
+            // the highest value is ambiguous by days. The peak is therefore defined as the
+            // top of the smooth curve: the zero of the acceleration, taken as the second
+            // difference of longitude over a sidereal month, which cancels those ripples.
+            let mut peak = 0.5 * (a + b);
+            let (h, reach) = if body == Body::Mercury { (step, step) } else { (SIDEREAL_MONTH.min((t_next - t) / 4.0), 10.0) };
+            let slope = |x: f64| -> Result<f64, CalcError> {
+                let (l0, l1, l2) = (self.lng_speed(body, x - h)?.0, self.lng_speed(body, x)?.0, self.lng_speed(body, x + h)?.0);
+                Ok(diff_deg(l1, l2) - diff_deg(l0, l1))
+            };
+            let (mut lo, mut hi) = ((peak - reach).max(t), (peak + reach).min(t_next));
+            // Near the ends of the ephemeris the interval may not fit; the estimate then stands.
+            if hi > lo
+                && let (Ok(mut s_lo), Ok(s_hi)) = (slope(lo), slope(hi))
+                && (s_lo > 0.0) != (s_hi > 0.0)
+            {
+                let mut ok = true;
+                while hi - lo > 1e-6 {
+                    let m = 0.5 * (lo + hi);
+                    let Ok(s_m) = slope(m) else {
+                        ok = false;
+                        break;
+                    };
+                    if (s_m > 0.0) == (s_lo > 0.0) {
+                        (lo, s_lo) = (m, s_m);
+                    } else {
+                        hi = m;
+                    }
+                }
+                if ok {
+                    peak = 0.5 * (lo + hi);
+                }
+            }
+            push(if falling { StationKind::RetroPeak } else { StationKind::Peak }, peak)?;
         }
-        out.sort_by(|a, b| a.jd.value().total_cmp(&b.jd.value()));
+        out.sort_by(|a, b| a.jd().total_cmp(&b.jd()));
         Ok(out)
     }
 

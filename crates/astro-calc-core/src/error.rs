@@ -57,6 +57,8 @@ pub enum EphemError {
     Format(String, String),
     #[error("no ephemeris data for NAIF id {target} at JD {jd}")]
     NoData { target: i32, jd: f64 },
+    #[error("invalid station table: {0}")]
+    Table(String),
 }
 
 /// Failure to calculate a position.
