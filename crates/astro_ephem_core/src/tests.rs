@@ -201,3 +201,15 @@ fn serde_uses_string_keys() {
     let back: Vec<Body> = serde_json::from_str(&json).unwrap();
     assert_eq!(back, v);
 }
+
+#[test]
+fn iso_strings_are_completed_and_converted_once() {
+    let jd = JdUt::from_iso("1990-08-23T12").unwrap();
+    assert_eq!(jd.to_iso().unwrap(), "1990-08-23T12:00:00");
+    assert_eq!(JdUt::from_iso("1996-01-12T11:25:00").unwrap().value(), 2450094.9756944445);
+    assert_eq!("1996-01-12T11:25".parse::<JdUt>().unwrap().value(), 2450094.9756944445);
+    assert_eq!(JdUt::from_iso("2024-01").unwrap().to_iso().unwrap(), "2024-01-01T00:00:00");
+    assert_eq!(JdUt::from_iso("2024").unwrap().to_iso().unwrap(), "2024-01-01T00:00:00");
+    assert_eq!(JdUt::from_iso("2450094.5").unwrap().value(), 2450094.5);
+    assert!(matches!(JdUt::from_iso("not a date"), Err(TimeError::Parse(_))));
+}

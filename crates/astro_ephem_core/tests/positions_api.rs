@@ -45,8 +45,13 @@ fn progress_sampling() {
 fn unsupported_inputs_are_errors() {
     let Some(eph) = eph() else { return };
     assert!(matches!(
+        eph.calc_position(Body::Isis, 2451545.0, ROME, CoordSystem::Ecliptic, Perspective::Geocentric),
+        Err(CalcError::UnsupportedBody(Body::Isis))
+    ));
+    // a supported body whose data file is not loaded
+    assert!(matches!(
         eph.calc_position(Body::Chiron, 2451545.0, ROME, CoordSystem::Ecliptic, Perspective::Geocentric),
-        Err(CalcError::UnsupportedBody(Body::Chiron))
+        Err(CalcError::Ephem(EphemError::NoData { target: 20_002_060, .. }))
     ));
     assert!(matches!(
         eph.calc_position(Body::Sun, 2200000.0, ROME, CoordSystem::Ecliptic, Perspective::Geocentric),

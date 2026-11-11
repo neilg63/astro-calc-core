@@ -72,6 +72,30 @@ impl JdUt {
         julian_day_to_unix_millis(self.0)
     }
 
+    /// Parses an ISO-8601-like UTC date-time, completing partial input
+    /// (`1990-08-23T12` → `1990-08-23T12:00:00`, `2024-01` → `2024-01-01T00:00:00`).
+    /// A plain number is taken as a Julian Day. Intended for client-facing wrappers: convert
+    /// once here, then pass the `JdUt` to the core methods.
+    pub fn from_iso(text: &str) -> Result<Self, TimeError> {
+        let text = text.trim();
+        if let Ok(jd) = text.parse::<f64>() {
+            // bare years such as "2024" are dates, not Julian Days
+            if jd.is_finite() && (text.contains('.') || jd.abs() >= 10_000.0) {
+                return Ok(Self(jd));
+            }
+        }
+        fuzzy_datetime::iso_fuzzy_string_to_datetime(text)
+            .map(|dt| Self::from_naive(&dt))
+            .map_err(|_| TimeError::Parse(text.to_string()))
+    }
+
+    /// ISO-8601 UTC string to the second, e.g. `1996-01-12T11:25:00`.
+    pub fn to_iso(self) -> Result<String, TimeError> {
+        // round to the nearest second first
+        let secs = (self.to_unix_millis() as f64 / 1000.0).round() as i64;
+        Self::from_unix(secs).to_naive().map(|d| d.format("%Y-%m-%dT%H:%M:%S").to_string())
+    }
+
     pub fn to_naive(self) -> Result<NaiveDateTime, TimeError> {
         NaiveDateTime::from_jd(self.0).ok_or(TimeError::OutOfRange(self.0))
     }
@@ -96,6 +120,13 @@ impl JdTt {
     #[inline]
     pub fn centuries_since_j2000(self) -> f64 {
         (self.0 - J2000) / 36_525.0
+    }
+}
+
+impl std::str::FromStr for JdUt {
+    type Err = TimeError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::from_iso(s)
     }
 }
 

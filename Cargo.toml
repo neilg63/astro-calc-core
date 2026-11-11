@@ -10,5 +10,6 @@ authors = ["Neil Gardner"]
 [workspace.dependencies]
 chrono = "0.4"
 julian_day_converter = "0.4.6"
+fuzzy-datetime = "0.1.4"
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"

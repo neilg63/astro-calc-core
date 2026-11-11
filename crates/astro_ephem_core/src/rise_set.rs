@@ -112,7 +112,7 @@ pub struct DayTransits {
 }
 
 /// Mean radius in km used for semi-diameters.
-fn radius_km(body: Body) -> f64 {
+pub(crate) fn radius_km(body: Body) -> f64 {
     match body {
         Body::Sun => 696_000.0,
         Body::Moon => 1_738.0,

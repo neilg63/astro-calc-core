@@ -3,6 +3,15 @@
 version = 4
 
 [[package]]
+name = "alphanumeric"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "497c98358c446f25a9818840e5ce86908d3ef2a0d6099ccc410a8f0eda4cd055"
+dependencies = [
+ "to_segments",
+]
+
+[[package]]
 name = "android_system_properties"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -16,6 +25,7 @@ name = "astro_ephem_core"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "fuzzy-datetime",
  "julian_day_converter",
  "memmap2",
  "serde",
@@ -98,6 +108,17 @@ dependencies = [
  "futures-task",
  "pin-project-lite",
  "slab",
+]
+
+[[package]]
+name = "fuzzy-datetime"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1907bfc8b2a43ecd99442d9087dd840d84b173fd5a1f1c651684b51547a63f0f"
+dependencies = [
+ "chrono",
+ "simple-string-patterns",
+ "to_segments",
 ]
 
 [[package]]
@@ -266,6 +287,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
+name = "simple-string-patterns"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f527fa1337913ce8abe0cfff89ae2aa1bb100e5d53892cf54256c6d779108a0"
+dependencies = [
+ "alphanumeric",
+]
+
+[[package]]
 name = "slab"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -312,6 +342,12 @@ dependencies = [
  "quote",
  "syn 3.0.10",
 ]
+
+[[package]]
+name = "to_segments"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a31b9217f3bf6330cc57fc844a853bfd0dd37c30572bccdfe236d193209ff91"
 
 [[package]]
 name = "unicode-ident"

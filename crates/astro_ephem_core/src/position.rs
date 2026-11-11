@@ -98,6 +98,17 @@ fn naif_id(body: Body) -> Option<i32> {
         Body::Uranus => 7,
         Body::Neptune => 8,
         Body::Pluto => 9,
+        // Small bodies use JPL Horizons SPK ids (20 000 000 + minor-planet number).
+        Body::Ceres => 20_000_001,
+        Body::Pallas => 20_000_002,
+        Body::Juno => 20_000_003,
+        Body::Vesta => 20_000_004,
+        Body::Chiron => 20_002_060,
+        Body::Pholus => 20_005_145,
+        Body::Catalog { catalog: crate::body::Catalog::JplHorizons, id } => i32::try_from(id).ok()?,
+        Body::Catalog { catalog: crate::body::Catalog::MinorPlanetCenter, id } => {
+            i32::try_from(id.checked_add(20_000_000)?).ok()?
+        }
         _ => return None,
     })
 }
@@ -173,6 +184,28 @@ impl Frame {
         };
         let dir = self.aberrate(dir);
         Ok((mat_vec(&self.eo.npb, dir), dist))
+    }
+
+    /// Apparent geocentric geometry of a body for phenomena.
+    pub(crate) fn geometry(&self, eph: &Ephemeris, body: Body) -> Result<crate::pheno::Geometry, CalcError> {
+        let target = naif_id(body).ok_or(CalcError::UnsupportedBody(body))?;
+        let (dir_b, dist) = self.apparent(eph, target)?;
+        let (dir_s, dist_s) = self.apparent(eph, NAIF_SUN)?;
+        // apparent geocentric vectors (true equator of date)
+        let (b, s) = (scale(dir_b, dist), scale(dir_s, dist_s));
+        let body_to_sun = sub(s, b);
+        let phase_angle = crate::pheno::angle_between(body_to_sun, scale(b, -1.0));
+        let elongation = crate::pheno::angle_between(b, s);
+        // Saturn: sine of the sub-Earth latitude from the IAU pole (α₀ = 40.589°, δ₀ = 83.537°, ICRF).
+        let ring_tilt_sin = if body == Body::Saturn {
+            let t = (self.tt - 2_451_545.0) / 36_525.0;
+            let (ra, dec) = ((40.589 - 0.036 * t).to_radians(), (83.537 - 0.004 * t).to_radians());
+            let pole = mat_vec(&self.eo.npb, [dec.cos() * ra.cos(), dec.cos() * ra.sin(), dec.sin()]);
+            -dot(pole, dir_b)
+        } else {
+            0.0
+        };
+        Ok(crate::pheno::Geometry { phase_angle, elongation, dist, helio_dist: norm(body_to_sun), ring_tilt_sin })
     }
 
     /// Gravitational light deflection by the Sun. `dir`: observer → source (unit);

@@ -44,6 +44,8 @@ pub enum DerivedError {
 pub enum TimeError {
     #[error("Julian Day {0} is outside the supported calendar range")]
     OutOfRange(f64),
+    #[error("cannot parse date-time: {0}")]
+    Parse(String),
 }
 
 /// Failure to read or evaluate an SPK ephemeris.

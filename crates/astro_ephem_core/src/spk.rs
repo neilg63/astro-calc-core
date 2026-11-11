@@ -22,6 +22,8 @@ const J2000_JD: f64 = 2_451_545.0;
 pub const AU_KM: f64 = 149_597_870.7;
 
 const RECORD_BYTES: usize = 1024;
+/// Largest modified-difference-array table size supported (SPK types 1 and 21).
+const MAX_MDA_DIM: usize = 25;
 
 #[derive(Debug, Clone, Copy)]
 struct Segment {
@@ -86,6 +88,27 @@ impl Ephemeris {
         Ok(e)
     }
 
+    /// Opens every `.bsp` file in a directory: the planetary file(s) plus any small-body files
+    /// (for example those fetched by `tools/fetch_horizons_spk.py`).
+    pub fn open_dir(dir: impl AsRef<Path>) -> Result<Self, EphemError> {
+        let dir = dir.as_ref();
+        let io = |e: std::io::Error| EphemError::Io(dir.display().to_string(), e.to_string());
+        let mut paths: Vec<_> = std::fs::read_dir(dir)
+            .map_err(io)?
+            .filter_map(|e| e.ok().map(|e| e.path()))
+            .filter(|p| p.extension().is_some_and(|x| x.eq_ignore_ascii_case("bsp")))
+            .collect();
+        paths.sort();
+        let mut e = Ephemeris { files: Vec::new(), delta_t_model: DeltaTModel::default(), by_target: HashMap::new() };
+        for p in &paths {
+            e.add_file(p)?;
+        }
+        if e.files.is_empty() {
+            return Err(EphemError::Io(dir.display().to_string(), "no .bsp files found".into()));
+        }
+        Ok(e)
+    }
+
     /// Adds another SPK file; its segments take precedence over earlier files.
     pub fn add_file(&mut self, path: impl AsRef<Path>) -> Result<(), EphemError> {
         let path = path.as_ref();
@@ -140,7 +163,10 @@ impl Ephemeris {
             .iter()
             .find(|s| et >= s.start_et && et <= s.end_et)
             .ok_or(EphemError::NoData { target, jd: tdb_jd })?;
-        let (p, v) = eval_segment(&self.files[seg.file], seg, et);
+        let (p, v) = match seg.data_type {
+            1 | 21 => eval_mda(&self.files[seg.file], seg, et),
+            _ => eval_segment(&self.files[seg.file], seg, et),
+        };
         Ok((seg.center, scale(p, 1.0 / AU_KM), scale(v, DAY_S / AU_KM)))
     }
 
@@ -209,18 +235,28 @@ fn read_segments(spk: &SpkFile, file_idx: usize, path: &Path) -> Result<Vec<Segm
             let data_type = spk.i32_at(ib + 12);
             let start_addr = spk.i32_at(ib + 16) as usize;
             let end_addr = spk.i32_at(ib + 20) as usize;
-            if data_type != 2 && data_type != 3 {
-                continue; // other types are not needed for DE files
-            }
             let end_word = end_addr - 1;
-            let init = spk.word(end_word - 3);
-            let intlen = spk.word(end_word - 2);
-            let rsize = spk.word(end_word - 1) as usize;
-            let n_records = spk.word(end_word) as usize;
-            let sets = if data_type == 2 { 3 } else { 6 };
-            if rsize < 2 + sets || (rsize - 2) / sets > 32 || n_records == 0 {
-                return Err(bad("unsupported segment record layout"));
-            }
+            let (init, intlen, rsize, n_records) = match data_type {
+                2 | 3 => {
+                    let rsize = spk.word(end_word - 1) as usize;
+                    let n_records = spk.word(end_word) as usize;
+                    let sets = if data_type == 2 { 3 } else { 6 };
+                    if rsize < 2 + sets || (rsize - 2) / sets > 32 || n_records == 0 {
+                        return Err(bad("unsupported segment record layout"));
+                    }
+                    (spk.word(end_word - 3), spk.word(end_word - 2), rsize, n_records)
+                }
+                // Modified difference arrays: type 1 has a fixed table size of 15, type 21 stores it.
+                1 | 21 => {
+                    let n_records = spk.word(end_word) as usize;
+                    let maxdim = if data_type == 21 { spk.word(end_word - 1) as usize } else { 15 };
+                    if maxdim == 0 || maxdim > MAX_MDA_DIM || n_records == 0 {
+                        return Err(bad("unsupported difference-array segment"));
+                    }
+                    (0.0, 0.0, 4 * maxdim + 11, n_records)
+                }
+                _ => continue, // other types are not needed
+            };
             segments.push(Segment {
                 file: file_idx,
                 target,
@@ -290,6 +326,84 @@ fn eval_segment(f: &SpkFile, seg: &Segment, et: f64) -> (Vec3, Vec3) {
             }
             vel[c] = v;
         }
+    }
+    (pos, vel)
+}
+
+/// Evaluates a type 1/21 segment (modified difference arrays): km and km/s.
+///
+/// Algorithm: NAIF SPK Required Reading, types 1 and 21 (the SPKE01/SPKE21 recurrences);
+/// cross-checked against the MIT-licensed `spktype21` Python implementation.
+fn eval_mda(f: &SpkFile, seg: &Segment, et: f64) -> (Vec3, Vec3) {
+    let maxdim = (seg.rsize - 11) / 4;
+    let n = seg.n_records;
+    // Final epochs of the records follow the records; pick the first record whose epoch ≥ et.
+    let epochs = seg.start_word + n * seg.rsize;
+    let (mut lo, mut hi) = (0usize, n - 1);
+    while lo < hi {
+        let mid = (lo + hi) / 2;
+        if f.word(epochs + mid) < et {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    let rec = seg.start_word + lo * seg.rsize;
+    let w_at = |i: usize| f.word(rec + i);
+
+    let tl = w_at(0);
+    let g = |j: usize| w_at(1 + j);
+    let refpos = [w_at(maxdim + 1), w_at(maxdim + 3), w_at(maxdim + 5)];
+    let refvel = [w_at(maxdim + 2), w_at(maxdim + 4), w_at(maxdim + 6)];
+    let dt = |j: usize, i: usize| w_at(maxdim + 7 + i * maxdim + j);
+    let kqmax1 = w_at(4 * maxdim + 7) as usize;
+    let kq = [w_at(4 * maxdim + 8) as usize, w_at(4 * maxdim + 9) as usize, w_at(4 * maxdim + 10) as usize];
+
+    let delta = et - tl;
+    let mut fc = [0.0f64; MAX_MDA_DIM + 2];
+    let mut wc = [0.0f64; MAX_MDA_DIM + 2];
+    let mut w = [0.0f64; MAX_MDA_DIM + 4];
+    fc[0] = 1.0;
+    let mut tp = delta;
+    let mq2 = kqmax1.saturating_sub(2);
+    let mut ks = kqmax1 - 1;
+    for j in 1..=mq2 {
+        fc[j] = tp / g(j - 1);
+        wc[j - 1] = delta / g(j - 1);
+        tp = delta + g(j - 1);
+    }
+    for (j, wj) in w.iter_mut().enumerate().take(kqmax1) {
+        *wj = 1.0 / (j + 1) as f64;
+    }
+    let mut jx = 0usize;
+    let mut ks1 = ks - 1;
+    while ks >= 2 {
+        jx += 1;
+        for j in 1..=jx {
+            w[j + ks - 1] = fc[j] * w[j + ks1 - 1] - wc[j - 1] * w[j + ks - 1];
+        }
+        ks = ks1;
+        ks1 -= 1;
+    }
+    let mut pos = [0.0; 3];
+    let mut vel = [0.0; 3];
+    for i in 0..3 {
+        let mut sum = 0.0;
+        for j in (1..=kq[i]).rev() {
+            sum += dt(j - 1, i) * w[j + ks - 1];
+        }
+        pos[i] = refpos[i] + delta * (refvel[i] + delta * sum);
+    }
+    for j in 1..=jx {
+        w[j + ks - 1] = fc[j] * w[j + ks1 - 1] - wc[j - 1] * w[j + ks - 1];
+    }
+    ks -= 1;
+    for i in 0..3 {
+        let mut sum = 0.0;
+        for j in (1..=kq[i]).rev() {
+            sum += dt(j - 1, i) * w[j + ks - 1];
+        }
+        vel[i] = refvel[i] + delta * sum;
     }
     (pos, vel)
 }

@@ -1,0 +1,2582 @@
+[
+ {
+  "utc": "1941-09-14T07:46:22",
+  "jd": 2430251.8238657406,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5301071559116471,
+    "apparentMagnitude": -26.847628221995542,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.49797693800333004,
+    "apparentMagnitude": -9.81769552687377,
+    "elongationOfPlanet": 84.35091736723805,
+    "key": "mo",
+    "phaseAngle": 95.49743653574214,
+    "phaseIlluminated": 0.452099391244529
+   },
+   {
+    "apparentDiameterOfDisc": 0.0014974319155498148,
+    "apparentMagnitude": -0.17676767905107393,
+    "elongationOfPlanet": 20.23086643133126,
+    "key": "me",
+    "phaseAngle": 48.84215204947128,
+    "phaseIlluminated": 0.8290678681232913
+   },
+   {
+    "apparentDiameterOfDisc": 0.003941099635882538,
+    "apparentMagnitude": -3.991657018228449,
+    "elongationOfPlanet": 37.90938440737321,
+    "key": "ve",
+    "phaseAngle": 58.221180064825866,
+    "phaseIlluminated": 0.7633207932899846
+   },
+   {
+    "apparentDiameterOfDisc": 0.0059685190722569195,
+    "apparentMagnitude": -2.2373345987024296,
+    "elongationOfPlanet": 147.51686269791958,
+    "key": "ma",
+    "phaseAngle": 22.810779413378384,
+    "phaseIlluminated": 0.9608951147714985
+   },
+   {
+    "apparentDiameterOfDisc": 0.011085241541790093,
+    "apparentMagnitude": -2.3611139332147273,
+    "elongationOfPlanet": 90.74240073652636,
+    "key": "ju",
+    "phaseAngle": 11.493759209262802,
+    "phaseIlluminated": 0.9899732072155137
+   },
+   {
+    "apparentDiameterOfDisc": 0.005277711370664905,
+    "apparentMagnitude": 0.049411165844436056,
+    "elongationOfPlanet": 112.53689085464451,
+    "key": "sa",
+    "phaseAngle": 5.836181976491383,
+    "phaseIlluminated": 0.9974083469765527
+   },
+   {
+    "apparentDiameterOfDisc": 0.00101711639662969,
+    "apparentMagnitude": 5.669558744450151,
+    "elongationOfPlanet": 110.77092285347601,
+    "key": "ur",
+    "phaseAngle": 2.7660860367822857,
+    "phaseIlluminated": 0.9994174385264375
+   },
+   {
+    "apparentDiameterOfDisc": 0.0005958017095120437,
+    "apparentMagnitude": 8.006703361571553,
+    "elongationOfPlanet": 6.220599576239491,
+    "key": "ne",
+    "phaseAngle": 0.21094362773542452,
+    "phaseIlluminated": 0.9999966113471923
+   },
+   {
+    "apparentDiameterOfDisc": 4.8914731521579375e-05,
+    "apparentMagnitude": 14.888620808353062,
+    "elongationOfPlanet": 46.07032147222507,
+    "key": "pl",
+    "phaseAngle": 1.0761757004352046,
+    "phaseIlluminated": 0.9999118041116362
+   }
+  ]
+ },
+ {
+  "utc": "1925-08-11T00:55:03",
+  "jd": 2424373.5382291665,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5260746286134811,
+    "apparentMagnitude": -26.831046674299692,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5106521324490666,
+    "apparentMagnitude": -10.239222672504614,
+    "elongationOfPlanet": 94.02280603709028,
+    "key": "mo",
+    "phaseAngle": 85.83020079270645,
+    "phaseIlluminated": 0.536356249628099
+   },
+   {
+    "apparentDiameterOfDisc": 0.002705877899497162,
+    "apparentMagnitude": 1.2674327353106047,
+    "elongationOfPlanet": 21.93277135417228,
+    "key": "me",
+    "phaseAngle": 123.40166622613006,
+    "phaseIlluminated": 0.22474749091341345
+   },
+   {
+    "apparentDiameterOfDisc": 0.0032710003814365556,
+    "apparentMagnitude": -3.864355268906068,
+    "elongationOfPlanet": 28.94021111585682,
+    "key": "ve",
+    "phaseAngle": 42.75484732973196,
+    "phaseIlluminated": 0.8671325394998088
+   },
+   {
+    "apparentDiameterOfDisc": 0.0009823116969691625,
+    "apparentMagnitude": 1.8109292617838442,
+    "elongationOfPlanet": 11.057467341201157,
+    "key": "ma",
+    "phaseAngle": 6.701564517851472,
+    "phaseIlluminated": 0.9965837316792551
+   },
+   {
+    "apparentDiameterOfDisc": 0.012740752232381558,
+    "apparentMagnitude": -2.639607701314471,
+    "elongationOfPlanet": 146.17591989212772,
+    "key": "ju",
+    "phaseAngle": 6.264483978913875,
+    "phaseIlluminated": 0.9970143928316477
+   },
+   {
+    "apparentDiameterOfDisc": 0.004602349645517154,
+    "apparentMagnitude": 0.6361212938445515,
+    "elongationOfPlanet": 80.53878419999255,
+    "key": "sa",
+    "phaseAngle": 5.811872380772693,
+    "phaseIlluminated": 0.9974298736896798
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010092291127000077,
+    "apparentMagnitude": 5.751011866849855,
+    "elongationOfPlanet": 142.98778901786756,
+    "key": "ur",
+    "phaseAngle": 1.744891721086462,
+    "phaseIlluminated": 0.9997681547822819
+   },
+   {
+    "apparentDiameterOfDisc": 0.00059829415381401,
+    "apparentMagnitude": 7.987491134768351,
+    "elongationOfPlanet": 4.3277333877113415,
+    "key": "ne",
+    "phaseAngle": 0.15008192830072753,
+    "phaseIlluminated": 0.9999982846557243
+   },
+   {
+    "apparentDiameterOfDisc": 4.4370176278192615e-05,
+    "apparentMagnitude": 15.308235058839866,
+    "elongationOfPlanet": 33.92154899695565,
+    "key": "pl",
+    "phaseAngle": 0.7618535410561127,
+    "phaseIlluminated": 0.9999557990782619
+   }
+  ]
+ },
+ {
+  "utc": "2021-01-13T09:18:34",
+  "jd": 2459227.8878935184,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5420476037154844,
+    "apparentMagnitude": -26.895997032139103,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5313968862434276,
+    "apparentMagnitude": -4.343136741030598,
+    "elongationOfPlanet": 3.838846075683245,
+    "key": "mo",
+    "phaseAngle": 176.1514885215421,
+    "phaseIlluminated": 0.0011275012349549751
+   },
+   {
+    "apparentDiameterOfDisc": 0.0015288327069580222,
+    "apparentMagnitude": -0.8691554808451462,
+    "elongationOfPlanet": 14.649680514737154,
+    "key": "me",
+    "phaseAngle": 42.604161579290555,
+    "phaseIlluminated": 0.8680239607346674
+   },
+   {
+    "apparentDiameterOfDisc": 0.0028953201687756695,
+    "apparentMagnitude": -3.8619474020499625,
+    "elongationOfPlanet": 17.471447952037153,
+    "key": "ve",
+    "phaseAngle": 24.010552639916863,
+    "phaseIlluminated": 0.9567352650402317
+   },
+   {
+    "apparentDiameterOfDisc": 0.002568334763148579,
+    "apparentMagnitude": 0.05695945851003659,
+    "elongationOfPlanet": 99.63010845355933,
+    "key": "ma",
+    "phaseAngle": 39.46426368374964,
+    "phaseIlluminated": 0.8860105828390673
+   },
+   {
+    "apparentDiameterOfDisc": 0.009042165571466067,
+    "apparentMagnitude": -1.945774867239563,
+    "elongationOfPlanet": 12.257208005542019,
+    "key": "ju",
+    "phaseAngle": 2.3534948261073603,
+    "phaseIlluminated": 0.9995782450631507
+   },
+   {
+    "apparentDiameterOfDisc": 0.004195984809747604,
+    "apparentMagnitude": 0.6020325635179375,
+    "elongationOfPlanet": 9.666222045323511,
+    "key": "sa",
+    "phaseAngle": 0.9516008044578016,
+    "phaseIlluminated": 0.9999310404590684
+   },
+   {
+    "apparentDiameterOfDisc": 0.0009966892285615107,
+    "apparentMagnitude": 5.742601353440095,
+    "elongationOfPlanet": 103.31557532884949,
+    "key": "ur",
+    "phaseAngle": 2.7723100932121576,
+    "phaseIlluminated": 0.9994148144094923
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006107841091168369,
+    "apparentMagnitude": 7.930024284543248,
+    "elongationOfPlanet": 55.3418340535894,
+    "key": "ne",
+    "phaseAngle": 1.5512897092996556,
+    "phaseIlluminated": 0.9998167457580651
+   },
+   {
+    "apparentDiameterOfDisc": 5.442955511700691e-05,
+    "apparentMagnitude": 14.401774972544821,
+    "elongationOfPlanet": 1.699692879779273,
+    "key": "pl",
+    "phaseAngle": 0.052076598701998544,
+    "phaseIlluminated": 0.9999997934715259
+   }
+  ]
+ },
+ {
+  "utc": "1940-10-29T10:12:19",
+  "jd": 2429931.9252199074,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5368942811983367,
+    "apparentMagnitude": -26.875253778188256,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5555105175009153,
+    "apparentMagnitude": -6.194212333987447,
+    "elongationOfPlanet": 21.105128776040814,
+    "key": "mo",
+    "phaseAngle": 158.84476321884924,
+    "phaseIlluminated": 0.03369697926378429
+   },
+   {
+    "apparentDiameterOfDisc": 0.0022157476432850347,
+    "apparentMagnitude": 0.12544850198884117,
+    "elongationOfPlanet": 22.002411522266634,
+    "key": "me",
+    "phaseAngle": 101.7645180713064,
+    "phaseIlluminated": 0.3980550884417351
+   },
+   {
+    "apparentDiameterOfDisc": 0.004219387144990411,
+    "apparentMagnitude": -4.0914096777724875,
+    "elongationOfPlanet": 39.78361242679513,
+    "key": "ve",
+    "phaseAngle": 62.16016226217544,
+    "phaseIlluminated": 0.733500788217111
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010248523933868543,
+    "apparentMagnitude": 1.7797876749808577,
+    "elongationOfPlanet": 20.44332754490803,
+    "key": "ma",
+    "phaseAngle": 12.165981980972054,
+    "phaseIlluminated": 0.9887705955611104
+   },
+   {
+    "apparentDiameterOfDisc": 0.01373082911926385,
+    "apparentMagnitude": -2.910536030101941,
+    "elongationOfPlanet": 174.413633840774,
+    "key": "ju",
+    "phaseAngle": 1.1197779375946817,
+    "phaseIlluminated": 0.9999045128935
+   },
+   {
+    "apparentDiameterOfDisc": 0.005589579875517088,
+    "apparentMagnitude": -0.1819834560999638,
+    "elongationOfPlanet": 173.53704111016546,
+    "key": "sa",
+    "phaseAngle": 0.7011970753237953,
+    "phaseIlluminated": 0.9999625570967821
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010448666944800258,
+    "apparentMagnitude": 5.617107207050851,
+    "elongationOfPlanet": 160.9708024398404,
+    "key": "ur",
+    "phaseAngle": 0.9545065394014122,
+    "phaseIlluminated": 0.9999306186867557
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006005100027665494,
+    "apparentMagnitude": 7.98899491093004,
+    "elongationOfPlanet": 39.17913211166515,
+    "key": "ne",
+    "phaseAngle": 1.185618166264612,
+    "phaseIlluminated": 0.9998929543713853
+   },
+   {
+    "apparentDiameterOfDisc": 4.956060469170563e-05,
+    "apparentMagnitude": 14.872507302064491,
+    "elongationOfPlanet": 91.51126915568712,
+    "key": "pl",
+    "phaseAngle": 1.4717104763456743,
+    "phaseIlluminated": 0.9998350639353
+   }
+  ]
+ },
+ {
+  "utc": "2019-10-31T20:43:47",
+  "jd": 2458788.363738426,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5370213272197751,
+    "apparentMagnitude": -26.875767555862062,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5218060400077685,
+    "apparentMagnitude": -8.134660682469718,
+    "elongationOfPlanet": 48.62932353423317,
+    "key": "mo",
+    "phaseAngle": 131.2601186477397,
+    "phaseIlluminated": 0.1702607087383624
+   },
+   {
+    "apparentDiameterOfDisc": 0.002373205737092314,
+    "apparentMagnitude": 0.49302511306762753,
+    "elongationOfPlanet": 19.689558349767825,
+    "key": "me",
+    "phaseAngle": 113.79091833328825,
+    "phaseIlluminated": 0.2982998671926814
+   },
+   {
+    "apparentDiameterOfDisc": 0.002960441023416976,
+    "apparentMagnitude": -3.8421096153522134,
+    "elongationOfPlanet": 20.6494931828874,
+    "key": "ve",
+    "phaseAngle": 28.794403124005232,
+    "phaseIlluminated": 0.9381768677236519
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010246772347478113,
+    "apparentMagnitude": 1.776323820930469,
+    "elongationOfPlanet": 20.221212092117884,
+    "key": "ma",
+    "phaseAngle": 12.045256638950974,
+    "phaseIlluminated": 0.9889915354388223
+   },
+   {
+    "apparentDiameterOfDisc": 0.00926683249026917,
+    "apparentMagnitude": -1.905851896734637,
+    "elongationOfPlanet": 45.20047398881152,
+    "key": "ju",
+    "phaseAngle": 7.713054845541064,
+    "phaseIlluminated": 0.995476322616947
+   },
+   {
+    "apparentDiameterOfDisc": 0.004427070716126997,
+    "apparentMagnitude": 0.5801427198500111,
+    "elongationOfPlanet": 67.29681217597896,
+    "key": "sa",
+    "phaseAngle": 5.234076082863595,
+    "phaseIlluminated": 0.9979151598414243
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010329711404743441,
+    "apparentMagnitude": 5.671051469686762,
+    "elongationOfPlanet": 176.30157828869505,
+    "key": "ur",
+    "phaseAngle": 0.17871963022605,
+    "phaseIlluminated": 0.9999975675780929
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006350060277062697,
+    "apparentMagnitude": 7.846091699180858,
+    "elongationOfPlanet": 127.98946174702735,
+    "key": "ne",
+    "phaseAngle": 1.4934634779091005,
+    "phaseIlluminated": 0.9998301524183982
+   },
+   {
+    "apparentDiameterOfDisc": 5.600676197465665e-05,
+    "apparentMagnitude": 14.321283441376396,
+    "elongationOfPlanet": 72.70943216254243,
+    "key": "pl",
+    "phaseAngle": 1.6025728155435106,
+    "phaseIlluminated": 0.9998044301182187
+   }
+  ]
+ },
+ {
+  "utc": "1924-04-30T23:29:43",
+  "jd": 2423906.4789699074,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5289782036715608,
+    "apparentMagnitude": -26.842998775374717,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5005411141243343,
+    "apparentMagnitude": -6.9859123755351344,
+    "elongationOfPlanet": 33.32442999364908,
+    "key": "mo",
+    "phaseAngle": 146.59215474619035,
+    "phaseIlluminated": 0.08261375970917478
+   },
+   {
+    "apparentDiameterOfDisc": 0.0030755461564013374,
+    "apparentMagnitude": 3.608682049996576,
+    "elongationOfPlanet": 10.602209851747386,
+    "key": "me",
+    "phaseAngle": 154.1744854267695,
+    "phaseIlluminated": 0.04993756603065341
+   },
+   {
+    "apparentDiameterOfDisc": 0.00721448592054414,
+    "apparentMagnitude": -4.53340675473707,
+    "elongationOfPlanet": 45.3684900396784,
+    "key": "ve",
+    "phaseAngle": 95.21674336983348,
+    "phaseIlluminated": 0.45453819971715426
+   },
+   {
+    "apparentDiameterOfDisc": 0.0027031784496865754,
+    "apparentMagnitude": -0.07724739047579932,
+    "elongationOfPlanet": 96.64555983696374,
+    "key": "ma",
+    "phaseAngle": 42.84910484446289,
+    "phaseIlluminated": 0.8665736429520277
+   },
+   {
+    "apparentDiameterOfDisc": 0.012144751388484597,
+    "apparentMagnitude": -2.465675041639022,
+    "elongationOfPlanet": 141.3573574329547,
+    "key": "ju",
+    "phaseAngle": 6.7894145541693876,
+    "phaseIlluminated": 0.9964936831988311
+   },
+   {
+    "apparentDiameterOfDisc": 0.005239313861251095,
+    "apparentMagnitude": 0.24277315444716407,
+    "elongationOfPlanet": 167.52366121482302,
+    "key": "sa",
+    "phaseAngle": 1.2724440229866576,
+    "phaseIlluminated": 0.9998767025013704
+   },
+   {
+    "apparentDiameterOfDisc": 0.0009386616755144367,
+    "apparentMagnitude": 5.908234188859335,
+    "elongationOfPlanet": 50.04062803267971,
+    "key": "ur",
+    "phaseAngle": 2.2007746508058372,
+    "phaseIlluminated": 0.9996311986540805
+   },
+   {
+    "apparentDiameterOfDisc": 0.000621552776308084,
+    "apparentMagnitude": 7.903978087964533,
+    "elongationOfPlanet": 97.27333742950465,
+    "key": "ne",
+    "phaseAngle": 1.9021314897515624,
+    "phaseIlluminated": 0.999724490913662
+   },
+   {
+    "apparentDiameterOfDisc": 4.443442106152376e-05,
+    "apparentMagnitude": 15.319571229547975,
+    "elongationOfPlanet": 60.22073511690947,
+    "key": "pl",
+    "phaseAngle": 1.1783882163375357,
+    "phaseIlluminated": 0.9998942558824724
+   }
+  ]
+ },
+ {
+  "utc": "1945-03-02T13:02:19",
+  "jd": 2431517.043275463,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5378042505724887,
+    "apparentMagnitude": -26.878931039863556,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.4907306409078307,
+    "apparentMagnitude": -11.579615989443377,
+    "elongationOfPlanet": 140.95319932566244,
+    "key": "mo",
+    "phaseAngle": 38.94838673703562,
+    "phaseIlluminated": 0.8888562756611629
+   },
+   {
+    "apparentDiameterOfDisc": 0.0013748235585559875,
+    "apparentMagnitude": -1.8105368159899378,
+    "elongationOfPlanet": 2.226127500296398,
+    "key": "me",
+    "phaseAngle": 5.965775357544568,
+    "phaseIlluminated": 0.9972920781037458
+   },
+   {
+    "apparentDiameterOfDisc": 0.00945457619787733,
+    "apparentMagnitude": -4.775015700140748,
+    "elongationOfPlanet": 43.34522340628528,
+    "key": "ve",
+    "phaseAngle": 108.72054745139835,
+    "phaseIlluminated": 0.33952367042235787
+   },
+   {
+    "apparentDiameterOfDisc": 0.0011862791356945259,
+    "apparentMagnitude": 1.2567499726667135,
+    "elongationOfPlanet": 29.17112393981454,
+    "key": "ma",
+    "phaseAngle": 19.99356058368299,
+    "phaseIlluminated": 0.9698655270793204
+   },
+   {
+    "apparentDiameterOfDisc": 0.012251330861756624,
+    "apparentMagnitude": -2.463546788289003,
+    "elongationOfPlanet": 167.52278223512238,
+    "key": "ju",
+    "phaseAngle": 2.263828007080216,
+    "phaseIlluminated": 0.9996097660044274
+   },
+   {
+    "apparentDiameterOfDisc": 0.005337952189095809,
+    "apparentMagnitude": -0.05398992459632268,
+    "elongationOfPlanet": 112.24685594692193,
+    "key": "sa",
+    "phaseAngle": 5.826710281215159,
+    "phaseIlluminated": 0.9974167450307717
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010085099469536183,
+    "apparentMagnitude": 5.661998492645863,
+    "elongationOfPlanet": 87.6034702197325,
+    "key": "ur",
+    "phaseAngle": 2.9441486552105753,
+    "phaseIlluminated": 0.9993400384246918
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006338507149924382,
+    "apparentMagnitude": 7.8745467494504195,
+    "elongationOfPlanet": 155.857812573106,
+    "key": "ne",
+    "phaseAngle": 0.7732816366193858,
+    "phaseIlluminated": 0.9999544630912387
+   },
+   {
+    "apparentDiameterOfDisc": 5.2113288733101265e-05,
+    "apparentMagnitude": 14.700633028722136,
+    "elongationOfPlanet": 146.3233760606255,
+    "key": "pl",
+    "phaseAngle": 0.8328666737963505,
+    "phaseIlluminated": 0.9999471751751431
+   }
+  ]
+ },
+ {
+  "utc": "2085-07-04T05:19:37",
+  "jd": 2482775.7219560184,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5244243991609642,
+    "apparentMagnitude": -26.82422433448135,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.529532193336533,
+    "apparentMagnitude": -11.638318355792823,
+    "elongationOfPlanet": 137.023315709546,
+    "key": "mo",
+    "phaseAngle": 42.880082435010834,
+    "phaseIlluminated": 0.8663897457670671
+   },
+   {
+    "apparentDiameterOfDisc": 0.003020142979376056,
+    "apparentMagnitude": 2.269581421933612,
+    "elongationOfPlanet": 17.67740910998846,
+    "key": "me",
+    "phaseAngle": 138.58656479452594,
+    "phaseIlluminated": 0.12502201053246337
+   },
+   {
+    "apparentDiameterOfDisc": 0.0033682107262978556,
+    "apparentMagnitude": -3.8844526395637824,
+    "elongationOfPlanet": 30.569357138800783,
+    "key": "ve",
+    "phaseAngle": 45.89838412090676,
+    "phaseIlluminated": 0.8479665246040948
+   },
+   {
+    "apparentDiameterOfDisc": 0.001103164134563908,
+    "apparentMagnitude": 1.7975357133780254,
+    "elongationOfPlanet": 37.14291854174063,
+    "key": "ma",
+    "phaseAngle": 21.6233563203868,
+    "phaseIlluminated": 0.9648131723100595
+   },
+   {
+    "apparentDiameterOfDisc": 0.008775913816169385,
+    "apparentMagnitude": -1.8210692937824593,
+    "elongationOfPlanet": 10.8293862483471,
+    "key": "ju",
+    "phaseAngle": 2.0932159598233895,
+    "phaseIlluminated": 0.9996663627646785
+   },
+   {
+    "apparentDiameterOfDisc": 0.004859268253251845,
+    "apparentMagnitude": 0.7219798562395106,
+    "elongationOfPlanet": 86.47570779182064,
+    "key": "sa",
+    "phaseAngle": 6.1652708760085755,
+    "phaseIlluminated": 0.9971081219036826
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010127284778726892,
+    "apparentMagnitude": 5.730027328084778,
+    "elongationOfPlanet": 137.45691261666812,
+    "key": "ur",
+    "phaseAngle": 1.9772779099702678,
+    "phaseIlluminated": 0.9997022943542369
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006015486600521577,
+    "apparentMagnitude": 7.97318042909087,
+    "elongationOfPlanet": 29.88435084992371,
+    "key": "ne",
+    "phaseAngle": 0.9690991340807175,
+    "phaseIlluminated": 0.9999284811041103
+   },
+   {
+    "apparentDiameterOfDisc": 4.0034657171458354e-05,
+    "apparentMagnitude": 15.79209625258244,
+    "elongationOfPlanet": 82.91445218521653,
+    "key": "pl",
+    "phaseAngle": 1.2115080219795673,
+    "phaseIlluminated": 0.9998882284815692
+   }
+  ]
+ },
+ {
+  "utc": "1988-04-14T04:39:01",
+  "jd": 2447265.693761574,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5314727896298151,
+    "apparentMagnitude": -26.853215059969948,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5466940789936312,
+    "apparentMagnitude": -7.013844351789682,
+    "elongationOfPlanet": 31.22461863110923,
+    "key": "mo",
+    "phaseAngle": 148.70294620998638,
+    "phaseIlluminated": 0.07275722838548943
+   },
+   {
+    "apparentDiameterOfDisc": 0.0014037062763692556,
+    "apparentMagnitude": -1.372146731627778,
+    "elongationOfPlanet": 7.136135384416957,
+    "key": "me",
+    "phaseAngle": 20.37551588078702,
+    "phaseIlluminated": 0.9687154293386387
+   },
+   {
+    "apparentDiameterOfDisc": 0.007406448069811835,
+    "apparentMagnitude": -4.569063051339156,
+    "elongationOfPlanet": 45.47188830678315,
+    "key": "ve",
+    "phaseAngle": 96.18708874064839,
+    "phaseIlluminated": 0.44611233648767507
+   },
+   {
+    "apparentDiameterOfDisc": 0.002045549062437664,
+    "apparentMagnitude": 0.5142139495675231,
+    "elongationOfPlanet": 79.5576639892371,
+    "key": "ma",
+    "phaseAngle": 42.14016537542499,
+    "phaseIlluminated": 0.8707528387710872
+   },
+   {
+    "apparentDiameterOfDisc": 0.009202401680861321,
+    "apparentMagnitude": -2.0323503061128187,
+    "elongationOfPlanet": 13.790666543483265,
+    "key": "ju",
+    "phaseAngle": 2.7580005709823667,
+    "phaseIlluminated": 0.9994208386292153
+   },
+   {
+    "apparentDiameterOfDisc": 0.004774987250338726,
+    "apparentMagnitude": 0.40366714789820257,
+    "elongationOfPlanet": 111.90242852559835,
+    "key": "sa",
+    "phaseAngle": 5.321121436810941,
+    "phaseIlluminated": 0.997845289581601
+   },
+   {
+    "apparentDiameterOfDisc": 0.001032352595655453,
+    "apparentMagnitude": 5.61032149968151,
+    "elongationOfPlanet": 113.4428131125295,
+    "key": "ur",
+    "phaseAngle": 2.741084960430012,
+    "phaseIlluminated": 0.9994279198183167
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006212094281228019,
+    "apparentMagnitude": 7.914918504901084,
+    "elongationOfPlanet": 104.2582858136131,
+    "key": "ne",
+    "phaseAngle": 1.845503746513208,
+    "phaseIlluminated": 0.9997406495189791
+   },
+   {
+    "apparentDiameterOfDisc": 6.661693434210805e-05,
+    "apparentMagnitude": 13.654309609996794,
+    "elongationOfPlanet": 156.25899673373527,
+    "key": "pl",
+    "phaseAngle": 0.7841619026316001,
+    "phaseIlluminated": 0.9999531726649632
+   }
+  ]
+ },
+ {
+  "utc": "1990-11-01T14:54:29",
+  "jd": 2448197.1211689813,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5372077651782018,
+    "apparentMagnitude": -26.876521296176378,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5477828702524046,
+    "apparentMagnitude": -12.356555582014044,
+    "elongationOfPlanet": 161.3677237174968,
+    "key": "mo",
+    "phaseAngle": 18.58733119510703,
+    "phaseIlluminated": 0.973919456342687
+   },
+   {
+    "apparentDiameterOfDisc": 0.001303816141799922,
+    "apparentMagnitude": -0.8814850936153122,
+    "elongationOfPlanet": 6.556503187356792,
+    "key": "me",
+    "phaseAngle": 14.223550926041934,
+    "phaseIlluminated": 0.9846722182795689
+   },
+   {
+    "apparentDiameterOfDisc": 0.002702700275776401,
+    "apparentMagnitude": -3.9898902348787115,
+    "elongationOfPlanet": 0.8751921752724919,
+    "key": "ve",
+    "phaseAngle": 1.201360519553605,
+    "phaseIlluminated": 0.9998900929518962
+   },
+   {
+    "apparentDiameterOfDisc": 0.004761713156823556,
+    "apparentMagnitude": -1.6282866639398206,
+    "elongationOfPlanet": 145.39244072209408,
+    "key": "ma",
+    "phaseAngle": 22.464688474379436,
+    "phaseIlluminated": 0.9620576028754275
+   },
+   {
+    "apparentDiameterOfDisc": 0.01046759776835893,
+    "apparentMagnitude": -2.1502006315720052,
+    "elongationOfPlanet": 86.62875331578077,
+    "key": "ju",
+    "phaseAngle": 10.857282032309326,
+    "phaseIlluminated": 0.9910497117482622
+   },
+   {
+    "apparentDiameterOfDisc": 0.004472187829129476,
+    "apparentMagnitude": 0.5763991098910601,
+    "elongationOfPlanet": 71.03376653514717,
+    "key": "sa",
+    "phaseAngle": 5.38633522918791,
+    "phaseIlluminated": 0.9977921903370364
+   },
+   {
+    "apparentDiameterOfDisc": 0.0009753687334652128,
+    "apparentMagnitude": 5.7523052294212365,
+    "elongationOfPlanet": 57.62576243177192,
+    "key": "ur",
+    "phaseAngle": 2.4736159792116235,
+    "phaseIlluminated": 0.999534100931661
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006075623203300514,
+    "apparentMagnitude": 7.961504923254599,
+    "elongationOfPlanet": 63.28524728184272,
+    "key": "ne",
+    "phaseAngle": 1.6834628270858398,
+    "phaseIlluminated": 0.9997841904983262
+   },
+   {
+    "apparentDiameterOfDisc": 6.255869386922262e-05,
+    "apparentMagnitude": 13.79050983389392,
+    "elongationOfPlanet": 17.000472088407832,
+    "key": "pl",
+    "phaseAngle": 0.5627055593840935,
+    "phaseIlluminated": 0.9999758868657066
+   }
+  ]
+ },
+ {
+  "utc": "1984-08-05T21:46:58",
+  "jd": 2445918.407615741,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5256337345029027,
+    "apparentMagnitude": -26.829226037540874,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5220621897141848,
+    "apparentMagnitude": -10.906638269212506,
+    "elongationOfPlanet": 112.65207111822987,
+    "key": "mo",
+    "phaseAngle": 67.21503239901088,
+    "phaseIlluminated": 0.6936368543116809
+   },
+   {
+    "apparentDiameterOfDisc": 0.0023212896311114394,
+    "apparentMagnitude": 0.5052347146177163,
+    "elongationOfPlanet": 26.641704738933004,
+    "key": "me",
+    "phaseAngle": 102.6085830058689,
+    "phaseIlluminated": 0.39085528352489834
+   },
+   {
+    "apparentDiameterOfDisc": 0.002793813528254687,
+    "apparentMagnitude": -3.8546165977502556,
+    "elongationOfPlanet": 14.100710484070738,
+    "key": "ve",
+    "phaseAngle": 20.08870255574312,
+    "phaseIlluminated": 0.969580997916157
+   },
+   {
+    "apparentDiameterOfDisc": 0.003050778589037378,
+    "apparentMagnitude": -0.3732315961911734,
+    "elongationOfPlanet": 100.44795706862739,
+    "key": "ma",
+    "phaseAngle": 43.88698676796265,
+    "phaseIlluminated": 0.8603542905571906
+   },
+   {
+    "apparentDiameterOfDisc": 0.012465006972818255,
+    "apparentMagnitude": -2.5694105054554717,
+    "elongationOfPlanet": 140.39800141735807,
+    "key": "ju",
+    "phaseAngle": 7.124462310564413,
+    "phaseIlluminated": 0.9961395380287528
+   },
+   {
+    "apparentDiameterOfDisc": 0.004647293876800232,
+    "apparentMagnitude": 0.6120777972889346,
+    "elongationOfPlanet": 86.53375143333633,
+    "key": "sa",
+    "phaseAngle": 5.879968940178156,
+    "phaseIlluminated": 0.997369346707509
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010483242454766629,
+    "apparentMagnitude": 5.549494783764666,
+    "elongationOfPlanet": 115.97417348432843,
+    "key": "ur",
+    "phaseAngle": 2.7435019145927217,
+    "phaseIlluminated": 0.9994269107019419
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006303183245356164,
+    "apparentMagnitude": 7.885737240878016,
+    "elongationOfPlanet": 135.33420000474942,
+    "key": "ne",
+    "phaseAngle": 1.345379163938007,
+    "phaseIlluminated": 0.9998621635168152
+   },
+   {
+    "apparentDiameterOfDisc": 6.376598642048116e-05,
+    "apparentMagnitude": 13.759794077240358,
+    "elongationOfPlanet": 76.51194093560451,
+    "key": "pl",
+    "phaseAngle": 1.896065044526806,
+    "phaseIlluminated": 0.999726245306854
+   }
+  ]
+ },
+ {
+  "utc": "1934-12-02T12:45:30",
+  "jd": 2427774.031597222,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5408292426030883,
+    "apparentMagnitude": -26.891110717198032,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5108237188956578,
+    "apparentMagnitude": -8.353729209278024,
+    "elongationOfPlanet": 53.00963254297985,
+    "key": "mo",
+    "phaseAngle": 126.86904698727152,
+    "phaseIlluminated": 0.2000059387502241
+   },
+   {
+    "apparentDiameterOfDisc": 0.0014739423270000948,
+    "apparentMagnitude": -0.6259523793900301,
+    "elongationOfPlanet": 15.363781637893736,
+    "key": "me",
+    "phaseAngle": 39.48979285941155,
+    "phaseIlluminated": 0.8858689436696741
+   },
+   {
+    "apparentDiameterOfDisc": 0.0027139059123261807,
+    "apparentMagnitude": -3.9542543265199694,
+    "elongationOfPlanet": 3.3164084145797688,
+    "key": "ve",
+    "phaseAngle": 4.5025080873709,
+    "phaseIlluminated": 0.9984569491397567
+   },
+   {
+    "apparentDiameterOfDisc": 0.001595306478790891,
+    "apparentMagnitude": 1.2013211646693254,
+    "elongationOfPlanet": 74.21185584325308,
+    "key": "ma",
+    "phaseAngle": 34.83846812495175,
+    "phaseIlluminated": 0.9103829248007909
+   },
+   {
+    "apparentDiameterOfDisc": 0.008705507173787362,
+    "apparentMagnitude": -1.7084098555557246,
+    "elongationOfPlanet": 28.419902220745644,
+    "key": "ju",
+    "phaseAngle": 4.948915654404397,
+    "phaseIlluminated": 0.9981360046592931
+   },
+   {
+    "apparentDiameterOfDisc": 0.004575329933121916,
+    "apparentMagnitude": 0.7828649070585119,
+    "elongationOfPlanet": 72.98443167930913,
+    "key": "sa",
+    "phaseAngle": 5.5182626761858256,
+    "phaseIlluminated": 0.997682798780267
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010177637363165842,
+    "apparentMagnitude": 5.707389639950702,
+    "elongationOfPlanet": 138.33463931107107,
+    "key": "ur",
+    "phaseAngle": 1.8854043669411915,
+    "phaseIlluminated": 0.9997293147621937
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006151522606600914,
+    "apparentMagnitude": 7.933665722808413,
+    "elongationOfPlanet": 85.14211228719822,
+    "key": "ne",
+    "phaseAngle": 1.864981772349449,
+    "phaseIlluminated": 0.9997351465821569
+   },
+   {
+    "apparentDiameterOfDisc": 4.853282973822025e-05,
+    "apparentMagnitude": 14.998911191761653,
+    "elongationOfPlanet": 133.81696090679813,
+    "key": "pl",
+    "phaseAngle": 1.0198842305622644,
+    "phaseIlluminated": 0.999920789084985
+   }
+  ]
+ },
+ {
+  "utc": "2064-04-19T12:15:03",
+  "jd": 2475030.010451389,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5307752591925899,
+    "apparentMagnitude": -26.850363243355893,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5019640903061731,
+    "apparentMagnitude": -6.80457201688486,
+    "elongationOfPlanet": 30.91570818006803,
+    "key": "mo",
+    "phaseAngle": 149.00654193576543,
+    "phaseIlluminated": 0.07138694935196954
+   },
+   {
+    "apparentDiameterOfDisc": 0.002701912057352848,
+    "apparentMagnitude": 1.0623103826789562,
+    "elongationOfPlanet": 23.754620144110987,
+    "key": "me",
+    "phaseAngle": 119.39087390979995,
+    "phaseIlluminated": 0.25461750991382714
+   },
+   {
+    "apparentDiameterOfDisc": 0.00272837018199133,
+    "apparentMagnitude": -3.8716312941487967,
+    "elongationOfPlanet": 9.271751599447184,
+    "key": "ve",
+    "phaseAngle": 12.88029336943263,
+    "phaseIlluminated": 0.9874189612128382
+   },
+   {
+    "apparentDiameterOfDisc": 0.0011038189511789437,
+    "apparentMagnitude": 1.5356169496453105,
+    "elongationOfPlanet": 26.60029972142641,
+    "key": "ma",
+    "phaseAngle": 17.128688227644034,
+    "phaseIlluminated": 0.9778228339090751
+   },
+   {
+    "apparentDiameterOfDisc": 0.012032576513953518,
+    "apparentMagnitude": -2.4042359239341,
+    "elongationOfPlanet": 152.13566825804256,
+    "key": "ju",
+    "phaseAngle": 4.932798912484577,
+    "phaseIlluminated": 0.9981481180550206
+   },
+   {
+    "apparentDiameterOfDisc": 0.00502891465684936,
+    "apparentMagnitude": 0.1640465984725914,
+    "elongationOfPlanet": 83.26774282725893,
+    "key": "sa",
+    "phaseAngle": 6.308384210405127,
+    "phaseIlluminated": 0.9969724435818617
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010914434058315512,
+    "apparentMagnitude": 5.428927250376199,
+    "elongationOfPlanet": 154.53077420730585,
+    "key": "ur",
+    "phaseAngle": 1.3267548392001565,
+    "phaseIlluminated": 0.9998659531236169
+   },
+   {
+    "apparentDiameterOfDisc": 0.000611466742910967,
+    "apparentMagnitude": 7.924046319279211,
+    "elongationOfPlanet": 55.10330660914522,
+    "key": "ne",
+    "phaseAngle": 1.5821048877682704,
+    "phaseIlluminated": 0.9998093935058852
+   },
+   {
+    "apparentDiameterOfDisc": 4.229536854918502e-05,
+    "apparentMagnitude": 15.51976366227099,
+    "elongationOfPlanet": 36.31364738767046,
+    "key": "pl",
+    "phaseAngle": 0.7629702422187652,
+    "phaseIlluminated": 0.999955669408548
+   }
+  ]
+ },
+ {
+  "utc": "1972-08-02T05:02:38",
+  "jd": 2441531.710162037,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5253658493774883,
+    "apparentMagnitude": -26.828119081495835,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5384769887628426,
+    "apparentMagnitude": -10.267389914519722,
+    "elongationOfPlanet": 91.64853706350303,
+    "key": "mo",
+    "phaseAngle": 88.21193110437542,
+    "phaseIlluminated": 0.5156013120481356
+   },
+   {
+    "apparentDiameterOfDisc": 0.0031166504623183107,
+    "apparentMagnitude": 3.7054466443905096,
+    "elongationOfPlanet": 10.70493465735722,
+    "key": "me",
+    "phaseAngle": 154.63762790449613,
+    "phaseIlluminated": 0.04819160351773505
+   },
+   {
+    "apparentDiameterOfDisc": 0.009002014864498965,
+    "apparentMagnitude": -4.652685011094177,
+    "elongationOfPlanet": 42.91316516955984,
+    "key": "ve",
+    "phaseAngle": 108.28052592395818,
+    "phaseIlluminated": 0.3431651296494751
+   },
+   {
+    "apparentDiameterOfDisc": 0.0009840200210917216,
+    "apparentMagnitude": 1.8143992571944279,
+    "elongationOfPlanet": 11.924241168486445,
+    "key": "ma",
+    "phaseAngle": 7.236265591655034,
+    "phaseIlluminated": 0.9960175862075009
+   },
+   {
+    "apparentDiameterOfDisc": 0.012398151861106948,
+    "apparentMagnitude": -2.551373529859255,
+    "elongationOfPlanet": 139.31863254414571,
+    "key": "ju",
+    "phaseAngle": 7.271191481973467,
+    "phaseIlluminated": 0.9959791028675953
+   },
+   {
+    "apparentDiameterOfDisc": 0.004776033934064197,
+    "apparentMagnitude": 0.15692677421720447,
+    "elongationOfPlanet": 52.59992052186293,
+    "key": "sa",
+    "phaseAngle": 5.113477651303955,
+    "phaseIlluminated": 0.9980100636513857
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010358220553612874,
+    "apparentMagnitude": 5.50020680732371,
+    "elongationOfPlanet": 64.94217102548022,
+    "key": "ur",
+    "phaseAngle": 2.8683569258815957,
+    "phaseIlluminated": 0.9993735730658455
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006222539033558658,
+    "apparentMagnitude": 7.917721328144727,
+    "elongationOfPlanet": 112.5202691825284,
+    "key": "ne",
+    "phaseAngle": 1.7688616778577257,
+    "phaseIlluminated": 0.999761741723636
+   },
+   {
+    "apparentDiameterOfDisc": 6.0170530686561605e-05,
+    "apparentMagnitude": 13.985409013969079,
+    "elongationOfPlanet": 51.908730205210816,
+    "key": "pl",
+    "phaseAngle": 1.4684815589648057,
+    "phaseIlluminated": 0.9998357868377898
+   }
+  ]
+ },
+ {
+  "utc": "1887-06-07T16:54:45",
+  "jd": 2410430.2046875,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5251688654679487,
+    "apparentMagnitude": -26.827304743571247,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.522893616473902,
+    "apparentMagnitude": -12.147254142510114,
+    "elongationOfPlanet": 157.21364590908348,
+    "key": "mo",
+    "phaseAngle": 22.731030162925354,
+    "phaseIlluminated": 0.9611644778766549
+   },
+   {
+    "apparentDiameterOfDisc": 0.001519260521041413,
+    "apparentMagnitude": -1.0354882590970445,
+    "elongationOfPlanet": 13.147353240453713,
+    "key": "me",
+    "phaseAngle": 43.75060906033294,
+    "phaseIlluminated": 0.8611783055801852
+   },
+   {
+    "apparentDiameterOfDisc": 0.004700096936844858,
+    "apparentMagnitude": -4.144680155352926,
+    "elongationOfPlanet": 42.18919391234166,
+    "key": "ve",
+    "phaseAngle": 71.04337465510869,
+    "phaseIlluminated": 0.662426137396757
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010474141867333753,
+    "apparentMagnitude": 1.447504107975099,
+    "elongationOfPlanet": 10.536919742575487,
+    "key": "ma",
+    "phaseAngle": 7.118291382775292,
+    "phaseIlluminated": 0.9961462140914288
+   },
+   {
+    "apparentDiameterOfDisc": 0.011559533700451565,
+    "apparentMagnitude": -2.307236431767982,
+    "elongationOfPlanet": 129.7566879913253,
+    "key": "ju",
+    "phaseAngle": 8.248430232145889,
+    "phaseIlluminated": 0.9948276589021086
+   },
+   {
+    "apparentDiameterOfDisc": 0.004651644491352485,
+    "apparentMagnitude": 0.21196325705821728,
+    "elongationOfPlanet": 34.38548814475772,
+    "key": "sa",
+    "phaseAngle": 3.630437430155558,
+    "phaseIlluminated": 0.9989966155922052
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010839726191356472,
+    "apparentMagnitude": 5.3984519069365335,
+    "elongationOfPlanet": 111.81880214045091,
+    "key": "ur",
+    "phaseAngle": 2.9405730913900414,
+    "phaseIlluminated": 0.9993416400993538
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006047442826682783,
+    "apparentMagnitude": 7.943693611360074,
+    "elongationOfPlanet": 18.388472941250686,
+    "key": "ne",
+    "phaseAngle": 0.6111184242023161,
+    "phaseIlluminated": 0.999971559227989
+   },
+   {
+    "apparentDiameterOfDisc": 3.8818627532417746e-05,
+    "apparentMagnitude": 15.888275085151204,
+    "elongationOfPlanet": 17.497190498748374,
+    "key": "pl",
+    "phaseAngle": 0.3583879999494724,
+    "phaseIlluminated": 0.9999902186173937
+   }
+  ]
+ },
+ {
+  "utc": "1962-11-03T12:18:31",
+  "jd": 2437972.0128587964,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5374919848750817,
+    "apparentMagnitude": -26.877669849982915,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5163480485705865,
+    "apparentMagnitude": -9.181287269673737,
+    "elongationOfPlanet": 68.08318312656127,
+    "key": "mo",
+    "phaseAngle": 111.77856886208025,
+    "phaseIlluminated": 0.3144897424490256
+   },
+   {
+    "apparentDiameterOfDisc": 0.001478940009148946,
+    "apparentMagnitude": -0.8848614385237271,
+    "elongationOfPlanet": 13.272530308117627,
+    "key": "me",
+    "phaseAngle": 37.404375731201654,
+    "phaseIlluminated": 0.8971841161845567
+   },
+   {
+    "apparentDiameterOfDisc": 0.016415964836480723,
+    "apparentMagnitude": -4.338122930802977,
+    "elongationOfPlanet": 15.563113221424743,
+    "key": "ve",
+    "phaseAngle": 158.4275200737993,
+    "phaseIlluminated": 0.03502340264732878
+   },
+   {
+    "apparentDiameterOfDisc": 0.0021097809429806128,
+    "apparentMagnitude": 0.5479937495493963,
+    "elongationOfPlanet": 89.53848278695163,
+    "key": "ma",
+    "phaseAngle": 38.98894661713892,
+    "phaseIlluminated": 0.8886336770891002
+   },
+   {
+    "apparentDiameterOfDisc": 0.012097110612010905,
+    "apparentMagnitude": -2.583832362902294,
+    "elongationOfPlanet": 112.25359803898249,
+    "key": "ju",
+    "phaseAngle": 10.614703991779342,
+    "phaseIlluminated": 0.99144405439098
+   },
+   {
+    "apparentDiameterOfDisc": 0.004604228110476058,
+    "apparentMagnitude": 0.6143479295605925,
+    "elongationOfPlanet": 84.67392683251367,
+    "key": "sa",
+    "phaseAngle": 5.701478897438555,
+    "phaseIlluminated": 0.9975265030125805
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010403027445379694,
+    "apparentMagnitude": 5.484232592192089,
+    "elongationOfPlanet": 65.95221571002702,
+    "key": "ur",
+    "phaseAngle": 2.833113518855415,
+    "phaseIlluminated": 0.9993888691512649
+   },
+   {
+    "apparentDiameterOfDisc": 0.0005943682944775373,
+    "apparentMagnitude": 8.017992910273048,
+    "elongationOfPlanet": 3.050260671663649,
+    "key": "ne",
+    "phaseAngle": 0.10359132462537496,
+    "phaseIlluminated": 0.9999991827754617
+   },
+   {
+    "apparentDiameterOfDisc": 5.6900343430259593e-05,
+    "apparentMagnitude": 14.238818217554755,
+    "elongationOfPlanet": 59.79201738024719,
+    "key": "pl",
+    "phaseAngle": 1.4792955105817511,
+    "phaseIlluminated": 0.9998333595241153
+   }
+  ]
+ },
+ {
+  "utc": "1931-03-21T15:49:54",
+  "jd": 2426422.159652778,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5350772111834601,
+    "apparentMagnitude": -26.867892162304713,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.4953031172102612,
+    "apparentMagnitude": -6.329273445997418,
+    "elongationOfPlanet": 25.478351635646426,
+    "key": "mo",
+    "phaseAngle": 154.45516011098715,
+    "phaseIlluminated": 0.04887595579766146
+   },
+   {
+    "apparentDiameterOfDisc": 0.001429685814147456,
+    "apparentMagnitude": -1.6897628825873976,
+    "elongationOfPlanet": 5.686506752961726,
+    "key": "me",
+    "phaseAngle": 17.381593909359683,
+    "phaseIlluminated": 0.9771681725993815
+   },
+   {
+    "apparentDiameterOfDisc": 0.004499652490437795,
+    "apparentMagnitude": -4.125089933656259,
+    "elongationOfPlanet": 41.92966741436604,
+    "key": "ve",
+    "phaseAngle": 66.53804152943243,
+    "phaseIlluminated": 0.6990700495487198
+   },
+   {
+    "apparentDiameterOfDisc": 0.0027584959990968306,
+    "apparentMagnitude": -0.0304738375950957,
+    "elongationOfPlanet": 118.29734743783217,
+    "key": "ma",
+    "phaseAngle": 31.784080776952692,
+    "phaseIlluminated": 0.9250195355420165
+   },
+   {
+    "apparentDiameterOfDisc": 0.011061763615919923,
+    "apparentMagnitude": -2.2864701406019856,
+    "elongationOfPlanet": 100.70818598564166,
+    "key": "ju",
+    "phaseAngle": 10.802931307125741,
+    "phaseIlluminated": 0.9911388314175373
+   },
+   {
+    "apparentDiameterOfDisc": 0.004438780686075725,
+    "apparentMagnitude": 0.624298777424448,
+    "elongationOfPlanet": 68.25881460393354,
+    "key": "sa",
+    "phaseAngle": 5.295140821399309,
+    "phaseIlluminated": 0.997866264214974
+   },
+   {
+    "apparentDiameterOfDisc": 0.0009280092647737727,
+    "apparentMagnitude": 5.922922902961941,
+    "elongationOfPlanet": 14.395250449212137,
+    "key": "ur",
+    "phaseAngle": 0.7138162482655175,
+    "phaseIlluminated": 0.9999611972964986
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006360696872370506,
+    "apparentMagnitude": 7.858774030219418,
+    "elongationOfPlanet": 153.64410271810593,
+    "key": "ne",
+    "phaseAngle": 0.8344838549656366,
+    "phaseIlluminated": 0.9999469698391861
+   },
+   {
+    "apparentDiameterOfDisc": 4.703613150521544e-05,
+    "apparentMagnitude": 15.114856990526736,
+    "elongationOfPlanet": 108.64602682321373,
+    "key": "pl",
+    "phaseAngle": 1.3153900309115323,
+    "phaseIlluminated": 0.9998682396436066
+   }
+  ]
+ },
+ {
+  "utc": "1927-12-07T07:12:53",
+  "jd": 2425221.800613426,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5412092655339691,
+    "apparentMagnitude": -26.89263600365894,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5514604541071769,
+    "apparentMagnitude": -12.33914811707156,
+    "elongationOfPlanet": 160.14184146824488,
+    "key": "mo",
+    "phaseAngle": 19.810345448758277,
+    "phaseIlluminated": 0.9704097951859985
+   },
+   {
+    "apparentDiameterOfDisc": 0.0015305111712496785,
+    "apparentMagnitude": -0.5722972196789589,
+    "elongationOfPlanet": 17.269753015884238,
+    "key": "me",
+    "phaseAngle": 46.24769228254606,
+    "phaseIlluminated": 0.8457710750340437
+   },
+   {
+    "apparentDiameterOfDisc": 0.005772214199128279,
+    "apparentMagnitude": -4.398104397439054,
+    "elongationOfPlanet": 45.99237757113367,
+    "key": "ve",
+    "phaseAngle": 80.48794417105177,
+    "phaseIlluminated": 0.5826275652072488
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010500248560602451,
+    "apparentMagnitude": 1.551218518948419,
+    "elongationOfPlanet": 15.003887423293707,
+    "key": "ma",
+    "phaseAngle": 9.481873161715724,
+    "phaseIlluminated": 0.9931688843924001
+   },
+   {
+    "apparentDiameterOfDisc": 0.011665723891523304,
+    "apparentMagnitude": -2.5136941532793795,
+    "elongationOfPlanet": 99.94670710558628,
+    "key": "ju",
+    "phaseAngle": 11.291139603746542,
+    "phaseIlluminated": 0.9903224742689024
+   },
+   {
+    "apparentDiameterOfDisc": 0.004181403083526618,
+    "apparentMagnitude": 0.4377934681201108,
+    "elongationOfPlanet": 3.8647596460079274,
+    "key": "sa",
+    "phaseAngle": 0.37641243329172297,
+    "phaseIlluminated": 0.9999892100085086
+   },
+   {
+    "apparentDiameterOfDisc": 0.0009828443809340064,
+    "apparentMagnitude": 5.806525501834046,
+    "elongationOfPlanet": 105.30806912900891,
+    "key": "ur",
+    "phaseAngle": 2.7096797036627733,
+    "phaseIlluminated": 0.999440951208042
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006235230514553535,
+    "apparentMagnitude": 7.899373499499277,
+    "elongationOfPlanet": 105.00388175200469,
+    "key": "ne",
+    "phaseAngle": 1.812653683333354,
+    "phaseIlluminated": 0.9997497994868842
+   },
+   {
+    "apparentDiameterOfDisc": 4.67439052800071e-05,
+    "apparentMagnitude": 15.168193113338834,
+    "elongationOfPlanet": 147.47422224184808,
+    "key": "pl",
+    "phaseAngle": 0.7314764535165078,
+    "phaseIlluminated": 0.9999592535716616
+   }
+  ]
+ },
+ {
+  "utc": "2004-11-18T16:54:37",
+  "jd": 2453328.2045949074,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5394443420171062,
+    "apparentMagnitude": -26.8855430996932,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5350287197878363,
+    "apparentMagnitude": -9.921343505688851,
+    "elongationOfPlanet": 83.06176045888837,
+    "key": "mo",
+    "phaseAngle": 96.7950178815013,
+    "phaseIlluminated": 0.4408411874163627
+   },
+   {
+    "apparentDiameterOfDisc": 0.0017521505387312862,
+    "apparentMagnitude": -0.37172198798975975,
+    "elongationOfPlanet": 22.037133164033346,
+    "key": "me",
+    "phaseAngle": 67.95024701116883,
+    "phaseIlluminated": 0.6877057876981978
+   },
+   {
+    "apparentDiameterOfDisc": 0.0034523301092342687,
+    "apparentMagnitude": -3.9406471036553428,
+    "elongationOfPlanet": 31.503952247911545,
+    "key": "ve",
+    "phaseAngle": 45.919119821102925,
+    "phaseIlluminated": 0.8478365581762511
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010442155743040531,
+    "apparentMagnitude": 1.7140710710716336,
+    "elongationOfPlanet": 21.71765768202734,
+    "key": "ma",
+    "phaseAngle": 13.080113015054717,
+    "phaseIlluminated": 0.9870272888866456
+   },
+   {
+    "apparentDiameterOfDisc": 0.008970013348702875,
+    "apparentMagnitude": -1.7547257243643344,
+    "elongationOfPlanet": 45.58023530228543,
+    "key": "ju",
+    "phaseAngle": 7.438709393781142,
+    "phaseIlluminated": 0.9957919604713518
+   },
+   {
+    "apparentDiameterOfDisc": 0.005390223246202868,
+    "apparentMagnitude": 0.013863447082570701,
+    "elongationOfPlanet": 119.45826642744639,
+    "key": "sa",
+    "phaseAngle": 5.458443815334695,
+    "phaseIlluminated": 0.9977327263643972
+   },
+   {
+    "apparentDiameterOfDisc": 0.0009764541942994308,
+    "apparentMagnitude": 5.81827387320899,
+    "elongationOfPlanet": 96.19229823273258,
+    "key": "ur",
+    "phaseAngle": 2.8062577861909372,
+    "phaseIlluminated": 0.9994003980312445
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006145263325917235,
+    "apparentMagnitude": 7.9269269863687795,
+    "elongationOfPlanet": 76.08672441030465,
+    "key": "ne",
+    "phaseAngle": 1.8287367929772949,
+    "phaseIlluminated": 0.9997453402666304
+   },
+   {
+    "apparentDiameterOfDisc": 6.029417424357535e-05,
+    "apparentMagnitude": 13.95734490805859,
+    "elongationOfPlanet": 25.659703203795367,
+    "key": "pl",
+    "phaseAngle": 0.7982210519946612,
+    "phaseIlluminated": 0.9999514785160508
+   }
+  ]
+ },
+ {
+  "utc": "2138-05-16T23:35:08",
+  "jd": 2502084.4827314815,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5274942017563329,
+    "apparentMagnitude": -26.836898339021683,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.49328827693482963,
+    "apparentMagnitude": -9.974558540035638,
+    "elongationOfPlanet": 88.90198557486548,
+    "key": "mo",
+    "phaseAngle": 90.9450289368132,
+    "phaseIlluminated": 0.49175344068434984
+   },
+   {
+    "apparentDiameterOfDisc": 0.00143689697123987,
+    "apparentMagnitude": -1.8610876893370119,
+    "elongationOfPlanet": 5.180549089969463,
+    "key": "me",
+    "phaseAngle": 17.258373925199272,
+    "phaseIlluminated": 0.9774882969726667
+   },
+   {
+    "apparentDiameterOfDisc": 0.00404761773099354,
+    "apparentMagnitude": -4.028915059000823,
+    "elongationOfPlanet": 38.31261195682437,
+    "key": "ve",
+    "phaseAngle": 60.651584353711165,
+    "phaseIlluminated": 0.7450595931608434
+   },
+   {
+    "apparentDiameterOfDisc": 0.0023767094160656145,
+    "apparentMagnitude": 0.3389922888108159,
+    "elongationOfPlanet": 101.67242048315596,
+    "key": "ma",
+    "phaseAngle": 37.295938403034064,
+    "phaseIlluminated": 0.8977582181536489
+   },
+   {
+    "apparentDiameterOfDisc": 0.01226193674914904,
+    "apparentMagnitude": -2.5109702042712696,
+    "elongationOfPlanet": 138.71221823731787,
+    "key": "ju",
+    "phaseAngle": 7.286152403968941,
+    "phaseIlluminated": 0.9959625616878436
+   },
+   {
+    "apparentDiameterOfDisc": 0.004775012650749386,
+    "apparentMagnitude": 0.5448955543727863,
+    "elongationOfPlanet": 109.90915437867461,
+    "key": "sa",
+    "phaseAngle": 5.448388338958575,
+    "phaseIlluminated": 0.9977410658659713
+   },
+   {
+    "apparentDiameterOfDisc": 0.001103425157404082,
+    "apparentMagnitude": 5.3556651174381775,
+    "elongationOfPlanet": 131.29914639994215,
+    "key": "ur",
+    "phaseAngle": 2.371233249143621,
+    "phaseIlluminated": 0.999571864433884
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006344802108314776,
+    "apparentMagnitude": 7.875854956128641,
+    "elongationOfPlanet": 166.78628844241598,
+    "key": "ne",
+    "phaseAngle": 0.44264571829903515,
+    "phaseIlluminated": 0.9999850787530162
+   },
+   {
+    "apparentDiameterOfDisc": 3.9036911142787274e-05,
+    "apparentMagnitude": 15.863916260418954,
+    "elongationOfPlanet": 17.681666571069893,
+    "key": "pl",
+    "phaseAngle": 0.3692935374892967,
+    "phaseIlluminated": 0.9999896142789002
+   }
+  ]
+ },
+ {
+  "utc": "2104-01-02T16:33:26",
+  "jd": 2489531.1898842594,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.542164321893174,
+    "apparentMagnitude": -26.896464561221812,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5409466527722694,
+    "apparentMagnitude": -8.758845549330665,
+    "elongationOfPlanet": 57.950097712951326,
+    "key": "mo",
+    "phaseAngle": 121.92829878355074,
+    "phaseIlluminated": 0.23557120836742207
+   },
+   {
+    "apparentDiameterOfDisc": 0.0015978020626574504,
+    "apparentMagnitude": -0.37858196043601655,
+    "elongationOfPlanet": 20.455065114207375,
+    "key": "me",
+    "phaseAngle": 54.1943014159733,
+    "phaseIlluminated": 0.7925191698669978
+   },
+   {
+    "apparentDiameterOfDisc": 0.003479852154937505,
+    "apparentMagnitude": -3.9437378501585307,
+    "elongationOfPlanet": 32.037215081932686,
+    "key": "ve",
+    "phaseAngle": 46.29553619965478,
+    "phaseIlluminated": 0.8454693669570102
+   },
+   {
+    "apparentDiameterOfDisc": 0.0039048657592067534,
+    "apparentMagnitude": -1.1276672795897298,
+    "elongationOfPlanet": 155.43785342698524,
+    "key": "ma",
+    "phaseAngle": 14.678770174769905,
+    "phaseIlluminated": 0.9836808556971499
+   },
+   {
+    "apparentDiameterOfDisc": 0.009099418335327712,
+    "apparentMagnitude": -1.9441092018914405,
+    "elongationOfPlanet": 21.456904676099153,
+    "key": "ju",
+    "phaseAngle": 4.041071335278702,
+    "phaseIlluminated": 0.9987568952161199
+   },
+   {
+    "apparentDiameterOfDisc": 0.0042523997237855805,
+    "apparentMagnitude": 0.5395869209066184,
+    "elongationOfPlanet": 32.376644725913074,
+    "key": "sa",
+    "phaseAngle": 3.017951367863577,
+    "phaseIlluminated": 0.9993065441685496
+   },
+   {
+    "apparentDiameterOfDisc": 0.001001941189482272,
+    "apparentMagnitude": 5.736196891977968,
+    "elongationOfPlanet": 112.53482034391708,
+    "key": "ur",
+    "phaseAngle": 2.6237249869013146,
+    "phaseIlluminated": 0.9994758501408955
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006213338413884715,
+    "apparentMagnitude": 7.914822937433509,
+    "elongationOfPlanet": 105.24332520841375,
+    "key": "ne",
+    "phaseAngle": 1.8009205974560558,
+    "phaseIlluminated": 0.9997530277728512
+   },
+   {
+    "apparentDiameterOfDisc": 3.9304380618625134e-05,
+    "apparentMagnitude": 15.895251156080903,
+    "elongationOfPlanet": 113.82429854307722,
+    "key": "pl",
+    "phaseAngle": 1.0463197196897933,
+    "phaseIlluminated": 0.9999166296748583
+   }
+  ]
+ },
+ {
+  "utc": "2057-09-06T12:56:10",
+  "jd": 2472613.0390046295,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5289097241392074,
+    "apparentMagnitude": -26.842717646511403,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5381354908292738,
+    "apparentMagnitude": -10.318376597486004,
+    "elongationOfPlanet": 93.07372186809279,
+    "key": "mo",
+    "phaseAngle": 86.78585297616158,
+    "phaseIlluminated": 0.5280340152200703
+   },
+   {
+    "apparentDiameterOfDisc": 0.0018478325739233468,
+    "apparentMagnitude": -0.7023223842663986,
+    "elongationOfPlanet": 17.58531280968087,
+    "key": "me",
+    "phaseAngle": 80.64999386320225,
+    "phaseIlluminated": 0.5812325296094438
+   },
+   {
+    "apparentDiameterOfDisc": 0.00322454369904126,
+    "apparentMagnitude": -3.8746707957934667,
+    "elongationOfPlanet": 27.729031155257424,
+    "key": "ve",
+    "phaseAngle": 40.693696341282276,
+    "phaseIlluminated": 0.8791030376072071
+   },
+   {
+    "apparentDiameterOfDisc": 0.001170775900998087,
+    "apparentMagnitude": 1.5603709918934041,
+    "elongationOfPlanet": 38.31543242739757,
+    "key": "ma",
+    "phaseAngle": 23.579844724280928,
+    "phaseIlluminated": 0.9582517530057575
+   },
+   {
+    "apparentDiameterOfDisc": 0.013729522448275033,
+    "apparentMagnitude": -2.9052863748184468,
+    "elongationOfPlanet": 177.3150318977207,
+    "key": "ju",
+    "phaseAngle": 0.5371100589148542,
+    "phaseIlluminated": 0.9999780306030885
+   },
+   {
+    "apparentDiameterOfDisc": 0.00533319960833136,
+    "apparentMagnitude": 0.1911622256875436,
+    "elongationOfPlanet": 128.75855627536328,
+    "key": "sa",
+    "phaseAngle": 4.862521410780719,
+    "phaseIlluminated": 0.9982004781776658
+   },
+   {
+    "apparentDiameterOfDisc": 0.001013885720319354,
+    "apparentMagnitude": 5.5497136032912815,
+    "elongationOfPlanet": 37.666215919307504,
+    "key": "ur",
+    "phaseAngle": 1.9212174395053976,
+    "phaseIlluminated": 0.9997189347904007
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006242460991042678,
+    "apparentMagnitude": 7.876503124878279,
+    "elongationOfPlanet": 90.37473350931079,
+    "key": "ne",
+    "phaseAngle": 1.936837830801622,
+    "phaseIlluminated": 0.9997143462659953
+   },
+   {
+    "apparentDiameterOfDisc": 4.5401519714191775e-05,
+    "apparentMagnitude": 15.300467499568217,
+    "elongationOfPlanet": 164.60537078604085,
+    "key": "pl",
+    "phaseAngle": 0.3570209951776183,
+    "phaseIlluminated": 0.9999902930933948
+   }
+  ]
+ },
+ {
+  "utc": "2138-09-14T20:02:37",
+  "jd": 2502205.335150463,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5297544646239644,
+    "apparentMagnitude": -26.846183015538944,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5433611178187896,
+    "apparentMagnitude": -11.279441752242409,
+    "elongationOfPlanet": 122.22584118371985,
+    "key": "mo",
+    "phaseAngle": 57.65617106317291,
+    "phaseIlluminated": 0.7674993919238556
+   },
+   {
+    "apparentDiameterOfDisc": 0.00142337138787518,
+    "apparentMagnitude": -0.35961249078970936,
+    "elongationOfPlanet": 16.437534409987734,
+    "key": "me",
+    "phaseAngle": 39.347287130549326,
+    "phaseIlluminated": 0.8866586033955126
+   },
+   {
+    "apparentDiameterOfDisc": 0.015997072206912304,
+    "apparentMagnitude": -4.152276220777915,
+    "elongationOfPlanet": 13.24025074721096,
+    "key": "ve",
+    "phaseAngle": 161.52323503621687,
+    "phaseIlluminated": 0.025773873444382034
+   },
+   {
+    "apparentDiameterOfDisc": 0.001363738286495773,
+    "apparentMagnitude": 1.2622178441537497,
+    "elongationOfPlanet": 51.022841679503415,
+    "key": "ma",
+    "phaseAngle": 31.529788363826587,
+    "phaseIlluminated": 0.9261841997504001
+   },
+   {
+    "apparentDiameterOfDisc": 0.010937898556007056,
+    "apparentMagnitude": -2.2622426019961113,
+    "elongationOfPlanet": 96.95666534353262,
+    "key": "ju",
+    "phaseAngle": 11.033490863573693,
+    "phaseIlluminated": 0.9907577414847314
+   },
+   {
+    "apparentDiameterOfDisc": 0.004916392357183768,
+    "apparentMagnitude": 0.3755811125864721,
+    "elongationOfPlanet": 127.86796839902968,
+    "key": "sa",
+    "phaseAngle": 4.5532844215929735,
+    "phaseIlluminated": 0.9984219682865023
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010094716673035068,
+    "apparentMagnitude": 5.549616005473566,
+    "elongationOfPlanet": 18.351095875685726,
+    "key": "ur",
+    "phaseAngle": 0.9949272918500959,
+    "phaseIlluminated": 0.9999246181972703
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006092111080627699,
+    "apparentMagnitude": 7.963980122188983,
+    "elongationOfPlanet": 75.6537542462358,
+    "key": "ne",
+    "phaseAngle": 1.8431841676242622,
+    "phaseIlluminated": 0.9997413009985472
+   },
+   {
+    "apparentDiameterOfDisc": 4.00034049441438e-05,
+    "apparentMagnitude": 15.80934670091117,
+    "elongationOfPlanet": 100.33527566149935,
+    "key": "pl",
+    "phaseAngle": 1.1821271324945046,
+    "phaseIlluminated": 0.9998935838092622
+   }
+  ]
+ },
+ {
+  "utc": "2112-10-01T15:04:42",
+  "jd": 2492726.128263889,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5323419179034098,
+    "apparentMagnitude": -26.856763212619057,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5427427893858419,
+    "apparentMagnitude": -11.299779160395456,
+    "elongationOfPlanet": 123.01259366620988,
+    "key": "mo",
+    "phaseAngle": 56.86974402580642,
+    "phaseIlluminated": 0.7732721279663222
+   },
+   {
+    "apparentDiameterOfDisc": 0.0018099452567469298,
+    "apparentMagnitude": -0.03400093464783138,
+    "elongationOfPlanet": 25.645033489288345,
+    "key": "me",
+    "phaseAngle": 73.3768838467788,
+    "phaseIlluminated": 0.6430374911227624
+   },
+   {
+    "apparentDiameterOfDisc": 0.003836179840921343,
+    "apparentMagnitude": -3.973903196670179,
+    "elongationOfPlanet": 36.95947964239467,
+    "key": "ve",
+    "phaseAngle": 55.86486896481886,
+    "phaseIlluminated": 0.7805733080937065
+   },
+   {
+    "apparentDiameterOfDisc": 0.0034967847050556616,
+    "apparentMagnitude": -0.7435079566952882,
+    "elongationOfPlanet": 103.62743634516455,
+    "key": "ma",
+    "phaseAngle": 44.797240986463244,
+    "phaseIlluminated": 0.8548023332891026
+   },
+   {
+    "apparentDiameterOfDisc": 0.00861742224697328,
+    "apparentMagnitude": -1.689333820043183,
+    "elongationOfPlanet": 22.962697594960183,
+    "key": "ju",
+    "phaseAngle": 4.122655519453308,
+    "phaseIlluminated": 0.9987062169538636
+   },
+   {
+    "apparentDiameterOfDisc": 0.005235722335883816,
+    "apparentMagnitude": 0.5946857928284963,
+    "elongationOfPlanet": 152.72106815631463,
+    "key": "sa",
+    "phaseAngle": 2.7123225959707855,
+    "phaseIlluminated": 0.9994398603409347
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010304788903792018,
+    "apparentMagnitude": 5.617729222316542,
+    "elongationOfPlanet": 113.26454921481267,
+    "key": "ur",
+    "phaseAngle": 2.7360918541448056,
+    "phaseIlluminated": 0.9994300017042882
+   },
+   {
+    "apparentDiameterOfDisc": 0.0005948349718372643,
+    "apparentMagnitude": 8.013989176547586,
+    "elongationOfPlanet": 4.730011298631607,
+    "key": "ne",
+    "phaseAngle": 0.1605644346721235,
+    "phaseIlluminated": 0.9999980366706058
+   },
+   {
+    "apparentDiameterOfDisc": 3.94426268215165e-05,
+    "apparentMagnitude": 15.895966490513011,
+    "elongationOfPlanet": 139.42609140696763,
+    "key": "pl",
+    "phaseAngle": 0.7612899184065157,
+    "phaseIlluminated": 0.9999558644531867
+   }
+  ]
+ },
+ {
+  "utc": "2038-02-08T07:53:27",
+  "jd": 2465462.8287847224,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5404632934289955,
+    "apparentMagnitude": -26.889640904841638,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.49220576584473463,
+    "apparentMagnitude": -7.834016850041487,
+    "elongationOfPlanet": 45.88235209449903,
+    "key": "mo",
+    "phaseAngle": 134.00477351171577,
+    "phaseIlluminated": 0.15264085061906085
+   },
+   {
+    "apparentDiameterOfDisc": 0.0013297321185586088,
+    "apparentMagnitude": -1.3098992758866452,
+    "elongationOfPlanet": 3.81613548304514,
+    "key": "me",
+    "phaseAngle": 8.871013128404462,
+    "phaseIlluminated": 0.9940190049225202
+   },
+   {
+    "apparentDiameterOfDisc": 0.011191324199221555,
+    "apparentMagnitude": -4.862043938759814,
+    "elongationOfPlanet": 39.82778589223494,
+    "key": "ve",
+    "phaseAngle": 118.52083291844319,
+    "phaseIlluminated": 0.2612608653667322
+   },
+   {
+    "apparentDiameterOfDisc": 0.002449371999193378,
+    "apparentMagnitude": 0.21625216691013116,
+    "elongationOfPlanet": 101.67018573414852,
+    "key": "ma",
+    "phaseAngle": 37.43257796626981,
+    "phaseIlluminated": 0.8970345713118097
+   },
+   {
+    "apparentDiameterOfDisc": 0.01257233063488107,
+    "apparentMagnitude": -2.5848333769617184,
+    "elongationOfPlanet": 152.0503646639799,
+    "key": "ju",
+    "phaseAngle": 5.054424847570558,
+    "phaseIlluminated": 0.9980557300308126
+   },
+   {
+    "apparentDiameterOfDisc": 0.005451636788896419,
+    "apparentMagnitude": 0.5130652496975365,
+    "elongationOfPlanet": 154.95572836159693,
+    "key": "sa",
+    "phaseAngle": 2.5702567044230684,
+    "phaseIlluminated": 0.9994969919749707
+   },
+   {
+    "apparentDiameterOfDisc": 0.001091375175231926,
+    "apparentMagnitude": 5.424555397481083,
+    "elongationOfPlanet": 151.39025238213833,
+    "key": "ur",
+    "phaseAngle": 1.4415442547483506,
+    "phaseIlluminated": 0.9998417558027897
+   },
+   {
+    "apparentDiameterOfDisc": 0.000616490256027867,
+    "apparentMagnitude": 7.902173774990589,
+    "elongationOfPlanet": 66.9971114826244,
+    "key": "ne",
+    "phaseAngle": 1.745929478352343,
+    "phaseIlluminated": 0.9997678789462744
+   },
+   {
+    "apparentDiameterOfDisc": 4.849383680627279e-05,
+    "apparentMagnitude": 14.910615927694598,
+    "elongationOfPlanet": 9.30208000091056,
+    "key": "pl",
+    "phaseAngle": 0.23834104660229438,
+    "phaseIlluminated": 0.9999956739473393
+   }
+  ]
+ },
+ {
+  "utc": "2002-10-05T15:08:42",
+  "jd": 2452553.1310416665,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5331443000251823,
+    "apparentMagnitude": -26.860033740082233,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5567445789560895,
+    "apparentMagnitude": -5.417627564909514,
+    "elongationOfPlanet": 12.922069496379143,
+    "key": "mo",
+    "phaseAngle": 167.0470236533983,
+    "phaseIlluminated": 0.01272282105387812
+   },
+   {
+    "apparentDiameterOfDisc": 0.0024412832271619458,
+    "apparentMagnitude": 1.2391127152005694,
+    "elongationOfPlanet": 13.760372218409305,
+    "key": "me",
+    "phaseAngle": 130.8998684841961,
+    "phaseIlluminated": 0.17263046062909537
+   },
+   {
+    "apparentDiameterOfDisc": 0.01283808587614597,
+    "apparentMagnitude": -4.768937649370769,
+    "elongationOfPlanet": 33.512142602451874,
+    "key": "ve",
+    "phaseAngle": 130.56613650506526,
+    "phaseIlluminated": 0.17483732404950303
+   },
+   {
+    "apparentDiameterOfDisc": 0.001008105049194468,
+    "apparentMagnitude": 1.823762581497507,
+    "elongationOfPlanet": 18.675476539349194,
+    "key": "ma",
+    "phaseAngle": 11.08637934638134,
+    "phaseIlluminated": 0.9906692017983827
+   },
+   {
+    "apparentDiameterOfDisc": 0.00957565060212601,
+    "apparentMagnitude": -1.9594539003885716,
+    "elongationOfPlanet": 59.328564149010994,
+    "key": "ju",
+    "phaseAngle": 9.38931502764124,
+    "phaseIlluminated": 0.9933013013874938
+   },
+   {
+    "apparentDiameterOfDisc": 0.005247006057908616,
+    "apparentMagnitude": 0.00905656612647121,
+    "elongationOfPlanet": 103.14724302760992,
+    "key": "sa",
+    "phaseAngle": 6.187349326173907,
+    "phaseIlluminated": 0.9970873927776964
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010074383394293198,
+    "apparentMagnitude": 5.745294382295719,
+    "elongationOfPlanet": 133.05503230172843,
+    "key": "ur",
+    "phaseAngle": 2.0880918563857183,
+    "phaseIlluminated": 0.9996679940442421
+   },
+   {
+    "apparentDiameterOfDisc": 0.000628102282920375,
+    "apparentMagnitude": 7.880935925252026,
+    "elongationOfPlanet": 116.05249863095624,
+    "key": "ne",
+    "phaseAngle": 1.7077136903974224,
+    "phaseIlluminated": 0.9997779285576687
+   },
+   {
+    "apparentDiameterOfDisc": 6.178552396302694e-05,
+    "apparentMagnitude": 13.882272926745825,
+    "elongationOfPlanet": 63.52869802306382,
+    "key": "pl",
+    "phaseAngle": 1.6798879051401991,
+    "phaseIlluminated": 0.9997851060252256
+   }
+  ]
+ },
+ {
+  "utc": "1996-07-12T19:17:10",
+  "jd": 2450277.303587963,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5244313389959401,
+    "apparentMagnitude": -26.824253069911073,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.4957035565869718,
+    "apparentMagnitude": -6.859577237205606,
+    "elongationOfPlanet": 31.962496766943186,
+    "key": "mo",
+    "phaseAngle": 147.95703031356928,
+    "phaseIlluminated": 0.07617478093788843
+   },
+   {
+    "apparentDiameterOfDisc": 0.001400753004560724,
+    "apparentMagnitude": -2.1027173256682445,
+    "elongationOfPlanet": 2.3207361460991858,
+    "key": "me",
+    "phaseAngle": 7.371651034966642,
+    "phaseIlluminated": 0.9958673834191147
+   },
+   {
+    "apparentDiameterOfDisc": 0.01106199539894178,
+    "apparentMagnitude": -4.692497396750991,
+    "elongationOfPlanet": 37.19126646339788,
+    "key": "ve",
+    "phaseAngle": 122.45300009736324,
+    "phaseIlluminated": 0.231696204461929
+   },
+   {
+    "apparentDiameterOfDisc": 0.001132228278180587,
+    "apparentMagnitude": 1.4794701019798064,
+    "elongationOfPlanet": 29.5209188287434,
+    "key": "ma",
+    "phaseAngle": 19.510753749117132,
+    "phaseIlluminated": 0.9712894114188729
+   },
+   {
+    "apparentDiameterOfDisc": 0.013041836956532365,
+    "apparentMagnitude": -2.698386144286242,
+    "elongationOfPlanet": 171.01019161523845,
+    "key": "ju",
+    "phaseAngle": 1.74470879265584,
+    "phaseIlluminated": 0.9997682033876838
+   },
+   {
+    "apparentDiameterOfDisc": 0.004976464333795401,
+    "apparentMagnitude": 0.8102581462514067,
+    "elongationOfPlanet": 103.31239311814929,
+    "key": "sa",
+    "phaseAngle": 5.966962076528453,
+    "phaseIlluminated": 0.9972910016446151
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010360279880113907,
+    "apparentMagnitude": 5.658894325467901,
+    "elongationOfPlanet": 167.57806657935308,
+    "key": "ur",
+    "phaseAngle": 0.639827057269568,
+    "phaseIlluminated": 0.999968824355953
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006385693091957513,
+    "apparentMagnitude": 7.8503287063036025,
+    "elongationOfPlanet": 174.1478102986098,
+    "key": "ne",
+    "phaseAngle": 0.2031320883064925,
+    "phaseIlluminated": 0.9999968576731553
+   },
+   {
+    "apparentDiameterOfDisc": 6.54299574073129e-05,
+    "apparentMagnitude": 13.711215987778266,
+    "elongationOfPlanet": 128.60169048010448,
+    "key": "pl",
+    "phaseAngle": 1.5176336399733477,
+    "phaseIlluminated": 0.9998246106408701
+   }
+  ]
+ },
+ {
+  "utc": "2010-03-07T21:59:38",
+  "jd": 2455263.416412037,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5371808044875779,
+    "apparentMagnitude": -26.87641231438432,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5038545444404685,
+    "apparentMagnitude": -9.948093613957495,
+    "elongationOfPlanet": 87.01567806356786,
+    "key": "mo",
+    "phaseAngle": 92.83195933257352,
+    "phaseIlluminated": 0.4752965540919512
+   },
+   {
+    "apparentDiameterOfDisc": 0.001361395318410959,
+    "apparentMagnitude": -1.2258136559240285,
+    "elongationOfPlanet": 6.265854630441518,
+    "key": "me",
+    "phaseAngle": 15.686751710777129,
+    "phaseIlluminated": 0.9813771453107532
+   },
+   {
+    "apparentDiameterOfDisc": 0.002802926001184708,
+    "apparentMagnitude": -3.865595934674686,
+    "elongationOfPlanet": 13.328430672816502,
+    "key": "ve",
+    "phaseAngle": 18.388900701376848,
+    "phaseIlluminated": 0.9744685705760304
+   },
+   {
+    "apparentDiameterOfDisc": 0.0031746221869812753,
+    "apparentMagnitude": -0.43302066821604734,
+    "elongationOfPlanet": 133.00994112485301,
+    "key": "ma",
+    "phaseAngle": 25.86545677526128,
+    "phaseIlluminated": 0.9499104800984018
+   },
+   {
+    "apparentDiameterOfDisc": 0.009153057426931522,
+    "apparentMagnitude": -2.022638833387452,
+    "elongationOfPlanet": 5.759088726714428,
+    "key": "ju",
+    "phaseAngle": 1.1407937981221794,
+    "phaseIlluminated": 0.9999008951977195
+   },
+   {
+    "apparentDiameterOfDisc": 0.005385323713478456,
+    "apparentMagnitude": 0.567904674986984,
+    "elongationOfPlanet": 164.63392103267572,
+    "key": "sa",
+    "phaseAngle": 1.5933179396847235,
+    "phaseIlluminated": 0.9998066822871581
+   },
+   {
+    "apparentDiameterOfDisc": 0.0009231480421361349,
+    "apparentMagnitude": 5.944494385134104,
+    "elongationOfPlanet": 8.846584290486351,
+    "key": "ur",
+    "phaseAngle": 0.43954553448518924,
+    "phaseIlluminated": 0.9999852870296959
+   },
+   {
+    "apparentDiameterOfDisc": 0.000601381701711778,
+    "apparentMagnitude": 7.970661629527428,
+    "elongationOfPlanet": 20.28137149200153,
+    "key": "ne",
+    "phaseAngle": 0.6521940941423874,
+    "phaseIlluminated": 0.9999676075514159
+   },
+   {
+    "apparentDiameterOfDisc": 5.9679548231800854e-05,
+    "apparentMagnitude": 14.043646257145467,
+    "elongationOfPlanet": 72.11312528679089,
+    "key": "pl",
+    "phaseAngle": 1.7014183389759665,
+    "phaseIlluminated": 0.9997795627172965
+   }
+  ]
+ },
+ {
+  "utc": "1874-10-11T15:07:03",
+  "jd": 2405808.1298958333,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5344285399863853,
+    "apparentMagnitude": -26.865258101144267,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.48998327141269893,
+    "apparentMagnitude": -5.112404291712661,
+    "elongationOfPlanet": 12.642513703127493,
+    "key": "mo",
+    "phaseAngle": 167.32341662244858,
+    "phaseIlluminated": 0.012187843505192919
+   },
+   {
+    "apparentDiameterOfDisc": 0.0015418483378012006,
+    "apparentMagnitude": -0.1618923754803836,
+    "elongationOfPlanet": 21.449003178647366,
+    "key": "me",
+    "phaseAngle": 52.172661209654876,
+    "phaseIlluminated": 0.8066420039183086
+   },
+   {
+    "apparentDiameterOfDisc": 0.008016440496707087,
+    "apparentMagnitude": -4.645916439860103,
+    "elongationOfPlanet": 46.076562971684865,
+    "key": "ve",
+    "phaseAngle": 98.99356446179394,
+    "phaseIlluminated": 0.4218382372075977
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010744456476607979,
+    "apparentMagnitude": 1.805514471886474,
+    "elongationOfPlanet": 32.19060492161992,
+    "key": "ma",
+    "phaseAngle": 18.615796716771783,
+    "phaseIlluminated": 0.9738402177013292
+   },
+   {
+    "apparentDiameterOfDisc": 0.00847994485549316,
+    "apparentMagnitude": -1.6636611865105841,
+    "elongationOfPlanet": 4.806883637460655,
+    "key": "ju",
+    "phaseAngle": 0.8746675131753447,
+    "phaseIlluminated": 0.9999417397555885
+   },
+   {
+    "apparentDiameterOfDisc": 0.004821428514904726,
+    "apparentMagnitude": 0.5275999814682706,
+    "elongationOfPlanet": 109.52580532625537,
+    "key": "sa",
+    "phaseAngle": 5.44056491299676,
+    "phaseIlluminated": 0.9977475436143595
+   },
+   {
+    "apparentDiameterOfDisc": 0.001030921414092189,
+    "apparentMagnitude": 5.519252392033283,
+    "elongationOfPlanet": 63.5927411781621,
+    "key": "ur",
+    "phaseAngle": 2.774640667139126,
+    "phaseIlluminated": 0.999413830302493
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006454166762672613,
+    "apparentMagnitude": 7.802313129093338,
+    "elongationOfPlanet": 168.27602438909167,
+    "key": "ne",
+    "phaseAngle": 0.3957267756634094,
+    "phaseIlluminated": 0.999988074299718
+   },
+   {
+    "apparentDiameterOfDisc": 3.961523730006707e-05,
+    "apparentMagnitude": 15.878776415051227,
+    "elongationOfPlanet": 143.13673154712663,
+    "key": "pl",
+    "phaseAngle": 0.7024344936071619,
+    "phaseIlluminated": 0.9999624248291619
+   }
+  ]
+ },
+ {
+  "utc": "1897-01-04T14:21:04",
+  "jd": 2413929.097962963,
+  "result": [
+   {
+    "apparentDiameterOfDisc": 0.5421847776472819,
+    "apparentMagnitude": -26.896546488906697,
+    "elongationOfPlanet": 0.0,
+    "key": "su",
+    "phaseAngle": 0.0,
+    "phaseIlluminated": 0.0
+   },
+   {
+    "apparentDiameterOfDisc": 0.5264976320681037,
+    "apparentMagnitude": -5.722567739419183,
+    "elongationOfPlanet": 17.27151455242705,
+    "key": "mo",
+    "phaseAngle": 162.68482232302247,
+    "phaseIlluminated": 0.02265900436447532
+   },
+   {
+    "apparentDiameterOfDisc": 0.001800115402128104,
+    "apparentMagnitude": -0.7137174098910974,
+    "elongationOfPlanet": 18.965372364857835,
+    "key": "me",
+    "phaseAngle": 71.33391231802747,
+    "phaseIlluminated": 0.6600261490591403
+   },
+   {
+    "apparentDiameterOfDisc": 0.004607665312368976,
+    "apparentMagnitude": -4.173772440461494,
+    "elongationOfPlanet": 42.653357951048406,
+    "key": "ve",
+    "phaseAngle": 66.99022270060118,
+    "phaseIlluminated": 0.6954441016659261
+   },
+   {
+    "apparentDiameterOfDisc": 0.003958646561355357,
+    "apparentMagnitude": -1.1292144963595476,
+    "elongationOfPlanet": 147.80094153728032,
+    "key": "ma",
+    "phaseAngle": 19.378559226552763,
+    "phaseIlluminated": 0.9716734453072046
+   },
+   {
+    "apparentDiameterOfDisc": 0.01146563607380632,
+    "apparentMagnitude": -2.3069083796687853,
+    "elongationOfPlanet": 124.49555884357774,
+    "key": "ju",
+    "phaseAngle": 8.655059786506962,
+    "phaseIlluminated": 0.9943061124319104
+   },
+   {
+    "apparentDiameterOfDisc": 0.004342196350849767,
+    "apparentMagnitude": 0.5695748132258132,
+    "elongationOfPlanet": 47.08508825609199,
+    "key": "sa",
+    "phaseAngle": 4.152167732148772,
+    "phaseIlluminated": 0.9986876355837441
+   },
+   {
+    "apparentDiameterOfDisc": 0.0010002101750541353,
+    "apparentMagnitude": 5.625066770123088,
+    "elongationOfPlanet": 46.97423615960452,
+    "key": "ur",
+    "phaseAngle": 2.1893409045228807,
+    "phaseIlluminated": 0.9996350203224922
+   },
+   {
+    "apparentDiameterOfDisc": 0.0006424049243074798,
+    "apparentMagnitude": 7.815505452250895,
+    "elongationOfPlanet": 153.61653695571152,
+    "key": "ne",
+    "phaseAngle": 0.8325860690525345,
+    "phaseIlluminated": 0.9999472107634049
+   },
+   {
+    "apparentDiameterOfDisc": 4.1152087136503594e-05,
+    "apparentMagnitude": 15.71567005329566,
+    "elongationOfPlanet": 146.1368781023392,
+    "key": "pl",
+    "phaseAngle": 0.6578350183131056,
+    "phaseIlluminated": 0.9999670448001348
+   }
+  ]
+ }
+]
