@@ -3,7 +3,7 @@
 
 use std::path::PathBuf;
 
-use astro_ephem_core::*;
+use astro_calc_core::*;
 use serde_json::Value;
 
 fn setup() -> Option<(Ephemeris, PathBuf)> {

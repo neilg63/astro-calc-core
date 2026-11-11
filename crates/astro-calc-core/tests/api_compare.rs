@@ -5,7 +5,7 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
-use astro_ephem_core::{Body, CoordSystem, DeltaTModel, Ephemeris, GeoPos, Perspective};
+use astro_calc_core::{Body, CoordSystem, DeltaTModel, Ephemeris, GeoPos, Perspective};
 use serde_json::Value;
 
 const BODIES: [&str; 10] = ["su", "mo", "me", "ve", "ma", "ju", "sa", "ur", "ne", "pl"];

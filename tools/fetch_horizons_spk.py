@@ -9,7 +9,7 @@ start, stop = (sys.argv[2], sys.argv[3]) if len(sys.argv) > 3 else ("1850-01-01"
 for name, cmd in BODIES.items():
     q = urllib.parse.urlencode({"format": "json", "COMMAND": f"'{cmd}'", "OBJ_DATA": "NO", "MAKE_EPHEM": "YES",
                                 "EPHEM_TYPE": "SPK", "START_TIME": f"'{start}'", "STOP_TIME": f"'{stop}'"})
-    req = urllib.request.Request("https://ssd.jpl.nasa.gov/api/horizons.api?" + q, headers={"User-Agent": "astro_ephem"})
+    req = urllib.request.Request("https://ssd.jpl.nasa.gov/api/horizons.api?" + q, headers={"User-Agent": "astro-calc"})
     with urllib.request.urlopen(req, timeout=300) as r:
         d = json.load(r)
     if "spk" not in d:

@@ -1,9 +1,9 @@
 //! Infers the reference API's ΔT from its geocentric Moon/Sun longitudes.
 //! Prints: utc, jd, our ΔT, implied ΔT (Moon), implied ΔT (Sun).
-use astro_ephem_core::*;
+use astro_calc_core::*;
 fn main() {
     let eph = Ephemeris::open("data/de440s.bsp").unwrap();
-    let rows: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("crates/astro_ephem_core/tests/fixtures/api_moon_series.json").unwrap()).unwrap();
+    let rows: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("crates/astro-calc-core/tests/fixtures/api_moon_series.json").unwrap()).unwrap();
     let g = GeoPos::default();
     for r in rows {
         let jd = r["jd"].as_f64().unwrap();

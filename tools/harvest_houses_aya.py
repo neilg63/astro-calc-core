@@ -3,7 +3,7 @@ Usage: python3 -I tools/harvest_houses_aya.py houses.json ayanamshas.json"""
 import datetime as dt, json, random, sys, time, urllib.request
 
 def get(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "astro_ephem-fixtures"})
+    req = urllib.request.Request(url, headers={"User-Agent": "astro-calc-fixtures"})
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.load(r)
 

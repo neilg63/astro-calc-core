@@ -4,7 +4,7 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
-use astro_ephem_core::*;
+use astro_calc_core::*;
 use serde_json::Value;
 
 fn root() -> PathBuf {

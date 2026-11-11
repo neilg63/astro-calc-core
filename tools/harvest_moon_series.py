@@ -8,7 +8,7 @@ rows = []
 for y in range(y0, y1 + 1):
     for m in ("01", "07"):
         q = f"https://astro.multifaceted.info/positions?dt={y:04d}-{m}-01T00:00:00&loc=0,0&bodies=su,mo&eq=0&topo=0"
-        req = urllib.request.Request(q, headers={"User-Agent": "astro_ephem-fixtures"})
+        req = urllib.request.Request(q, headers={"User-Agent": "astro-calc-fixtures"})
         with urllib.request.urlopen(req, timeout=30) as r:
             d = json.load(r)
         rows.append({"utc": f"{y:04d}-{m}-01T00:00:00", "jd": d["date"]["jd"],

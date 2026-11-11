@@ -4,7 +4,7 @@ import datetime as dt, json, os, random, sys, time, urllib.request
 
 API = "https://astro.multifaceted.info"
 def get(path):
-    req = urllib.request.Request(API + path, headers={"User-Agent": "astro_ephem-fixtures"})
+    req = urllib.request.Request(API + path, headers={"User-Agent": "astro-calc-fixtures"})
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.load(r)
 

@@ -1,4 +1,4 @@
-//! # astro_ephem_core
+//! # astro_calc_core
 //!
 //! Pure-Rust ephemeris core, built from published standards and JPL data files.
 //!

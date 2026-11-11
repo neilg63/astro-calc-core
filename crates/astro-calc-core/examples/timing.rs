@@ -1,4 +1,4 @@
-use astro_ephem_core::*;
+use astro_calc_core::*;
 use std::time::Instant;
 fn main() {
     let eph = Ephemeris::open("data/de440s.bsp").unwrap();

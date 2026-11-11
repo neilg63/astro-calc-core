@@ -1,5 +1,5 @@
 [package]
-name = "astro_ephem_core"
+name = "astro-calc-core"
 version = "0.1.0"
 description = "Pure-Rust ephemeris core: planetary positions, angles, ayanamshas, rise/set and stations from JPL data"
 edition.workspace = true

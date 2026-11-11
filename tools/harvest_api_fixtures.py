@@ -11,7 +11,7 @@ LOCS = [(45.22, 11.228, 0), (-33.865, 151.209, 58), (40.7128, -74.006, 10), (69.
 
 def fetch(when, loc, topo):
     q = f"{BASE}?dt={when}&loc={loc[0]},{loc[1]},{loc[2]}&bodies={BODIES}&eq=2&topo={topo}"
-    req = urllib.request.Request(q, headers={"User-Agent": "astro_ephem-fixtures"})
+    req = urllib.request.Request(q, headers={"User-Agent": "astro-calc-fixtures"})
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.load(r)
 

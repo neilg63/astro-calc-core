@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use astro_ephem_core::*;
+use astro_calc_core::*;
 
 fn eph() -> Option<Ephemeris> {
     let bsp = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/de440s.bsp");

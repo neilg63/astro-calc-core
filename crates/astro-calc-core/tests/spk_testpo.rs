@@ -3,7 +3,7 @@
 
 use std::path::PathBuf;
 
-use astro_ephem_core::Ephemeris;
+use astro_calc_core::Ephemeris;
 
 fn data_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data")

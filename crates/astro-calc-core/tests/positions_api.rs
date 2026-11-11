@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use astro_ephem_core::*;
+use astro_calc_core::*;
 
 fn eph() -> Option<Ephemeris> {
     let p = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/de440s.bsp");
@@ -61,7 +61,7 @@ fn unsupported_inputs_are_errors() {
 
 #[test]
 fn observed_delta_t_is_sane() {
-    use astro_ephem_core::models::{delta_t, delta_t_with};
+    use astro_calc_core::models::{delta_t, delta_t_with};
     assert!((delta_t(2451544.5) - 63.83).abs() < 0.05); // 2000-01-01
     assert!((delta_t(2461041.5) - 69.1).abs() < 0.2); // 2026-01-01
     let api = delta_t_with(DeltaTModel::AstroCalcApi, 2461041.5);

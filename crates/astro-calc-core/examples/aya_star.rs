@@ -1,6 +1,6 @@
 //! Tests star-position models against the reference API's star-based ayanamshas.
-use astro_ephem_core::*;
-use astro_ephem_core::math::*;
+use astro_calc_core::*;
+use astro_calc_core::math::*;
 fn hms(h: f64, m: f64, s: f64) -> f64 { (h + m / 60.0 + s / 3600.0) * 15.0 }
 fn dms(d: f64, m: f64, s: f64) -> f64 { d.signum() * (d.abs() + m / 60.0 + s / 3600.0) }
 // (key, ra°, dec°, pmra mas/yr (μα*), pmdec mas/yr, epoch year)
@@ -13,7 +13,7 @@ fn stars() -> Vec<(&'static str, f64, f64, f64, f64, f64)> { vec![
     ("galcent_cochrane", hms(17.,45.,40.0409), dms(-29.,0.,28.118), 0.0, 0.0, 2000.0),
 ]}
 fn aberrate(dir: Vec3, eph: &Ephemeris, tdb: f64) -> Vec3 {
-    let c = 299_792.458 * 86_400.0 / astro_ephem_core::spk::AU_KM;
+    let c = 299_792.458 * 86_400.0 / astro_calc_core::spk::AU_KM;
     let (e, ev) = eph.barycentric(399, tdb).unwrap();
     let (sun, _) = eph.barycentric(10, tdb).unwrap();
     let sun_to_obs = sub(e, sun);
@@ -33,7 +33,7 @@ fn aberrate(dir: Vec3, eph: &Ephemeris, tdb: f64) -> Vec3 {
 }
 fn main() {
     let eph = Ephemeris::open("data/de440s.bsp").unwrap();
-    let rows: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("crates/astro_ephem_core/tests/fixtures/api_ayanamshas.json").unwrap()).unwrap();
+    let rows: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("crates/astro-calc-core/tests/fixtures/api_ayanamshas.json").unwrap()).unwrap();
     for (key, ra0, de0, pma, pmd, ep) in stars() {
         let mut res: Vec<[f64; 3]> = vec![];
         for r in &rows {
