@@ -14,6 +14,7 @@
 //! * Synchronous and CPU-bound. Callable from async code: short calls inline, bulk calls via
 //!   `spawn_blocking` (optional `tokio` wrappers to follow behind a feature flag).
 
+pub mod aspects;
 pub mod ayanamsha;
 pub mod body;
 pub mod derived;
@@ -30,6 +31,10 @@ pub mod rise_set;
 pub mod spk;
 pub mod time;
 
+pub use aspects::{
+    AspectMatch, AspectOrb, AspectPeriod, BodyAspect, ChartKind, ChartSubject, ProgressionOptions, TROPICAL_YEAR, aspect_orbs,
+    aspects_between, best_aspect, match_aspects, separation,
+};
 pub use ayanamsha::{Ayanamsha, to_sidereal};
 pub use body::{Body, BodyKind, Catalog, parse_body_list};
 pub use derived::{Angle, Derived, DerivedId, DerivedRegistry, Ref};
