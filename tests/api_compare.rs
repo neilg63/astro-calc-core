@@ -39,7 +39,7 @@ impl Stat {
 #[test]
 fn positions_match_reference_api() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let bsp = root.join("../../data/de440s.bsp");
+    let bsp = root.join("data/de440s.bsp");
     if !bsp.exists() {
         eprintln!("skipping: {} not present", bsp.display());
         return;

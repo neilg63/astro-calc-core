@@ -3,7 +3,7 @@
 use astro_calc_core::*;
 fn main() {
     let eph = Ephemeris::open("data/de440s.bsp").unwrap();
-    let rows: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("crates/astro-calc-core/tests/fixtures/api_moon_series.json").unwrap()).unwrap();
+    let rows: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("tests/fixtures/api_moon_series.json").unwrap()).unwrap();
     let g = GeoPos::default();
     for r in rows {
         let jd = r["jd"].as_f64().unwrap();

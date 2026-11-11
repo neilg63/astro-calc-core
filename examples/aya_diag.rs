@@ -4,7 +4,7 @@ fn p_a(t: f64) -> f64 { // IAU 2006 general precession in longitude, arcsec
     (5028.796195 + (1.1054348 + (0.00007964 + (-0.000023857 - 0.0000000383 * t) * t) * t) * t) * t
 }
 fn main() {
-    let rows: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("crates/astro-calc-core/tests/fixtures/api_ayanamshas.json").unwrap()).unwrap();
+    let rows: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("tests/fixtures/api_ayanamshas.json").unwrap()).unwrap();
     let keys: Vec<String> = rows[0]["values"].as_object().unwrap().keys().cloned().collect();
     for k in keys {
         let mut a = vec![]; let mut b = vec![];

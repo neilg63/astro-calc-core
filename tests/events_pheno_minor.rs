@@ -11,7 +11,7 @@ fn root() -> PathBuf {
 }
 
 fn data() -> PathBuf {
-    root().join("../../data")
+    root().join("data")
 }
 
 /// Planetary ephemeris only, with the reference API's ΔT.

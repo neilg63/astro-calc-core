@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use astro_calc_core::*;
 
 fn eph() -> Option<Ephemeris> {
-    let p = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/de440s.bsp");
+    let p = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/de440s.bsp");
     p.exists().then(|| Ephemeris::open(p).unwrap())
 }
 

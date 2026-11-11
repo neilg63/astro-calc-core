@@ -2,7 +2,7 @@
 use astro_calc_core::*;
 fn main() {
     let eph = Ephemeris::open("data/de440s.bsp").unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi);
-    let cases: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("crates/astro-calc-core/tests/fixtures/api_rise_set.json").unwrap()).unwrap();
+    let cases: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("tests/fixtures/api_rise_set.json").unwrap()).unwrap();
     for key in ["su", "mo", "ju"] {
         let body: Body = key.parse().unwrap();
         for mode in 0..8 {

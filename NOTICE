@@ -7,7 +7,7 @@ used under the following licence:
   Redistribution and use in source and binary forms, with or without modification,
   are permitted under the 3-clause BSD licence; see https://github.com/liberfa/erfa/blob/master/LICENSE.
 
-Affected files: crates/astro-calc-core/src/models/mod.rs (IAU 2006 precession, IAU 2000B
+Affected files: src/models/mod.rs (IAU 2006 precession, IAU 2000B
 nutation arguments, ERA/GMST, WGS84), models/nut00b_table.rs, position.rs (light deflection and
 aberration formulae).
 

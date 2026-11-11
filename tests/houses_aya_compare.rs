@@ -85,7 +85,7 @@ fn polar_fallback_is_reported() {
 
 #[test]
 fn ayanamshas_match_reference() {
-    let bsp = root().join("../../data/de440s.bsp");
+    let bsp = root().join("data/de440s.bsp");
     if !bsp.exists() {
         eprintln!("skipping: {} not present", bsp.display());
         return;

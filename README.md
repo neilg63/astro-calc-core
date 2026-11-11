@@ -1,11 +1,11 @@
-# astro-calc
+# astro-calc-core
 
 A pure-Rust astronomical calculation library for astrology software. It computes
 positions, houses, ayanamshas, rise and set times, stations and aspects directly from
 NASA JPL ephemeris files, with no C dependencies.
 
-The workspace currently holds one crate, `astro-calc-core`. Further crates (a REST API,
-a GUI, a WebAssembly wrapper) are planned on top of it.
+This crate, `astro-calc-core`, is the library. Applications are planned on top of it as
+separate projects: `astro-calc-api` (a REST API) and `astro-calc-ui` (a desktop GUI).
 
 ## Status: alpha
 

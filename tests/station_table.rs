@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use astro_calc_core::*;
 
 fn eph() -> Option<Ephemeris> {
-    let bsp = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/de440s.bsp");
+    let bsp = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/de440s.bsp");
     bsp.exists().then(|| Ephemeris::open(bsp).unwrap())
 }
 
@@ -71,7 +71,7 @@ fn table_round_trips_and_matches_live_search() {
     assert_eq!(back.station_set(&eph, Body::Venus, from + 500.0, 4, 0).unwrap().stations.len(), 4);
 
     // A table built under another ΔT model does not match this ephemeris.
-    let other = Ephemeris::open(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/de440s.bsp")).unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi);
+    let other = Ephemeris::open(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/de440s.bsp")).unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi);
     assert!(!back.matches(&other));
 }
 

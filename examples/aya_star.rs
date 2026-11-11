@@ -33,7 +33,7 @@ fn aberrate(dir: Vec3, eph: &Ephemeris, tdb: f64) -> Vec3 {
 }
 fn main() {
     let eph = Ephemeris::open("data/de440s.bsp").unwrap();
-    let rows: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("crates/astro-calc-core/tests/fixtures/api_ayanamshas.json").unwrap()).unwrap();
+    let rows: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("tests/fixtures/api_ayanamshas.json").unwrap()).unwrap();
     for (key, ra0, de0, pma, pmd, ep) in stars() {
         let mut res: Vec<[f64; 3]> = vec![];
         for r in &rows {

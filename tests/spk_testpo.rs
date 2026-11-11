@@ -1,12 +1,12 @@
 //! Verifies the SPK reader against JPL's own reference values (testpo.440).
-//! Needs `data/de440s.bsp` and `data/testpo.440` at the workspace root; skipped otherwise.
+//! Needs `data/de440s.bsp` and `data/testpo.440` at the crate root; skipped otherwise.
 
 use std::path::PathBuf;
 
 use astro_calc_core::Ephemeris;
 
 fn data_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data")
 }
 
 /// testpo body codes → NAIF ids.
@@ -61,7 +61,7 @@ fn de440s_matches_testpo() {
 /// Data passed in as bytes (as on WebAssembly) gives the same results as an opened file.
 #[test]
 fn from_bytes_matches_opened_file() {
-    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/de440s.bsp");
+    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/de440s.bsp");
     if !path.exists() {
         return;
     }
