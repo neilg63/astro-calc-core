@@ -7,9 +7,9 @@ NASA JPL ephemeris files, with no C dependencies.
 This crate, `astro-calc-core`, is the library. Applications are planned on top of it as
 separate projects: `astro-calc-api` (a REST API) and `astro-calc-ui` (a desktop GUI).
 
-## Status: alpha
+## Status: pre-alpha
 
-This is an alpha release.
+This is a pre-alpha release: an early version published for review and experiment.
 
 - The public API is still changing and may break between versions.
 - Results have been checked against JPL's own test data, published almanac values and an

@@ -6,6 +6,7 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["Neil Gardner"]
 readme = "README.md"
+repository = "https://github.com/neilg63/astro-calc-core"
 
 [features]
 default = ["mmap"]
