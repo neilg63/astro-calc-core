@@ -39,8 +39,8 @@ pub mod station_table;
 pub mod time;
 
 pub use aspects::{
-    AspectMatch, AspectOrb, AspectPeriod, BodyAspect, ChartKind, ChartSubject, ProgressionOptions, TROPICAL_YEAR, aspect_orbs,
-    aspects_between, best_aspect, match_aspects, separation,
+    AspectOrb, AspectPeriod, AspectResult, BodyAspect, ChartKind, ChartSubject, ProgressionOptions, TROPICAL_YEAR, aspect_orb,
+    aspect_orbs, aspects_between, best_aspect, match_aspects, separation,
 };
 pub use ayanamsha::{Ayanamsha, to_sidereal};
 pub use body::{Body, BodyKind, Catalog, parse_body_list};

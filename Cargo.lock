@@ -21,9 +21,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "aspect360"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "533229f92c2d169df593d08a3a82d5fa3cf5fb3a4227b3763e26bf06c95662a5"
+dependencies = [
+ "ring360",
+]
+
+[[package]]
 name = "astro-calc-core"
 version = "0.1.0"
 dependencies = [
+ "aspect360",
  "chrono",
  "fuzzy-datetime",
  "julian_day_converter",
@@ -230,6 +240,12 @@ checksum = "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001"
 dependencies = [
  "proc-macro2",
 ]
+
+[[package]]
+name = "ring360"
+version = "0.2.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7f50964a764c83bd2a5349acc9a0efdd41560a1fb1d653adba7d1782f73f163"
 
 [[package]]
 name = "rustversion"

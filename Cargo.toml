@@ -28,6 +28,7 @@ mmap = ["dep:memmap2"]
 serde = ["dep:serde"]
 
 [dependencies]
+aspect360 = "0.1.9"
 chrono = "0.4"
 julian_day_converter = "0.4.6"
 fuzzy-datetime = "0.1.4"

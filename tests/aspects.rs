@@ -16,15 +16,16 @@ fn targets() -> Vec<AspectOrb> {
 #[test]
 fn instant_matching_follows_caller_definitions() {
     let targets = aspect_orbs(&[(30.0, 5.0), (45.0, 8.0), (360.0 / 7.0, 9.0), (60.0, 8.0), (90.0, 8.0), (120.0, 8.0), (150.0, 10.0)]);
-    let found: Vec<_> = match_aspects(192.928202, 249.325729, &targets).collect();
+    let found = match_aspects(192.928202, 249.325729, &targets);
     assert_eq!(found.len(), 2);
-    assert_eq!(found[0].index, 2);
-    assert_eq!(found[1].index, 3);
-    assert_eq!(best_aspect(192.928202, 249.325729, &targets).unwrap().aspect.angle, 60.0);
+    // The septile (index 2) and the sextile (index 3) both match; the sextile is the better fit.
+    assert_eq!((found[0].target(), found[1].target()), (360.0 / 7.0, 60.0));
+    assert_eq!(best_aspect(192.928202, 249.325729, &targets).unwrap().target(), 60.0);
     // Across the 0° boundary, and angles above 180 fold back.
     assert!((separation(359.0, 10.0) - 11.0).abs() < 1e-12);
     assert!((separation(10.0, 359.0) - 11.0).abs() < 1e-12);
-    assert_eq!(AspectOrb::new(240.0, -3.0), AspectOrb { angle: 120.0, orb: 3.0 });
+    let folded = aspect_orb(240.0, -3.0);
+    assert_eq!((folded.target(), folded.orb()), (120.0, 3.0));
     assert!(best_aspect(0.0, 20.0, &targets).is_none());
 }
 
@@ -43,20 +44,20 @@ fn progressed_periods_agree_with_dense_sampling() {
     let lng = |s: &ChartSubject, body: Body, t: f64| {
         eph.calc_position(body, s.chart_jd(t, opts.year_days), s.geo, CoordSystem::Ecliptic, opts.perspective).unwrap().lng
     };
-    let dev = |p: &AspectPeriod, t: f64| (separation(lng(&a, p.body_a, t), lng(&b, p.body_b, t)) - p.aspect.angle).abs();
+    let dev = |p: &AspectPeriod, t: f64| (separation(lng(&a, p.body_a, t), lng(&b, p.body_b, t)) - p.aspect.target()).abs();
     let mut exact = 0;
     for p in &periods {
         for t in [p.enter_jd, p.leave_jd].into_iter().flatten() {
-            assert!((dev(p, t) - p.aspect.orb).abs() < 2e-5, "{p:?}");
+            assert!((dev(p, t) - p.aspect.orb()).abs() < 2e-5, "{p:?}");
         }
         for &t in &p.exact_jds {
             assert!(dev(p, t) < 2e-5, "{p:?}");
             exact += 1;
         }
         assert!((dev(p, p.min_orb_jd) - p.min_orb).abs() < 2e-5, "{p:?}");
-        assert!(p.min_orb <= p.aspect.orb + 1e-9);
+        assert!(p.min_orb <= p.aspect.orb() + 1e-9);
         let (s, e) = (p.enter_jd.unwrap_or(from), p.leave_jd.unwrap_or(to));
-        assert!(s <= p.min_orb_jd && p.min_orb_jd <= e && dev(p, 0.5 * (s + e)) <= p.aspect.orb);
+        assert!(s <= p.min_orb_jd && p.min_orb_jd <= e && dev(p, 0.5 * (s + e)) <= p.aspect.orb());
     }
     assert!(exact > 20);
 
@@ -75,7 +76,7 @@ fn progressed_periods_agree_with_dense_sampling() {
                     let covered = periods.iter().any(|p| {
                         p.body_a == ba
                             && p.body_b == bb
-                            && p.aspect == m.aspect
+                            && p.aspect.target() == m.target()
                             && p.enter_jd.unwrap_or(from) - 1e-3 <= t
                             && t <= p.leave_jd.unwrap_or(to) + 1e-3
                     });
@@ -103,7 +104,7 @@ fn natal_chart_stays_fixed_and_bad_ranges_are_rejected() {
     for p in &periods {
         for &t in &p.exact_jds {
             let venus = eph.calc_position(Body::Venus, a.chart_jd(t, opts.year_days), geo, CoordSystem::Ecliptic, Perspective::Geocentric).unwrap().lng;
-            assert!((separation(venus, mars) - p.aspect.angle).abs() < 2e-5);
+            assert!((separation(venus, mars) - p.aspect.target()).abs() < 2e-5);
         }
     }
     assert!(periods.iter().any(|p| !p.exact_jds.is_empty()));

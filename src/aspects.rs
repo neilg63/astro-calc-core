@@ -1,15 +1,21 @@
 //! Aspects between ecliptic longitudes, and the periods during which two charts are in
 //! aspect.
 //!
-//! The crate defines no aspects of its own. A client supplies the angles and orbs it cares
-//! about as [`AspectOrb`] values (or `(angle, orb)` pairs), so any harmonic can be used.
+//! No aspect matching is implemented here: it lives in the `aspect360` crate (re-exported as
+//! [`AspectOrb`] and [`AspectResult`]), which this module uses throughout. A client supplies
+//! the angles and orbs it cares about as `AspectOrb` values (or `(angle, orb)` pairs via
+//! [`aspect_orb`]/[`aspect_orbs`]), so any harmonic can be used.
 //!
 //! Two levels are offered:
 //! * instant tests on longitudes: [`separation`], [`match_aspects`], [`best_aspect`],
 //!   [`aspects_between`];
 //! * a search over time, [`Ephemeris::progressed_aspects`], which compares two people's
 //!   natal or secondary-progressed charts and returns when each aspect entered its orb,
-//!   became exact and left it.
+//!   became exact and left it. This part is specific to this crate's ephemeris and cannot
+//!   itself move into `aspect360`, which knows nothing of bodies or time.
+
+use aspect360::{Aspect360, ToRing360};
+pub use aspect360::{AspectOrb, AspectResult};
 
 use crate::body::Body;
 use crate::error::CalcError;
@@ -25,77 +31,41 @@ pub const TROPICAL_YEAR: f64 = 365.242_19;
 /// Times found by the period search are refined to this many days (about 9 seconds).
 const TIME_TOL: f64 = 1e-4;
 
-/// An aspect to look for: a target separation and the allowed deviation either side.
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AspectOrb {
-    /// Target separation in degrees, 0–180.
-    pub angle: f64,
-    /// Orb in degrees: the aspect holds while the separation is within `angle ± orb`.
-    pub orb: f64,
-}
-
-impl AspectOrb {
-    /// Any angle is folded into 0–180 (so 240 becomes 120); the orb's sign is ignored.
-    pub fn new(angle: f64, orb: f64) -> Self {
-        Self { angle: diff_deg(0.0, angle).abs(), orb: orb.abs() }
-    }
-}
-
-impl From<(f64, f64)> for AspectOrb {
-    fn from((angle, orb): (f64, f64)) -> Self {
-        Self::new(angle, orb)
-    }
+/// Builds an `aspect360::AspectOrb`, folding the angle into 0–180 (so 240 becomes 120) and
+/// taking the orb's absolute value.
+pub fn aspect_orb(angle: f64, orb: f64) -> AspectOrb {
+    AspectOrb(diff_deg(0.0, angle).abs(), orb.abs())
 }
 
 /// Converts `(angle, orb)` pairs into aspect definitions.
 pub fn aspect_orbs(pairs: &[(f64, f64)]) -> Vec<AspectOrb> {
-    pairs.iter().map(|&p| p.into()).collect()
+    pairs.iter().map(|&(angle, orb)| aspect_orb(angle, orb)).collect()
 }
 
 /// Shortest angular distance between two longitudes, 0–180 degrees.
 #[inline]
 pub fn separation(lng_a: f64, lng_b: f64) -> f64 {
-    diff_deg(lng_a, lng_b).abs()
-}
-
-/// One aspect found between two longitudes.
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AspectMatch {
-    /// The matched definition.
-    pub aspect: AspectOrb,
-    /// Its index in the list of definitions that was searched.
-    pub index: usize,
-    /// Actual separation, 0–180 degrees.
-    pub separation: f64,
-    /// `separation − aspect.angle`: negative when closer than the exact aspect.
-    pub deviation: f64,
+    lng_a.to_360().angle(lng_b.to_360()).abs()
 }
 
 /// All aspects from `targets` that the two longitudes make, in the order of `targets`.
-/// Several can match at once when orbs overlap. Does not allocate.
-pub fn match_aspects(lng_a: f64, lng_b: f64, targets: &[AspectOrb]) -> impl Iterator<Item = AspectMatch> + '_ {
-    let sep = separation(lng_a, lng_b);
-    targets.iter().enumerate().filter_map(move |(index, &aspect)| {
-        let deviation = sep - aspect.angle;
-        (deviation.abs() <= aspect.orb).then_some(AspectMatch { aspect, index, separation: sep, deviation })
-    })
+/// Several can match at once when orbs overlap.
+pub fn match_aspects(lng_a: f64, lng_b: f64, targets: &[AspectOrb]) -> Vec<AspectResult> {
+    lng_a.to_360().find_aspects(&lng_b.to_360(), targets)
 }
 
-/// The matching aspect with the smallest deviation, if any.
-pub fn best_aspect(lng_a: f64, lng_b: f64, targets: &[AspectOrb]) -> Option<AspectMatch> {
-    match_aspects(lng_a, lng_b, targets).min_by(|x, y| x.deviation.abs().total_cmp(&y.deviation.abs()))
+/// The matching aspect with the smallest divergence, if any.
+pub fn best_aspect(lng_a: f64, lng_b: f64, targets: &[AspectOrb]) -> Option<AspectResult> {
+    lng_a.to_360().find_best_aspect(&lng_b.to_360(), targets)
 }
 
 /// An aspect between a body of one chart and a body of another at one moment.
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+// Not `PartialEq`/`Serialize`: `aspect360::AspectResult` (0.1.x) derives neither.
+#[derive(Debug, Clone, Copy)]
 pub struct BodyAspect {
     pub body_a: Body,
     pub body_b: Body,
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub matched: AspectMatch,
+    pub matched: AspectResult,
 }
 
 /// Every aspect between each position in `a` and each in `b` (by `lng`). Pass the same slice
@@ -105,7 +75,7 @@ pub fn aspects_between(a: &[BodyPos], b: &[BodyPos], targets: &[AspectOrb]) -> V
     let mut out = Vec::new();
     for pa in a {
         for pb in b {
-            out.extend(match_aspects(pa.lng, pb.lng, targets).map(|matched| BodyAspect { body_a: pa.body, body_b: pb.body, matched }));
+            out.extend(match_aspects(pa.lng, pb.lng, targets).into_iter().map(|matched| BodyAspect { body_a: pa.body, body_b: pb.body, matched }));
         }
     }
     out
@@ -172,8 +142,8 @@ impl Default for ProgressionOptions {
 
 /// A stretch of time during which a body of chart A is in aspect to a body of chart B.
 /// Times are real (calendar) UT Julian Days, not progressed ones.
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+// Not `PartialEq`/`Serialize`: `aspect360::AspectOrb` (0.1.x) derives neither.
+#[derive(Debug, Clone)]
 pub struct AspectPeriod {
     pub body_a: Body,
     pub body_b: Body,
@@ -382,16 +352,17 @@ impl Ephemeris {
         for (ia, &body_a) in bodies_a.iter().enumerate() {
             for (ib, &body_b) in bodies_b.iter().enumerate() {
                 for &aspect in targets {
-                    // B may stand `angle` ahead of A or behind it: two separate alignments,
+                    let target = aspect.target();
+                    // B may stand `target` ahead of A or behind it: two separate alignments,
                     // which coincide for the conjunction and the opposition.
-                    let one_sided = aspect.angle < 1e-9 || aspect.angle > 180.0 - 1e-9;
-                    let offsets = [aspect.angle, -aspect.angle];
+                    let one_sided = target < 1e-9 || target > 180.0 - 1e-9;
+                    let offsets = [target, -target];
                     for &offset in &offsets[..if one_sided { 1 } else { 2 }] {
                         for (i, v) in hs.iter_mut().enumerate() {
                             *v = diff_deg(offset, grid_a[i][ia] - grid_b[i][ib]);
                         }
                         let h = |t: f64| Ok(diff_deg(offset, lng(a, body_a, t)? - lng(b, body_b, t)?));
-                        for p in scan(&times, &hs, aspect.orb, &h)? {
+                        for p in scan(&times, &hs, aspect.orb(), &h)? {
                             out.push(AspectPeriod {
                                 body_a,
                                 body_b,
