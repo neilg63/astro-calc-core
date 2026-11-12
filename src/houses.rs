@@ -80,10 +80,13 @@ pub enum HouseSystem {
     Meridian,
     /// `H`: horizon (azimuthal) houses.
     Horizontal,
+    /// `U`: Krusinski-Pisa-Goelzer; the great circle through the ascendant and the zenith
+    /// divided into 30° arcs, projected onto the ecliptic along meridians.
+    Krusinski,
 }
 
 impl HouseSystem {
-    pub const ALL: [HouseSystem; 13] = [
+    pub const ALL: [HouseSystem; 14] = [
         HouseSystem::WholeSign,
         HouseSystem::Equal,
         HouseSystem::Vehlow,
@@ -97,6 +100,7 @@ impl HouseSystem {
         HouseSystem::Morinus,
         HouseSystem::Meridian,
         HouseSystem::Horizontal,
+        HouseSystem::Krusinski,
     ];
 
     /// Conventional one-letter code.
@@ -115,6 +119,7 @@ impl HouseSystem {
             HouseSystem::Morinus => 'M',
             HouseSystem::Meridian => 'X',
             HouseSystem::Horizontal => 'H',
+            HouseSystem::Krusinski => 'U',
         }
     }
 
@@ -133,6 +138,7 @@ impl HouseSystem {
             'M' => HouseSystem::Morinus,
             'X' => HouseSystem::Meridian,
             'H' => HouseSystem::Horizontal,
+            'U' => HouseSystem::Krusinski,
             _ => return None,
         })
     }
@@ -152,6 +158,7 @@ impl HouseSystem {
             HouseSystem::Morinus => "Morinus",
             HouseSystem::Meridian => "Meridian (Axial Rotation)",
             HouseSystem::Horizontal => "Horizontal (Azimuthal)",
+            HouseSystem::Krusinski => "Krusinski-Pisa-Goelzer",
         }
     }
 }
@@ -375,6 +382,7 @@ impl Sky {
                 c
             }
             HouseSystem::Horizontal => self.horizontal(),
+            HouseSystem::Krusinski => self.krusinski(asc),
         };
         let mut cusps = cusps;
         // Beyond the polar circles, when the ascendant had to be moved to the eastern side, the
@@ -420,6 +428,26 @@ impl Sky {
                 d = crate::math::scale(d, -1.0);
             }
             norm_deg((d[1] * ce + d[2] * se).atan2(d[0]).to_degrees())
+        })
+    }
+
+    /// Krusinski-Pisa-Goelzer houses (B. Krusinski, 1995): the great circle through the
+    /// ascendant and the zenith is divided into twelve 30° arcs starting at the ascendant,
+    /// and each division point is carried to the ecliptic along its meridian (the great
+    /// circle through the celestial poles). The zenith and nadir fall on the 10th and 4th
+    /// cusps, which are therefore the MC and IC.
+    fn krusinski(&self, asc: f64) -> [f64; 12] {
+        let (sl, cl) = self.ramc.sin_cos();
+        let (sp, cp) = self.phi.sin_cos();
+        let up = [cp * cl, cp * sl, sp];
+        let (se, ce) = self.eps.sin_cos();
+        let (sa, ca) = asc.to_radians().sin_cos();
+        let east = [ca, sa * ce, sa * se];
+        std::array::from_fn(|i| {
+            // Houses are numbered against the diurnal motion: downwards from the ascendant.
+            let (st, ct) = (-(i as f64) * PI / 6.0).sin_cos();
+            let p = [0, 1, 2].map(|j| ct * east[j] + st * up[j]);
+            self.lng_from_ra(p[1].atan2(p[0]))
         })
     }
 

@@ -124,6 +124,13 @@ pub(crate) fn radius_km(body: Body) -> f64 {
         Body::Uranus => 25_559.0,
         Body::Neptune => 24_764.0,
         Body::Pluto => 1_188.3,
+        // Mean radii from the JPL Small-Body Database.
+        Body::Ceres => 469.7,
+        Body::Pallas => 256.5,
+        Body::Juno => 123.3,
+        Body::Vesta => 261.4,
+        Body::Chiron => 83.0,
+        Body::Pholus => 95.0,
         _ => 0.0,
     }
 }

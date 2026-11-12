@@ -29,6 +29,12 @@ pub const SPEED_STEP: f64 = 0.001;
 
 const NAIF_SUN: i32 = 10;
 const NAIF_EARTH: i32 = 399;
+/// GM of the Earth plus the Moon in AU³/day² (DE440: 398 600.435 507 + 4 902.800 118 km³/s²).
+const GM_EARTH_MOON: f64 = 403_503.235_625 * 86_400.0 * 86_400.0 / (AU_KM * AU_KM * AU_KM);
+/// Mean inclination of the lunar orbit to the ecliptic, degrees.
+const MEAN_LUNAR_INCLINATION: f64 = 5.145_396_4;
+/// Mean apogee distance of the Moon, a(1 + e) with a = 384 400 km and e = 0.0549, in AU.
+const MEAN_LUNAR_APOGEE_AU: f64 = 405_504.0 / AU_KM;
 
 /// Output coordinate system.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -241,6 +247,19 @@ impl Frame {
         lng.to_degrees()
     }
 
+    /// ICRS vector → true ecliptic and equinox of date.
+    fn to_ecl(&self, x: Vec3) -> Vec3 {
+        let u = mat_vec(&self.eo.npb, x);
+        let (s, c) = self.eo.eps_true.sin_cos();
+        [u[0], c * u[1] + s * u[2], -s * u[1] + c * u[2]]
+    }
+
+    /// True ecliptic of date → true equator of date.
+    fn ecl_to_equ(&self, e: Vec3) -> Vec3 {
+        let (s, c) = self.eo.eps_true.sin_cos();
+        [e[0], c * e[1] - s * e[2], s * e[1] + c * e[2]]
+    }
+
     /// Ecliptic longitude (degrees, true ecliptic and equinox of date) of a lunar node.
     fn node_lng(&self, eph: &Ephemeris, kind: Source) -> Result<f64, CalcError> {
         Ok(match kind {
@@ -249,15 +268,92 @@ impl Frame {
                 // Osculating node: direction of k × h for the geometric geocentric lunar orbit,
                 // h = r × v, in the true ecliptic of date.
                 let (r, v) = eph.relative(301, NAIF_EARTH, self.tdb)?;
-                let to_ecl = |x: Vec3| {
-                    let u = mat_vec(&self.eo.npb, x);
-                    let (s, c) = self.eo.eps_true.sin_cos();
-                    [u[0], c * u[1] + s * u[2], -s * u[1] + c * u[2]]
-                };
-                let h = cross(to_ecl(r), to_ecl(v));
+                let h = cross(self.to_ecl(r), self.to_ecl(v));
                 h[0].atan2(-h[1]).to_degrees()
             }
         })
+    }
+
+    /// A lunar apsis as a vector (AU) in the true ecliptic of date.
+    fn apsis(&self, eph: &Ephemeris, kind: Apsis) -> Result<Vec3, CalcError> {
+        match kind {
+            Apsis::MeanApogee => {
+                // The mean orbit: mean node, mean inclination, mean perigee + 180°.
+                let node = crate::models::mean_lunar_node(self.tt).to_radians();
+                let arg = (crate::models::mean_lunar_perigee(self.tt) + 180.0).to_radians() - node;
+                let (si, ci) = MEAN_LUNAR_INCLINATION.to_radians().sin_cos();
+                let lng = node + (ci * arg.sin()).atan2(arg.cos()) + self.eo.dpsi;
+                let lat = (si * arg.sin()).asin();
+                Ok(scale([lat.cos() * lng.cos(), lat.cos() * lng.sin(), lat.sin()], MEAN_LUNAR_APOGEE_AU))
+            }
+            Apsis::OscuApogee => {
+                // Apogee of the two-body ellipse that fits the Moon's geometric geocentric
+                // position and velocity at this instant: opposite the eccentricity vector.
+                let (r, v) = eph.relative(301, NAIF_EARTH, self.tdb)?;
+                let (r, v) = (self.to_ecl(r), self.to_ecl(v));
+                let rn = norm(r);
+                let ev = sub(scale(cross(v, cross(r, v)), 1.0 / GM_EARTH_MOON), scale(r, 1.0 / rn));
+                let e = norm(ev);
+                let a = 1.0 / (2.0 / rn - dot(v, v) / GM_EARTH_MOON);
+                Ok(scale(ev, -a * (1.0 + e) / e))
+            }
+            Apsis::IntpApogee | Apsis::IntpPerigee => self.interpolated_apsis(eph, kind == Apsis::IntpApogee),
+        }
+    }
+
+    /// The Moon's actual apogees (or perigees) joined into a continuous curve.
+    ///
+    /// The Moon is at its greatest (least) distance once per anomalistic month. Its position
+    /// at each of those moments is a real apsis. Between them the apsis is taken from a cubic
+    /// through the four nearest ones, interpolating the offset from the mean apogee
+    /// (perigee) in longitude, the latitude and the distance.
+    fn interpolated_apsis(&self, eph: &Ephemeris, apogee: bool) -> Result<Vec3, CalcError> {
+        const ANOMALISTIC_MONTH: f64 = 27.554_549_9;
+        let mean_lng = |tt: f64| crate::models::mean_lunar_perigee(tt) + if apogee { 180.0 } else { 0.0 };
+        let radial = |t: f64| eph.relative(301, NAIF_EARTH, t).map(|(r, v)| dot(r, v));
+        // Position of the mean cycle: whole numbers are mean apogees (perigees).
+        let phase = (crate::models::mean_lunar_anomaly(self.tt) - if apogee { 180.0 } else { 0.0 }) / 360.0;
+        let base = phase.floor();
+        let mut events: Vec<(f64, f64, f64, f64)> = Vec::with_capacity(6);
+        for j in -2..=3 {
+            let guess = self.tdb - (phase - base - j as f64) * ANOMALISTIC_MONTH;
+            // The radial velocity falls through zero at an apogee and rises through it at a perigee.
+            let (mut a, mut b) = (guess - 5.0, guess + 5.0);
+            let before = radial(a)? > 0.0;
+            if before != apogee || (radial(b)? > 0.0) == before {
+                continue;
+            }
+            while b - a > 1e-7 {
+                let m = 0.5 * (a + b);
+                if (radial(m)? > 0.0) == before {
+                    a = m;
+                } else {
+                    b = m;
+                }
+            }
+            let t = 0.5 * (a + b);
+            let p = self.to_ecl(eph.relative(301, NAIF_EARTH, t)?.0);
+            let (lng, lat) = to_spherical(p);
+            events.push((t, crate::math::diff_deg(mean_lng(t), lng.to_degrees()), lat, norm(p)));
+        }
+        if events.len() < 4 {
+            return Err(CalcError::Ephem(crate::error::EphemError::NoData { target: 301, jd: self.tdb }));
+        }
+        // The four events nearest in time, two either side where possible.
+        let after = events.partition_point(|e| e.0 <= self.tdb);
+        let first = after.saturating_sub(2).min(events.len() - 4);
+        let pts = &events[first..first + 4];
+        let lagrange = |pick: fn(&(f64, f64, f64, f64)) -> f64| {
+            (0..4)
+                .map(|i| {
+                    let w: f64 = (0..4).filter(|&k| k != i).map(|k| (self.tdb - pts[k].0) / (pts[i].0 - pts[k].0)).product();
+                    w * pick(&pts[i])
+                })
+                .sum::<f64>()
+        };
+        let lng = (mean_lng(self.tt) + lagrange(|e| e.1)).to_radians();
+        let (lat, dist) = (lagrange(|e| e.2), lagrange(|e| e.3));
+        Ok(scale([lat.cos() * lng.cos(), lat.cos() * lng.sin(), lat.sin()], dist))
     }
 
     /// Apparent direction in the true equator of date (unit vector) and distance (AU; 0 for
@@ -270,6 +366,24 @@ impl Frame {
                 let (s, c) = self.eo.eps_true.sin_cos();
                 let (sl, cl) = l.sin_cos();
                 ([cl, c * sl, s * sl], 0.0)
+            }
+            Source::Kepler(el) => {
+                // A heliocentric orbit, treated like a real body: light-time, deflection and
+                // aberration all apply.
+                let mut tau = 0.0;
+                let mut p = [0.0; 3];
+                let mut bary = [0.0; 3];
+                for _ in 0..3 {
+                    bary = add(el.heliocentric(self.tt - tau), eph.barycentric(NAIF_SUN, self.tdb - tau)?.0);
+                    p = sub(bary, self.obs_pos);
+                    tau = norm(p) / C_AU_DAY;
+                }
+                let dir = self.aberrate(self.deflect(unit(p), unit(sub(bary, self.sun_pos))));
+                (mat_vec(&self.eo.npb, dir), norm(p))
+            }
+            Source::Apsis(kind) => {
+                let p = self.ecl_to_equ(self.apsis(eph, kind)?);
+                (unit(p), norm(p))
             }
         };
         Ok((if opposite { scale(u, -1.0) } else { u }, dist))
@@ -317,11 +431,22 @@ pub fn equatorial_to_horizontal(hour_angle: f64, dec: f64, lat: f64) -> (f64, f6
 }
 
 /// Where a body's position comes from.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 enum Source {
     Naif(i32),
     MeanNode,
     TrueNode,
+    Apsis(Apsis),
+    Kepler(crate::hypothetical::OrbitalElements),
+}
+
+/// The lunar apsides offered as bodies.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Apsis {
+    MeanApogee,
+    OscuApogee,
+    IntpApogee,
+    IntpPerigee,
 }
 
 /// Data source for a body and whether to take the diametrically opposite point.
@@ -331,7 +456,14 @@ fn source(body: Body) -> Option<(Source, bool)> {
         Body::MeanSouthNode => (Source::MeanNode, true),
         Body::TrueNode => (Source::TrueNode, false),
         Body::SouthNode => (Source::TrueNode, true),
-        b => (Source::Naif(naif_id(b)?), false),
+        Body::MeanApogee => (Source::Apsis(Apsis::MeanApogee), false),
+        Body::OscuApogee => (Source::Apsis(Apsis::OscuApogee), false),
+        Body::IntpApogee => (Source::Apsis(Apsis::IntpApogee), false),
+        Body::IntpPerigee => (Source::Apsis(Apsis::IntpPerigee), false),
+        b => match crate::hypothetical::elements(b) {
+            Some(el) => (Source::Kepler(el), false),
+            None => (Source::Naif(naif_id(b)?), false),
+        },
     })
 }
 

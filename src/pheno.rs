@@ -5,7 +5,8 @@
 //! resulting Sun–body–Earth triangle. Magnitudes follow the *Astronomical Almanac* phase laws:
 //! Hilton (2005) for Mercury and Venus, Harris (1961) for Mars–Pluto, Allen's law for the Moon,
 //! and the ring term of Meeus, *Astronomical Algorithms* ch. 45, for Saturn. They reproduce the
-//! AstroCalc reference API to 0.001 mag (Saturn to about 0.03 mag).
+//! AstroCalc reference API to 0.001 mag (Saturn to about 0.03 mag). Minor bodies use the IAU
+//! H–G system with parameters from the JPL Small-Body Database.
 //!
 //! Disc sizes use current IAU radii, so they differ from the reference API where its radii
 //! are outdated (most visibly Pluto).
@@ -110,7 +111,34 @@ fn magnitude(body: Body, alpha: f64, r: f64, delta: f64, ring_tilt_sin: f64) -> 
         Body::Uranus => -7.19 + dist_term,
         Body::Neptune => -6.87 + dist_term,
         Body::Pluto => -1.00 + dist_term,
-        // Asteroids: H, G would be needed; report the geometric term only with H = 0 unknown.
-        _ => f64::NAN,
+        other => match hg_parameters(other) {
+            Some((h, g)) => hg_magnitude(h, g, alpha, r, delta),
+            None => f64::NAN,
+        },
     }
+}
+
+/// Absolute magnitude H and slope parameter G of the built-in minor bodies, from the JPL
+/// Small-Body Database. Chiron and Pholus have no published G; the standard 0.15 is assumed.
+pub const fn hg_parameters(body: Body) -> Option<(f64, f64)> {
+    Some(match body {
+        Body::Ceres => (3.34, 0.12),
+        Body::Pallas => (4.12, 0.11),
+        Body::Juno => (5.19, 0.32),
+        Body::Vesta => (3.25, 0.32),
+        Body::Chiron => (5.54, 0.15),
+        Body::Pholus => (7.07, 0.15),
+        _ => return None,
+    })
+}
+
+/// Apparent visual magnitude of a minor body in the IAU H–G system (Bowell et al. 1989):
+/// absolute magnitude `h`, slope parameter `g`, phase angle in degrees, and the distances
+/// from the Sun and from the observer in AU. Use it with catalogue values for bodies that
+/// are not built in.
+pub fn hg_magnitude(h: f64, g: f64, phase_angle: f64, helio_dist: f64, dist: f64) -> f64 {
+    let t = (phase_angle.to_radians() / 2.0).tan().abs();
+    let phi1 = (-3.33 * t.powf(0.63)).exp();
+    let phi2 = (-1.87 * t.powf(1.22)).exp();
+    h + 5.0 * (helio_dist * dist).log10() - 2.5 * ((1.0 - g) * phi1 + g * phi2).log10()
 }

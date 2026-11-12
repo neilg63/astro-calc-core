@@ -163,6 +163,20 @@ pub fn mean_lunar_node(jd_tt: f64) -> f64 {
     125.044_547_9 - 1_934.136_289_1 * t + 0.002_075_4 * t * t + t * t * t / 467_441.0 - t.powi(4) / 60_616_000.0
 }
 
+/// Mean longitude of the Moon's perigee on the mean ecliptic of date, measured along the
+/// ecliptic to the node and then along the orbit (Chapront et al., as given in Meeus,
+/// Astronomical Algorithms 2nd ed. ch. 50), degrees.
+pub fn mean_lunar_perigee(jd_tt: f64) -> f64 {
+    let t = centuries(jd_tt);
+    83.353_246_5 + 4_069.013_728_7 * t - 0.010_32 * t * t - t * t * t / 80_053.0 + t.powi(4) / 18_999_000.0
+}
+
+/// Mean anomaly of the Moon (Meeus ch. 47), degrees.
+pub fn mean_lunar_anomaly(jd_tt: f64) -> f64 {
+    let t = centuries(jd_tt);
+    134.963_396_4 + 477_198.867_505_5 * t + 0.008_741_4 * t * t + t * t * t / 69_699.0 - t.powi(4) / 14_712_000.0
+}
+
 /// Nutation in longitude and obliquity, IAU 2000B (radians).
 pub fn nutation(jd_tt: f64) -> (f64, f64) {
     use nut00b_table::NUT00B;
