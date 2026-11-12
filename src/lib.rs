@@ -33,6 +33,8 @@ pub mod pheno;
 pub mod position;
 pub mod rise_set;
 pub mod spk;
+mod star_table;
+pub mod stars;
 pub mod station_table;
 pub mod time;
 
@@ -54,6 +56,7 @@ pub use pheno::{Phenomena, hg_magnitude, hg_parameters};
 pub use position::{BodyJdPos, BodyPos, BodyPosSet, CoordSystem, Perspective};
 pub use rise_set::{DayTransits, DiscAlignment, RiseSetOptions, TransitEvent, local_day_start};
 pub use spk::Ephemeris;
+pub use stars::{Star, named_stars, star_by_hip, star_by_name};
 pub use station_table::StationTable;
 pub use time::{J2000, JdTt, JdUt};
 

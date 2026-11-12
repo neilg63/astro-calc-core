@@ -28,6 +28,13 @@ strings such as `1990-08-23T12` are accepted by wrapper methods and converted on
 - Sun, Moon, Mercury to Pluto and the Earth, plus Ceres, Pallas, Juno, Vesta, Chiron and
   Pholus when their data files are present.
 - Mean and true lunar nodes.
+- Lunar apogee: mean and osculating (Black Moon Lilith), plus the interpolated apogee and
+  perigee.
+- Fixed stars: the 410 stars with an IAU-approved name and a Hipparcos number, addressed
+  by name or as `hip:65474`, with proper motion and parallax. Other stars can be supplied
+  from catalogue data.
+- Hypothetical bodies from Keplerian elements: the eight Uranian points (Cupido to
+  Poseidon) and Isis-Transpluto. `OrbitalElements` is public for defining others.
 - Geocentric or topocentric; ecliptic, equatorial or horizontal coordinates.
 - Longitude, latitude, distance and their daily speeds.
 - Bulk methods: many bodies at one time, or many bodies over a series of times.
@@ -36,7 +43,8 @@ strings such as `1990-08-23T12` are accepted by wrapper methods and converted on
 
 - Ascendant, MC, ARMC, vertex, equatorial ascendant, co-ascendants and polar ascendant.
 - House systems: Whole Sign, Equal, Vehlow, Porphyry, Placidus, Koch, Alcabitius, Campanus,
-  Regiomontanus, Topocentric (Polich/Page), Morinus, Meridian and Horizontal.
+  Regiomontanus, Topocentric (Polich/Page), Morinus, Meridian, Horizontal and
+  Krusinski-Pisa-Goelzer.
 
 **Ayanamshas**
 
@@ -77,6 +85,8 @@ strings such as `1990-08-23T12` are accepted by wrapper methods and converted on
 **Phenomena**
 
 - Phase angle, illuminated fraction, elongation, apparent diameter and magnitude.
+- Minor bodies use the IAU H–G magnitude system; `hg_magnitude` accepts catalogue values
+  for bodies that are not built in.
 
 **Design**
 
@@ -141,22 +151,44 @@ The date range the library supports is the range of the files loaded.
 | IERS Conventions (2010) | Earth orientation models |
 | US Naval Observatory ΔT tables | Difference between Terrestrial Time and Universal Time |
 | Morrison & Stephenson (2004) | Long-term ΔT outside the observed range |
-| Hipparcos, the New Reduction (van Leeuwen 2007), via NASA HEASARC | Star positions for star-based ayanamshas |
+| Hipparcos, the New Reduction (van Leeuwen 2007), via NASA HEASARC | Star positions, proper motions and parallaxes |
+| [IAU Catalog of Star Names](https://www.iau.org/public/themes/naming_stars/) (IAU Working Group on Star Names) | Star names and visual magnitudes |
 | Reid & Brunthaler (2004) | Position of the Galactic Centre (Sgr A*) |
 | Hilton (2005); Harris (1961); Meeus, *Astronomical Algorithms* ch. 45 | Planetary magnitudes and Saturn's rings |
+| [JPL Small-Body Database](https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html); Bowell et al. (1989) | Asteroid H and G values, radii and the H–G magnitude law |
+| Chapront et al., as given in Meeus ch. 47 and 50 | Mean lunar node, perigee and anomaly |
+| Neely (1988) | Orbital elements of the Uranian points |
+| Krusinski (1995) | The Krusinski-Pisa-Goelzer house system |
 | *Explanatory Supplement to the Astronomical Almanac*, 3rd ed. | The apparent-position pipeline |
 | Holden, *The Elements of House Division*; Meeus, *Astronomical Algorithms* | House systems and general reference |
 
 Licence terms for the transcribed tables and formulae are in [NOTICE](NOTICE).
 
+## Known limits of the newer features
+
+- The interpolated lunar apogee and perigee follow this library's own construction (a curve
+  through the Moon's actual apsides). Other publishers construct theirs differently, so
+  values between apsides will not agree exactly.
+- Of the hypothetical bodies, Kronos and Isis have been checked against an independent
+  reference. The other seven use the same method with published elements but have not been
+  independently checked.
+- The Krusinski house system has been tested for its defining properties only.
+
 ## Not yet implemented
 
-- Lunar apogee and perigee points.
-- Hypothetical bodies and fixed stars as positions.
-- The Krusinski house system.
-- Magnitudes for asteroids.
 - Parallel bulk calculation and async wrappers.
 - Viewpoints other than the Earth (heliocentric or from another planet).
+
+## Examples
+
+```bash
+cargo run --release --example positions
+```
+
+`positions` is a quick start. `timing` and `stations_timing` report speeds, and
+`build_station_table` generates the station table file. The other examples and the Python
+scripts in `tools/` are maintenance aids: they regenerate test fixtures and data, and are
+not part of the published crate.
 
 ## Tests
 

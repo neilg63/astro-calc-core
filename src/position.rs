@@ -367,6 +367,24 @@ impl Frame {
                 let (sl, cl) = l.sin_cos();
                 ([cl, c * sl, s * sl], 0.0)
             }
+            Source::Star(star) => {
+                // Catalogue direction carried forward by proper motion, then shifted by
+                // annual parallax, bent by the Sun and aberrated like any other source.
+                let years = (self.tt - crate::stars::HIPPARCOS_EPOCH_JD) / 365.25;
+                let (sa, ca) = star.ra.to_radians().sin_cos();
+                let (sd, cd) = star.dec.to_radians().sin_cos();
+                let mas = (1.0f64 / 3.6e6).to_radians();
+                let (ma, md) = (star.pm_ra * mas * years, star.pm_dec * mas * years);
+                let east = [-sa, ca, 0.0];
+                let north = [-sd * ca, -sd * sa, cd];
+                let mut p = [0, 1, 2].map(|i| [cd * ca, cd * sa, sd][i] + ma * east[i] + md * north[i]);
+                if star.parallax > 0.0 {
+                    p = sub(unit(p), scale(self.obs_pos, star.parallax * mas));
+                }
+                let dir = unit(p);
+                let dir = self.aberrate(self.deflect(dir, dir));
+                (mat_vec(&self.eo.npb, dir), star.distance_au())
+            }
             Source::Kepler(el) => {
                 // A heliocentric orbit, treated like a real body: light-time, deflection and
                 // aberration all apply.
@@ -438,6 +456,7 @@ enum Source {
     TrueNode,
     Apsis(Apsis),
     Kepler(crate::hypothetical::OrbitalElements),
+    Star(crate::stars::Star),
 }
 
 /// The lunar apsides offered as bodies.
@@ -460,9 +479,10 @@ fn source(body: Body) -> Option<(Source, bool)> {
         Body::OscuApogee => (Source::Apsis(Apsis::OscuApogee), false),
         Body::IntpApogee => (Source::Apsis(Apsis::IntpApogee), false),
         Body::IntpPerigee => (Source::Apsis(Apsis::IntpPerigee), false),
-        b => match crate::hypothetical::elements(b) {
-            Some(el) => (Source::Kepler(el), false),
-            None => (Source::Naif(naif_id(b)?), false),
+        b => match (crate::hypothetical::elements(b), crate::stars::star_of(b)) {
+            (Some(el), _) => (Source::Kepler(el), false),
+            (_, Some(star)) => (Source::Star(*star), false),
+            _ => (Source::Naif(naif_id(b)?), false),
         },
     })
 }
@@ -481,6 +501,10 @@ impl FrameTriple {
 
     fn body_pos(&self, eph: &Ephemeris, body: Body, cs: CoordSystem) -> Result<BodyPos, CalcError> {
         let (src, opp) = source(body).ok_or(CalcError::UnsupportedBody(body))?;
+        self.source_pos(eph, body, src, opp, cs)
+    }
+
+    fn source_pos(&self, eph: &Ephemeris, body: Body, src: Source, opp: bool, cs: CoordSystem) -> Result<BodyPos, CalcError> {
         let [a, m, b] = &self.0;
         let (l0, b0, d0) = a.coords(eph, src, opp, cs)?;
         let (l1, b1, d1) = m.coords(eph, src, opp, cs)?;
@@ -519,6 +543,21 @@ impl Ephemeris {
     ) -> Result<BodyPos, CalcError> {
         let frames = FrameTriple::new(self, jd.into().value(), &geo, perspective)?;
         frames.body_pos(self, body, cs)
+    }
+
+    /// Apparent position of a star from catalogue data supplied by the caller, for stars
+    /// that are not in the built-in table. The data must be ICRS at epoch J1991.25, as in
+    /// the Hipparcos catalogue.
+    pub fn calc_star_position(
+        &self,
+        star: &crate::stars::Star,
+        jd: impl Into<JdUt>,
+        geo: GeoPos,
+        cs: CoordSystem,
+        perspective: Perspective,
+    ) -> Result<BodyPos, CalcError> {
+        let frames = FrameTriple::new(self, jd.into().value(), &geo, perspective)?;
+        frames.source_pos(self, star.body(), Source::Star(*star), false, cs)
     }
 
     /// Apparent positions of several bodies at one time. Time-dependent quantities are computed

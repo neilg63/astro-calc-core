@@ -7,6 +7,19 @@ license = "MIT OR Apache-2.0"
 authors = ["Neil Gardner"]
 readme = "README.md"
 repository = "https://github.com/neilg63/astro-calc-core"
+# The published crate holds the library and its user-facing examples: no tools, test
+# fixtures or diagnostic examples.
+include = [
+    "/src/**",
+    "/examples/positions.rs",
+    "/examples/timing.rs",
+    "/examples/stations_timing.rs",
+    "/examples/build_station_table.rs",
+    "/README.md",
+    "/LICENSE-MIT",
+    "/LICENSE-APACHE",
+    "/NOTICE",
+]
 
 [features]
 default = ["mmap"]
