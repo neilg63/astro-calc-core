@@ -68,6 +68,10 @@ pub enum CalcError {
     Ephem(#[from] EphemError),
     #[error("body not supported yet: {0}")]
     UnsupportedBody(crate::Body),
+    #[error("{body} cannot be observed from the {perspective:?} perspective")]
+    NotVisibleFrom { body: crate::Body, perspective: crate::Perspective },
+    #[error("horizontal coordinates need an observer on the Earth, not the {0:?} perspective")]
+    NoHorizon(crate::Perspective),
     #[error("invalid sampling: days {days}, interval {interval}")]
     InvalidInterval { days: f64, interval: f64 },
 }

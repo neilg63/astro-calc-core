@@ -34,7 +34,7 @@ fn progressed_periods_agree_with_dense_sampling() {
     let Some(eph) = eph() else { return };
     let a = ChartSubject::progressed(JdUt::from_iso("1975-03-21T08:30:00").unwrap(), GeoPos::new(56.1, -3.6, 0.0).unwrap());
     let b = ChartSubject::progressed(JdUt::from_iso("1978-11-02T19:15:00").unwrap(), GeoPos::new(48.85, 2.35, 0.0).unwrap());
-    let bodies: Vec<Body> = Body::CORE.to_vec();
+    let bodies: Vec<Body> = parse_body_list("su,mo,me,ve,ma,ju,sa,ur,ne,pl,ra").unwrap();
     let targets = targets();
     let opts = ProgressionOptions::default();
     let (from, to) = (b.birth.value(), b.birth.value() + 80.0 * TROPICAL_YEAR);

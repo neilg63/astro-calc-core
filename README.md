@@ -27,7 +27,11 @@ strings such as `1990-08-23T12` are accepted by wrapper methods and converted on
 
 - Sun, Moon, Mercury to Pluto and the Earth, plus Ceres, Pallas, Juno, Vesta, Chiron and
   Pholus when their data files are present.
-- Mean and true lunar nodes.
+- Mean and true lunar nodes. Ketu is derived from Rahu when both are asked for.
+- The ascendant as a body (`as`), so it can be listed with the planets.
+- Body sets: `default` (ascendant, Sun to Pluto, Ketu, Rahu) and `basic` (the same without
+  Uranus, Neptune and Pluto), adapted automatically to the perspective.
+- Longitude-only methods, tropical or sidereal, about twice as fast as full positions.
 - Lunar apogee: mean and osculating (Black Moon Lilith), plus the interpolated apogee and
   perigee.
 - Fixed stars: the 410 stars with an IAU-approved name and a Hipparcos number, addressed
@@ -35,7 +39,15 @@ strings such as `1990-08-23T12` are accepted by wrapper methods and converted on
   from catalogue data.
 - Hypothetical bodies from Keplerian elements: the eight Uranian points (Cupido to
   Poseidon) and Isis-Transpluto. `OrbitalElements` is public for defining others.
-- Geocentric or topocentric; ecliptic, equatorial or horizontal coordinates.
+- Ecliptic, equatorial or horizontal coordinates, with fields named after the system:
+  `lng`/`lat` (`BodyPos`), `ras`/`dcl` (`BodyPosEqu`) or `azi`/`alt` (`BodyPosHor`), and
+  `BodyPosExt` for all three from a single calculation. A shared `BodyPosition` trait
+  reads any of them through `lng()`, `lat()`, their speeds and `dist()`.
+- Eleven perspectives: geocentric, topocentric, heliocentric, selenocentric (Moon),
+  hermeocentric (Mercury), cytherocentric (Venus), areocentric (Mars), jovicentric
+  (Jupiter), cronocentric (Saturn), barycentric, and Local Space (azimuth and altitude on
+  the observer's horizon). From other centres the Earth becomes a body, and coordinates
+  stay on the Earth's ecliptic or equator of date.
 - Longitude, latitude, distance and their daily speeds.
 - Bulk methods: many bodies at one time, or many bodies over a series of times.
 
@@ -56,7 +68,12 @@ strings such as `1990-08-23T12` are accepted by wrapper methods and converted on
 **Rise, set and transit**
 
 - Rise, set, upper and lower meridian transit for any supported body.
-- Options for disc centre or limb, refraction, and a fixed disc size.
+- Disc alignment (upper limb, centre or lower limb), with the actual or a fixed disc size.
+- Refraction on, off, or scaled for a given air pressure and temperature.
+- Civil, nautical and astronomical twilight.
+- A raised or lowered horizon, and the dip of the horizon for an elevated observer.
+- Geocentric positions and bodies projected onto the ecliptic, including the traditional
+  Hindu rising.
 
 **Planetary stations**
 
@@ -177,7 +194,6 @@ Licence terms for the transcribed tables and formulae are in [NOTICE](NOTICE).
 ## Not yet implemented
 
 - Parallel bulk calculation and async wrappers.
-- Viewpoints other than the Earth (heliocentric or from another planet).
 
 ## Examples
 

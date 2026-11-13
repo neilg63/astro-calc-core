@@ -118,7 +118,7 @@ fn legacy_mode_mapping() {
     use DiscAlignment::*;
     let m = |n| {
         let o = RiseSetOptions::from_legacy_mode(n);
-        (o.disc, o.refraction, o.fixed_disc)
+        (o.disc, o.refraction != Refraction::Off, o.fixed_disc)
     };
     assert_eq!(m(0), (UpperLimb, true, false));
     assert_eq!(m(1), m(3));

@@ -109,6 +109,8 @@ pub enum BodyKind {
     Star,
     /// User-defined point (derived registry).
     Derived,
+    /// Chart angles, which depend on the time and the place (the ascendant).
+    Angle,
 }
 
 /// A celestial body or calculated point.
@@ -161,6 +163,9 @@ pub enum Body {
     Vulkanus,
     Poseidon,
     Isis,
+    /// The ascendant: the degree of the ecliptic rising in the east at the given place.
+    /// Not a body, but listed alongside them in a chart. Needs a location.
+    Ascendant,
     /// A minor body or star identified by catalogue number.
     Catalog { catalog: Catalog, id: u64 },
     /// A user-defined point; its recipe lives in a `DerivedRegistry`.
@@ -169,7 +174,7 @@ pub enum Body {
 
 impl Body {
     /// Every variant that has a two-letter key, in declaration order.
-    pub const NAMED: [Body; 41] = [
+    pub const NAMED: [Body; 42] = [
         Body::Sun,
         Body::Moon,
         Body::Mercury,
@@ -211,10 +216,28 @@ impl Body {
         Body::Vulkanus,
         Body::Poseidon,
         Body::Isis,
+        Body::Ascendant,
     ];
 
-    /// Sun, Moon, Mercury–Pluto and the true node: the API's `core` set.
-    pub const CORE: [Body; 11] = [
+    /// The two luminaries: the Sun and the Moon. Neither is a planet.
+    pub const LUMINARIES: [Body; 2] = [Body::Sun, Body::Moon];
+
+    /// The planets as seen from the Earth, Mercury to Pluto. Pluto is listed with them by
+    /// astrological convention, although astronomers class it as a dwarf planet. The Earth
+    /// is not included; see [`Body::set_for`] for views from elsewhere.
+    pub const PLANETS: [Body; 8] = [
+        Body::Mercury,
+        Body::Venus,
+        Body::Mars,
+        Body::Jupiter,
+        Body::Saturn,
+        Body::Uranus,
+        Body::Neptune,
+        Body::Pluto,
+    ];
+
+    /// The luminaries followed by the planets: Sun, Moon and Mercury to Pluto.
+    pub const LUMINARIES_AND_PLANETS: [Body; 10] = [
         Body::Sun,
         Body::Moon,
         Body::Mercury,
@@ -225,8 +248,58 @@ impl Body {
         Body::Uranus,
         Body::Neptune,
         Body::Pluto,
+    ];
+
+    /// The default set of bodies, known by the key `default`: ascendant, Sun, Moon, Mercury to
+    /// Pluto, Ketu and Rahu (the true lunar nodes). See [`Body::set_for`] for views from elsewhere than the Earth.
+    pub const DEFAULT_BODIES: [Body; 13] = [
+        Body::Ascendant,
+        Body::Sun,
+        Body::Moon,
+        Body::Mercury,
+        Body::Venus,
+        Body::Mars,
+        Body::Jupiter,
+        Body::Saturn,
+        Body::Uranus,
+        Body::Neptune,
+        Body::Pluto,
+        Body::SouthNode,
         Body::TrueNode,
     ];
+
+    /// The `basic` set: the default bodies without Uranus, Neptune and Pluto, as used in Indian astrology.
+    pub const BASIC: [Body; 10] = [
+        Body::Ascendant,
+        Body::Sun,
+        Body::Moon,
+        Body::Mercury,
+        Body::Venus,
+        Body::Mars,
+        Body::Jupiter,
+        Body::Saturn,
+        Body::SouthNode,
+        Body::TrueNode,
+    ];
+
+    /// Adapts a set of bodies to a perspective. Seen from the Earth the set is unchanged.
+    /// From anywhere else the Earth is added (after Venus), and what cannot be seen from
+    /// there is dropped: the body at the centre, the ascendant and the Earth's lunar points.
+    pub fn set_for(set: &[Body], perspective: crate::position::Perspective) -> Vec<Body> {
+        if perspective.is_earth_based() {
+            return set.to_vec();
+        }
+        let mut list: Vec<Body> = set
+            .iter()
+            .copied()
+            .filter(|b| Some(*b) != perspective.center() && !matches!(b.kind(), BodyKind::Angle | BodyKind::LunarPoint))
+            .collect();
+        if !list.contains(&Body::Earth) && perspective.center() != Some(Body::Earth) {
+            let at = list.iter().position(|b| !matches!(b, Body::Sun | Body::Moon | Body::Mercury | Body::Venus)).unwrap_or(list.len());
+            list.insert(at, Body::Earth);
+        }
+        list
+    }
 
     /// Shorthand for a catalogue object.
     pub const fn catalog(catalog: Catalog, id: u64) -> Self {
@@ -278,6 +351,7 @@ impl Body {
             Vulkanus => "vu",
             Poseidon => "po",
             Isis => "is",
+            Ascendant => "as",
             Catalog { .. } | Derived(_) => return None,
         })
     }
@@ -327,6 +401,7 @@ impl Body {
             Vulkanus => "Vulkanus",
             Poseidon => "Poseidon",
             Isis => "Isis",
+            Ascendant => "Ascendant",
             Catalog { .. } | Derived(_) => return None,
         })
     }
@@ -341,6 +416,7 @@ impl Body {
             }
             MeanNode | TrueNode | MeanSouthNode | SouthNode | MeanApogee | OscuApogee
             | IntpApogee | IntpPerigee => BodyKind::LunarPoint,
+            Ascendant => BodyKind::Angle,
             Chiron | Pholus | Ceres | Pallas | Juno | Vesta => BodyKind::MinorBody,
             Io | Europa | Ganymede | Callisto | Titan | Triton | Charon => BodyKind::Satellite,
             Cupido | Hades | Zeus | Kronos | Apollon | Admetos | Vulkanus | Poseidon | Isis => {
@@ -408,6 +484,7 @@ impl FromStr for Body {
             "me" | "mercury" => Mercury,
             "ve" | "venus" => Venus,
             "ea" | "earth" => Earth,
+            "as" | "asc" | "ascendant" => Ascendant,
             "ma" | "mars" => Mars,
             "ju" | "jupiter" => Jupiter,
             "sa" | "saturn" => Saturn,
@@ -449,17 +526,33 @@ impl FromStr for Body {
     }
 }
 
-/// Parses a comma-separated list such as `"su,mo,ma"`, or the specials `"core"` and `"all"`.
+/// Parses a comma-separated list such as `"su,mo,ma"`. The set names `default`, `basic` and
+/// `all` may stand alone or among the keys (`"basic,ch"`); a body named twice is kept once.
 pub fn parse_body_list(s: &str) -> Result<Vec<Body>, BodyParseError> {
-    match s.trim().to_ascii_lowercase().as_str() {
-        "core" => Ok(Body::CORE.to_vec()),
-        "all" => Ok(Body::NAMED.to_vec()),
-        _ => s
-            .split(',')
-            .filter(|p| !p.trim().is_empty())
-            .map(str::parse)
-            .collect(),
+    parse_body_list_for(s, crate::position::Perspective::Geocentric)
+}
+
+/// As [`parse_body_list`], with `default` and `basic` adapted to the perspective by
+/// [`Body::set_for`]: away from the Earth they gain the Earth and lose what cannot be seen.
+pub fn parse_body_list_for(s: &str, perspective: crate::position::Perspective) -> Result<Vec<Body>, BodyParseError> {
+    let mut list: Vec<Body> = Vec::new();
+    let mut add = |bodies: Vec<Body>| {
+        for b in bodies {
+            if !list.contains(&b) {
+                list.push(b);
+            }
+        }
+    };
+    for token in s.split(',').map(str::trim).filter(|t| !t.is_empty()) {
+        match token.to_ascii_lowercase().as_str() {
+            // `core` is the former name of the default set, still accepted for now.
+            "default" | "core" => add(Body::set_for(&Body::DEFAULT_BODIES, perspective)),
+            "basic" => add(Body::set_for(&Body::BASIC, perspective)),
+            "all" => add(Body::NAMED.to_vec()),
+            _ => add(vec![token.parse()?]),
+        }
     }
+    Ok(list)
 }
 
 #[cfg(feature = "serde")]

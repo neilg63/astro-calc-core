@@ -21,7 +21,7 @@ fn main() {
     let t = Instant::now();
     let from = b.birth.value();
     let periods = eph
-        .progressed_aspects(&a, &Body::CORE, &b, &Body::CORE, &targets, from, from + 80.0 * TROPICAL_YEAR, &ProgressionOptions::default())
+        .progressed_aspects(&a, &bodies, &b, &bodies, &targets, from, from + 80.0 * TROPICAL_YEAR, &ProgressionOptions::default())
         .unwrap();
     println!("{} progressed aspect periods over 80 years (11 x 11 bodies, 5 aspects) in {:?}", periods.len(), t.elapsed());
 }

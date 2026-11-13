@@ -116,7 +116,7 @@ fn body_lists() {
         parse_body_list("su, mo,ma,").unwrap(),
         vec![Body::Sun, Body::Moon, Body::Mars]
     );
-    assert_eq!(parse_body_list("core").unwrap(), Body::CORE.to_vec());
+    assert_eq!(parse_body_list("default").unwrap(), Body::DEFAULT_BODIES.to_vec());
     assert!(parse_body_list("su,xx").is_err());
 }
 

@@ -14,7 +14,7 @@ const ROME: GeoPos = GeoPos { lat: 41.9, lng: 12.5, alt: 20.0 };
 #[test]
 fn single_and_bulk_agree() {
     let Some(eph) = eph() else { return };
-    let bodies = Body::CORE[..10].to_vec();
+    let bodies = Body::LUMINARIES_AND_PLANETS.to_vec();
     let all = eph.calc_positions(&bodies, 2451545.0, ROME, CoordSystem::Ecliptic, Perspective::Topocentric).unwrap();
     for (b, p) in bodies.iter().zip(&all) {
         let one = eph.calc_position(*b, 2451545.0, ROME, CoordSystem::Ecliptic, Perspective::Topocentric).unwrap();

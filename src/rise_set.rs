@@ -4,9 +4,12 @@
 //! refining each bracketed crossing by bisection to about 1 ms. A body rises or sets when its
 //! centre's geometric altitude equals
 //!
-//! `h₀ = −refraction ± semi-diameter` (upper limb −, lower limb +, centre 0),
+//! `h₀ = horizon − refraction ± semi-diameter − dip` (upper limb −, lower limb +, centre 0),
 //!
-//! where refraction at the horizon is [`HORIZON_REFRACTION_ARCMIN`] when enabled.
+//! where refraction at the level horizon is [`HORIZON_REFRACTION_ARCMIN`] when enabled.
+//! [`RiseSetOptions`] also covers the three twilights, a raised or lowered horizon,
+//! refraction for a given pressure and temperature, the dip of the horizon for an elevated
+//! observer, geocentric positions and bodies projected onto the ecliptic.
 //! Constants were calibrated against the AstroCalc reference API (all eight legacy modes agree
 //! to ~0.03′ of altitude, i.e. a fraction of a second in time).
 
@@ -40,15 +43,55 @@ pub enum DiscAlignment {
     LowerLimb,
 }
 
-/// Rise/set options.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+/// Atmospheric refraction at the horizon.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum Refraction {
+    /// No atmosphere: the geometric horizon.
+    Off,
+    /// Standard conditions ([`HORIZON_REFRACTION_ARCMIN`] at the horizon).
+    #[default]
+    Standard,
+    /// Scaled for the air at the observer: pressure in hPa (millibars) and temperature in °C.
+    Atmosphere { pressure: f64, temperature: f64 },
+}
+
+/// The altitude a body must cross to count as rising or setting.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum Horizon {
+    /// The level horizon, altitude 0°.
+    #[default]
+    Level,
+    /// A horizon at an apparent altitude in degrees: a ridge above the level (positive) or
+    /// a view downwards (negative). Disc alignment and refraction still apply.
+    Altitude(f64),
+    /// Civil twilight: the centre is 6° below the horizon. For the twilights the disc
+    /// alignment, refraction and dip are not used.
+    CivilTwilight,
+    /// Nautical twilight: 12° below.
+    NauticalTwilight,
+    /// Astronomical twilight: 18° below.
+    AstronomicalTwilight,
+}
+
+/// Rise/set options. `RiseSetOptions::default()` is the centre of the disc on the level
+/// horizon with standard refraction; change fields directly or with the `with_` methods.
+#[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RiseSetOptions {
     pub disc: DiscAlignment,
-    /// Apply atmospheric refraction at the horizon.
-    pub refraction: bool,
+    pub refraction: Refraction,
     /// Use a fixed mean semi-diameter for the Sun and Moon instead of the actual one.
     pub fixed_disc: bool,
+    pub horizon: Horizon,
+    /// Lower the horizon by the dip due to the observer's height above the ground
+    /// (the location's altitude, taken as height above the surrounding terrain or sea).
+    pub dip: bool,
+    /// Use the body's geocentric position, ignoring parallax.
+    pub geocentric: bool,
+    /// Place the body on the ecliptic at its longitude, ignoring its ecliptic latitude.
+    pub ignore_latitude: bool,
 }
 
 impl Default for RiseSetOptions {
@@ -59,6 +102,58 @@ impl Default for RiseSetOptions {
 }
 
 impl RiseSetOptions {
+    /// The conventional almanac definition: upper limb on the level horizon with standard
+    /// refraction.
+    pub const fn upper_limb() -> Self {
+        Self::from_legacy_mode(0)
+    }
+
+    /// The start or end of a twilight ([`Horizon::CivilTwilight`] and the others).
+    pub const fn twilight(horizon: Horizon) -> Self {
+        Self { horizon, ..Self::from_legacy_mode(3) }
+    }
+
+    /// Traditional Hindu rising: the centre of the disc on the geometric horizon, seen from
+    /// the centre of the Earth, with the body placed on the ecliptic.
+    pub const fn hindu_rising() -> Self {
+        Self { refraction: Refraction::Off, geocentric: true, ignore_latitude: true, ..Self::from_legacy_mode(3) }
+    }
+
+    pub const fn with_disc(mut self, disc: DiscAlignment) -> Self {
+        self.disc = disc;
+        self
+    }
+
+    pub const fn with_refraction(mut self, refraction: Refraction) -> Self {
+        self.refraction = refraction;
+        self
+    }
+
+    pub const fn with_fixed_disc(mut self, fixed: bool) -> Self {
+        self.fixed_disc = fixed;
+        self
+    }
+
+    pub const fn with_horizon(mut self, horizon: Horizon) -> Self {
+        self.horizon = horizon;
+        self
+    }
+
+    pub const fn with_dip(mut self, dip: bool) -> Self {
+        self.dip = dip;
+        self
+    }
+
+    pub const fn with_geocentric(mut self, geocentric: bool) -> Self {
+        self.geocentric = geocentric;
+        self
+    }
+
+    pub const fn with_ignore_latitude(mut self, ignore: bool) -> Self {
+        self.ignore_latitude = ignore;
+        self
+    }
+
     /// Maps the AstroCalc API `mode` parameter (0–7), including its historical behaviour:
     /// mode 1 ("no refraction only") behaves like mode 3, and the "fixed disc" modes use the
     /// upper limb.
@@ -72,7 +167,40 @@ impl RiseSetOptions {
             7 => (DiscAlignment::UpperLimb, true, true),
             _ => (DiscAlignment::UpperLimb, true, false),
         };
-        Self { disc, refraction, fixed_disc }
+        Self {
+            disc,
+            refraction: if refraction { Refraction::Standard } else { Refraction::Off },
+            fixed_disc,
+            horizon: Horizon::Level,
+            dip: false,
+            geocentric: false,
+            ignore_latitude: false,
+        }
+    }
+}
+
+/// Refraction (arcminutes) at an apparent altitude (degrees), scaled so that the horizon
+/// value is [`HORIZON_REFRACTION_ARCMIN`]. The variation with altitude is Bennett's formula.
+fn refraction_at(apparent_alt: f64) -> f64 {
+    let bennett = |h: f64| 1.0 / (h + 7.31 / (h + 4.4)).to_radians().tan();
+    if apparent_alt == 0.0 {
+        return HORIZON_REFRACTION_ARCMIN;
+    }
+    let h = apparent_alt.clamp(-1.0, 89.9);
+    HORIZON_REFRACTION_ARCMIN * bennett(h) / bennett(0.0)
+}
+
+/// Dip of the horizon (arcminutes) for an observer `height` metres above it.
+fn horizon_dip(height: f64, refracted: bool) -> f64 {
+    const EARTH_RADIUS_M: f64 = 6_371_000.0;
+    if height <= 0.0 {
+        return 0.0;
+    }
+    if refracted {
+        // The standard navigational allowance, which includes terrestrial refraction.
+        1.76 * height.sqrt()
+    } else {
+        (EARTH_RADIUS_M / (EARTH_RADIUS_M + height)).acos().to_degrees() * 60.0
     }
 }
 
@@ -142,8 +270,22 @@ pub fn local_day_start(jd: f64, lng: f64) -> f64 {
 }
 
 impl Ephemeris {
-    fn horizon_target(&self, body: Body, opts: &RiseSetOptions, dist_au: f64) -> f64 {
-        let refr = if opts.refraction { HORIZON_REFRACTION_ARCMIN } else { 0.0 };
+    /// Geometric altitude (degrees) of the body's centre at the moment of rising or setting.
+    fn horizon_target(&self, body: Body, opts: &RiseSetOptions, dist_au: f64, height: f64) -> f64 {
+        let base = match opts.horizon {
+            Horizon::CivilTwilight => return -6.0,
+            Horizon::NauticalTwilight => return -12.0,
+            Horizon::AstronomicalTwilight => return -18.0,
+            Horizon::Level => 0.0,
+            Horizon::Altitude(alt) => alt,
+        };
+        let refr = match opts.refraction {
+            Refraction::Off => 0.0,
+            Refraction::Standard => refraction_at(base),
+            // Meeus, Astronomical Algorithms ch. 16: proportional to pressure, inversely to
+            // absolute temperature, relative to 1010 hPa and 10 °C.
+            Refraction::Atmosphere { pressure, temperature } => refraction_at(base) * (pressure / 1010.0) * (283.0 / (273.0 + temperature)),
+        };
         let sd = match (opts.fixed_disc, body) {
             (true, Body::Sun) => FIXED_SD_SUN,
             (true, Body::Moon) => FIXED_SD_MOON,
@@ -155,15 +297,17 @@ impl Ephemeris {
             DiscAlignment::Center => 0.0,
             DiscAlignment::LowerLimb => sd,
         };
-        (limb - refr) / 60.0
+        let dip = if opts.dip { horizon_dip(height, opts.refraction != Refraction::Off) } else { 0.0 };
+        base + (limb - refr - dip) / 60.0
     }
 
     /// Signed function whose zero crossings in the right direction are the event.
     fn event_fn(&self, body: Body, geo: &GeoPos, event: TransitEvent, opts: &RiseSetOptions, t: f64) -> Result<f64, CalcError> {
-        let frame = Frame::new(self, t, geo, Perspective::Topocentric)?;
-        let (alt, ha, dist) = frame.alt_ha_dist(self, body)?;
+        let perspective = if opts.geocentric { Perspective::Geocentric } else { Perspective::Topocentric };
+        let frame = Frame::new(self, t, geo, perspective)?;
+        let (alt, ha, dist) = frame.alt_ha_dist(self, body, opts.ignore_latitude)?;
         Ok(match event {
-            TransitEvent::Rise | TransitEvent::Set => alt.to_degrees() - self.horizon_target(body, opts, dist),
+            TransitEvent::Rise | TransitEvent::Set => alt.to_degrees() - self.horizon_target(body, opts, dist, geo.alt),
             // sin(HA) goes − → + at upper transit (HA = 0) and + → − at lower transit (HA = 180°)
             TransitEvent::Mc | TransitEvent::Ic => ha.sin(),
         })
@@ -215,7 +359,7 @@ impl Ephemeris {
     /// Geometric topocentric altitude (degrees) of a body's centre.
     pub fn altitude(&self, body: Body, jd: impl Into<JdUt>, geo: GeoPos) -> Result<f64, CalcError> {
         let frame = Frame::new(self, jd.into().value(), &geo, Perspective::Topocentric)?;
-        Ok(frame.alt_ha_dist(self, body)?.0.to_degrees())
+        Ok(frame.alt_ha_dist(self, body, false)?.0.to_degrees())
     }
 
     /// Rise, set and transits for the local day containing `jd` (see [`DayTransits`]).

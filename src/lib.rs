@@ -43,7 +43,7 @@ pub use aspects::{
     aspect_orbs, aspects_between, best_aspect, match_aspects, separation,
 };
 pub use ayanamsha::{Ayanamsha, to_sidereal};
-pub use body::{Body, BodyKind, Catalog, parse_body_list};
+pub use body::{Body, BodyKind, Catalog, parse_body_list, parse_body_list_for};
 pub use derived::{Angle, Derived, DerivedId, DerivedRegistry, Ref};
 pub use error::{BodyParseError, CalcError, DerivedError, EphemError, GeoError, TimeError};
 pub use events::{JdSpeed, MoonPhase, MoonPhaseEvent, Station, StationKind, StationSet};
@@ -53,8 +53,8 @@ pub use houses::{Angles, HouseSystem, Houses, angles, ascendant, house_sets, hou
 pub use indian_time::{IndianDay, SolarDayKind};
 pub use models::DeltaTModel;
 pub use pheno::{Phenomena, hg_magnitude, hg_parameters};
-pub use position::{BodyJdPos, BodyPos, BodyPosSet, CoordSystem, Perspective};
-pub use rise_set::{DayTransits, DiscAlignment, RiseSetOptions, TransitEvent, local_day_start};
+pub use position::{BodyJdPos, BodyLng, BodyPos, BodyPosEqu, BodyPosExt, BodyPosHor, BodyPosSet, BodyPosition, CoordSystem, Perspective};
+pub use rise_set::{DayTransits, DiscAlignment, Horizon, Refraction, RiseSetOptions, TransitEvent, local_day_start};
 pub use spk::Ephemeris;
 pub use stars::{Star, named_stars, star_by_hip, star_by_name};
 pub use station_table::StationTable;

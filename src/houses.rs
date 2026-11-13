@@ -205,6 +205,11 @@ impl Houses {
     }
 }
 
+/// The ascendant in degrees for a given ARMC, true obliquity and latitude (all radians).
+pub(crate) fn ascendant_from(ramc: f64, eps: f64, phi: f64) -> f64 {
+    Sky { ramc, eps, phi }.asc()
+}
+
 /// The frame shared by all angle and house calculations at one moment and place.
 #[derive(Debug, Clone, Copy)]
 struct Sky {
