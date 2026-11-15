@@ -49,7 +49,7 @@ fn series_agree_with_jpl_inside_the_files() {
 fn falls_back_outside_the_files() {
     let eph = jpl();
     let inside = 2_451_545.0;
-    let outside = 2_300_000.5; // 1 February 1585
+    let outside = eph.date_range().unwrap().start - 365.0; // a year before the planetary file
     assert_eq!(eph.engine_at(inside), Some(CalcEngine::Jpl));
     assert_eq!(eph.engine_at(outside), Some(CalcEngine::Analytic));
     let bodies = [Body::Ascendant, Body::Sun, Body::Moon, Body::TrueNode, Body::SouthNode, Body::MeanApogee, Body::Mercury, Body::Venus, Body::Mars, Body::Jupiter, Body::Saturn, Body::Uranus, Body::Neptune];
@@ -87,7 +87,7 @@ fn the_join_at_the_edge_of_the_files_is_smooth() {
 #[test]
 fn what_the_series_cannot_do_is_reported() {
     let eph = jpl();
-    let outside = 2_300_000.5;
+    let outside = eph.date_range().unwrap().start - 365.0;
     // No Pluto or minor bodies in the series: the error names the JPL coverage.
     for body in [Body::Pluto, Body::Chiron] {
         let err = eph.calc_position(body, outside, geo(), CoordSystem::Ecliptic, Perspective::Geocentric).unwrap_err();

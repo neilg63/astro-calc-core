@@ -2,10 +2,37 @@
 // Some tests here describe failures that the `analytic` feature turns into results.
 #![cfg_attr(feature = "analytic", allow(unused_imports))]
 
-use astro_calc_core::{Body, BodyPosition, CalcEngine, CalcError, CoordSystem, EphemError, Ephemeris, GeoPos, Perspective, RiseSetOptions, TransitEvent, scan_dir};
+//
+// These run against whichever planetary file `data/` holds (any astro-calc-build tier), and check
+// the exact dates of the files JPL publishes.
+
+use astro_calc_core::{Body, BodyPosition, CalcEngine, CalcError, CoordSystem, DateRange, EphemError, Ephemeris, GeoPos, Perspective, RiseSetOptions, TransitEvent, scan_dir};
+
+/// The span of each planetary file JPL publishes, as the library reports it.
+const KNOWN: [(&str, &str); 3] = [
+    ("de440s.bsp", "1849-12-26 to 2150-01-22"),
+    ("de440.bsp", "1549-12-31 to 2650-01-25"),
+    ("de442.bsp", "1549-12-31 to 2650-01-25"),
+];
 
 fn eph() -> Ephemeris {
     Ephemeris::open_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/data")).expect("data files")
+}
+
+/// The installed planetary file's name.
+fn planetary_name() -> String {
+    let files = scan_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/data")).expect("data files");
+    files.into_iter().find(|f| f.is_planetary()).expect("a planetary file").name
+}
+
+/// A year before the planetary file starts.
+fn before(range: DateRange) -> f64 {
+    range.start - 365.0
+}
+
+#[cfg(not(feature = "analytic"))]
+fn label(jd: f64) -> String {
+    DateRange { start: jd, end: jd }.start_date()
 }
 
 fn geo() -> GeoPos {
@@ -16,12 +43,12 @@ fn geo() -> GeoPos {
 fn date_range_matches_the_planetary_file() {
     let eph = eph();
     let range = eph.date_range().expect("planetary file loaded");
-    // de440s: the end of 1849 to early 2150.
-    assert_eq!(range.start_date(), "1849-12-26");
-    assert_eq!(range.end_date(), "2150-01-22");
-    assert_eq!(range.to_string(), "1849-12-26 to 2150-01-22");
+    assert_eq!(range.to_string(), format!("{} to {}", range.start_date(), range.end_date()));
+    if let Some((_, span)) = KNOWN.iter().find(|(name, _)| *name == planetary_name()) {
+        assert_eq!(range.to_string(), *span);
+    }
     assert!(range.contains(2_451_545.0));
-    assert!(!range.contains(2_300_000.0));
+    assert!(!range.contains(before(range)));
     // Every core body shares it; nothing reaches further than the Earth's own data.
     let (a, b) = eph.coverage(399).unwrap();
     assert!(range.start >= a && range.end <= b);
@@ -62,7 +89,8 @@ fn positions_report_the_engine() {
 #[cfg(not(feature = "analytic"))]
 fn out_of_range_says_what_is_covered() {
     let eph = eph();
-    let jd = 2_300_000.5; // 1 February 1585
+    let range = eph.date_range().unwrap();
+    let jd = before(range);
     assert_eq!(eph.engine_at(jd), None);
     let err = eph.calc_position(Body::Mars, jd, geo(), CoordSystem::Ecliptic, Perspective::Geocentric).unwrap_err();
     match &err {
@@ -72,8 +100,8 @@ fn out_of_range_says_what_is_covered() {
         other => panic!("unexpected error: {other:?}"),
     }
     let text = err.to_string();
-    assert!(text.contains("1585-02-01"), "{text}");
-    assert!(text.contains("1849-12-26 to 2150-01-22"), "{text}");
+    assert!(text.contains(&label(jd)), "{text}");
+    assert!(text.contains(&range.to_string()), "{text}");
 }
 
 #[test]
@@ -92,8 +120,10 @@ fn data_directory_listing() {
     assert_eq!(files, eph().files());
     let planetary: Vec<_> = files.iter().filter(|f| f.is_planetary()).collect();
     assert_eq!(planetary.len(), 1);
-    assert_eq!(planetary[0].name, "de440s.bsp");
-    assert_eq!(planetary[0].range.to_string(), "1849-12-26 to 2150-01-22");
+    assert_eq!(planetary[0].range, eph().date_range().unwrap());
+    if let Some((_, span)) = KNOWN.iter().find(|(name, _)| *name == planetary[0].name) {
+        assert_eq!(planetary[0].range.to_string(), *span);
+    }
     assert!(planetary[0].targets.contains(&301) && planetary[0].size > 30_000_000);
     // The asteroid files hold one body each and are not planetary.
     let chiron = files.iter().find(|f| f.targets == [20_002_060]).expect("chiron file");
@@ -124,7 +154,7 @@ fn every_kind_of_result_reports_the_engine() {
 #[cfg(not(feature = "analytic"))]
 fn errors_classify_themselves() {
     let eph = eph();
-    let early = eph.altitude(Body::Sun, 2_300_000.5, geo()).unwrap_err();
+    let early = eph.altitude(Body::Sun, before(eph.date_range().unwrap()), geo()).unwrap_err();
     assert!(early.is_out_of_range());
     assert_eq!(early.engine(), Some(CalcEngine::Jpl));
     let unsupported = eph.calc_position(Body::Ascendant, 2_451_545.0, geo(), CoordSystem::Ecliptic, Perspective::Heliocentric).unwrap_err();
