@@ -1,5 +1,9 @@
 # astro-calc-core
 
+[![mirror](https://img.shields.io/badge/mirror-github-blue)](https://github.com/neilg63/astro-calc-core)
+[![crates.io](https://img.shields.io/crates/v/astro-calc-core.svg)](https://crates.io/crates/astro-calc-core)
+[![docs.rs](https://docs.rs/astro-calc-core/badge.svg)](https://docs.rs/astro-calc-core)
+
 A pure-Rust astronomical calculation library for astrology software. It computes
 positions, houses, ayanamshas, rise and set times, stations and aspects directly from
 NASA JPL ephemeris files, with no C dependencies.

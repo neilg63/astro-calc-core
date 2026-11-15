@@ -1,5 +1,8 @@
 # astro-calc-build
 
+[![mirror](https://img.shields.io/badge/mirror-github-blue)](https://github.com/neilg63/astro-calc-core/tree/main/crates/astro-calc-build)
+[![crates.io](https://img.shields.io/crates/v/astro-calc-build.svg)](https://crates.io/crates/astro-calc-build)
+
 Installs the JPL ephemeris files that [astro-calc-core](https://crates.io/crates/astro-calc-core) reads.
 
 astro-calc-core is distributed without JPL data. Without it, calculations use the built-in analytic
