@@ -186,20 +186,87 @@ Apple M5 Pro, DE440s, release build:
 ## Data files
 
 The library reads JPL ephemeris files in the SPK (`.bsp`) format. They are not included in
-this repository; fetch them into `data/`:
+the crate or this repository. Without them, calculations use the analytical series (with the
+`analytic` feature, below) or fail with an error naming the dates covered.
+
+### Installing the data: `astro-calc-build`
+
+`astro-calc-build` is a companion command-line tool, a separate crate in this repository
+(`crates/astro-calc-build`). It downloads the files into any folder you choose, checks each one,
+and builds the station table:
 
 ```bash
-curl -o data/de440s.bsp https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp
+cargo install astro-calc-build          # from this repository: cargo install --path crates/astro-calc-build
+astro-calc-build                        # overview: tiers, commands, the state of ASTRO_DATA_DIR
+astro-calc-build install -d /srv/astro/data --tier 1
 ```
 
-`de440s.bsp` (33 MB) covers the Sun, Moon and planets from 1850 to 2150 and is all that is
-needed for a standard chart. The larger `de440.bsp` (1550 to 2650) uses the same format.
+Choose a tier by the dates you need:
 
-The minor bodies come from JPL Horizons, one file each:
+| Tier | Sun, Moon and planets | Planetary file | Small bodies | Download |
+|---|---|---|---|---|
+| 1 `modern` | 1849-12-26 to 2150-01-22 | `de440s.bsp`, 31 MiB | 1850 to 2150 | ~62 MiB |
+| 2 `historical` | 1549-12-31 to 2650-01-25 | `de440.bsp`, 114 MiB | 1600 to 2500 | ~207 MiB |
+| 3 `ancient` | 1000 BCE to 3000 CE | `de441_-999_3000.bsp`, 415 MiB, cut from DE441 | 1600 to 2500 | ~508 MiB |
+| 4 `long-range` | 13201 BCE to 17191 CE | `de441.bsp`, 3.08 GiB | 1600 to 2500 | ~3.2 GiB |
 
-```bash
-python3 -I tools/fetch_horizons_spk.py data
-```
+Tiers can be named by number or by name (`--tier ancient`). The planetary file comes from
+JPL's server. JPL Horizons generates the small-body files (Ceres, Pallas, Juno, Vesta, Chiron,
+Pholus) on request, but only between 1600 and 2500.
+
+Tier 3 is an excerpt of DE441: the installer reads DE441's index, fetches only the records
+covering 1000 BCE to 3000 CE with HTTP range requests, and writes them as a smaller SPK file
+with a new index. The records are copied byte for byte, so positions are exactly DE441's. It
+is about as far as the ΔT and precession models stay sound. In tier 4, dates thousands of
+years from today are limited by those models rather than by the ephemeris, so its station
+table defaults to 3000 BCE to 3000 CE. Any span can be cut the same way with
+`--planets-from` / `--planets-to`, from JPL or from a local copy (`--from-file`).
+
+**Commands**
+
+| Command | What it does |
+|---|---|
+| `install -d PATH` | Shows a plan (files, dates, sizes, anything to be removed), asks, then downloads, verifies and builds `stations.bin`. Without `--tier` on a terminal it asks for one |
+| `info -d PATH` | The files in a folder, the dates each covers, the span for the Sun, Moon and planets, every small body with its body key, and whether `stations.bin` matches |
+| `stations -d PATH` | Rebuilds `stations.bin`; `--from` / `--to` years, `--bodies` |
+| `tiers` | Tiers, planetary files, small bodies and body sets in detail |
+| `config` | The effective configuration as TOML |
+
+`-d` / `--data-dir` takes any path (relative, absolute or `~/…`); the folder can also be
+given as a plain argument, and `ASTRO_DATA_DIR` supplies it when omitted. Point the apps that
+read the data at the same folder: `Ephemeris::open_dir(path)` here, `ASTRO_DATA_DIR` for
+astro-calc-api.
+
+**`install` options**
+
+| Option | Effect |
+|---|---|
+| `-t, --tier T` | `1`-`4`, a tier name (`modern`, `historical`, `ancient`, `long-range`) or one in the config file |
+| `--planets KEY` | Another planetary file: `de440s`, `de440`, `de441`, `de442` (2026, DE440's successor), `de441-ancient` |
+| `--planets-from YEAR`, `--planets-to YEAR` | Cut the planetary file to these years (astronomical: -999 is 1000 BCE), fetching only those records |
+| `--from-file PATH` | Cut the excerpt from a local copy of the full file instead of using range requests |
+| `--bodies LIST` | `all`, `none`, set names (`default`, `main`, `centaurs`) and body keys, comma-separated |
+| `--bodies-from DATE`, `--bodies-to DATE` | Span of the Horizons small-body files, `YYYY-MM-DD` |
+| `--stations-from YEAR`, `--stations-to YEAR` | Span of the station table, astronomical years (-2999 is 3000 BC) |
+| `--station-bodies LIST` | Planets in the station table (default `me,ve,ma,ju,sa,ur,ne,pl`) |
+| `--no-stations` | Skip the station table |
+| `--keep-other-planets` | Keep other planetary files in the folder (removed by default, so ephemerides are not mixed) |
+| `--dry-run` | Show the plan only |
+| `--force` | Download and rebuild even what is already installed |
+| `-y, --yes` | Do not ask for confirmation |
+
+Each file is written as `<name>.part`, checked (an SPK index holding the expected bodies, and
+SHA-256 when one is configured) and only then renamed, so an interrupted run never leaves a
+broken file for `open_dir`. Re-running skips what is in place and resumes a partial download.
+
+**Config file.** `astro-calc-build.toml` in the current folder or
+`~/.config/astro-calc-build/config.toml` (or `--config FILE`) overrides the download URLs and
+file names (a mirror, say), and adds planetary files, small bodies, body sets and named tiers.
+A small body can be added by its Minor Planet Center number (`mpc = 136199` for Eris), which
+this library then calculates as `mpc:136199`. `astro-calc-build config` prints the complete
+effective configuration to start from; see `crates/astro-calc-build/README.md` for the format.
+
+### What the library does with them
 
 The date range the library supports is the range of the files loaded.
 `scan_dir(dir)` lists the `.bsp` files in a directory with the dates and bodies each holds,
@@ -298,7 +365,7 @@ cargo run --release --example positions
 ```
 
 `positions` is a quick start. `bulk` shows the bulk functions with timings, `timing` and `stations_timing` report speeds, and
-`build_station_table` generates the station table file. The other examples and the Python
+`build_station_table` generates the station table file (as does `astro-calc-build stations`). The other examples and the Python
 scripts in `tools/` are maintenance aids: they regenerate test fixtures and data, and are
 not part of the published crate.
 

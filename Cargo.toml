@@ -22,6 +22,10 @@ include = [
     "/NOTICE",
 ]
 
+[workspace]
+# The data installer CLI. Not part of the published library (see `include` above).
+members = ["crates/astro-calc-build"]
+
 [features]
 default = ["mmap"]
 # Memory-map ephemeris files instead of reading them into memory. Turn off for WebAssembly.
