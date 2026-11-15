@@ -60,7 +60,7 @@ fn longitudes_ascendant_and_nodes() {
             // The same longitude as a full position, and as the single-body method.
             assert_eq!(l.body, p.body);
             assert!(math::diff_deg(l.lng, p.lng).abs() < 1e-10, "{} {ps}: {} vs {}", l.body, l.lng, p.lng);
-            assert!(math::diff_deg(l.lng, eph.calc_longitude(l.body, jd, geo, ps, None).unwrap()).abs() < 1e-10);
+            assert!(math::diff_deg(l.lng, eph.calc_longitude(l.body, jd, geo, ps, None).unwrap().value).abs() < 1e-10);
         }
         // The ascendant listed as a body is the ascendant of the house functions.
         assert_eq!(lngs[0].body, Body::Ascendant);
@@ -71,7 +71,7 @@ fn longitudes_ascendant_and_nodes() {
         let (ke, ra) = (lngs[11].lng, lngs[12].lng);
         assert_eq!((lngs[11].body, lngs[12].body), (Body::SouthNode, Body::TrueNode));
         assert!(math::diff_deg(ke + 180.0, ra).abs() < 1e-9);
-        assert!(math::diff_deg(ke, eph.calc_longitude(Body::SouthNode, jd, geo, ps, None).unwrap()).abs() < 1e-9);
+        assert!(math::diff_deg(ke, eph.calc_longitude(Body::SouthNode, jd, geo, ps, None).unwrap().value).abs() < 1e-9);
         assert!((full[11].lng_speed - full[12].lng_speed).abs() < 1e-12 && full[11].lat == -full[12].lat);
     }
     // In either order, and in all three coordinate systems at once, the pair stays opposite.
@@ -92,7 +92,7 @@ fn longitudes_ascendant_and_nodes() {
     for (t, s) in tropical.iter().zip(&sidereal) {
         assert!((math::diff_deg(s.lng, t.lng) - aya).abs() < 1e-10 && (0.0..360.0).contains(&s.lng), "{}", t.body);
     }
-    assert!((eph.calc_longitude(Body::Moon, jd, geo, Perspective::Geocentric, Some(Ayanamsha::Lahiri)).unwrap() - to_sidereal(eph.calc_longitude(Body::Moon, jd, geo, Perspective::Geocentric, None).unwrap(), aya)).abs() < 1e-10);
+    assert!((eph.calc_longitude(Body::Moon, jd, geo, Perspective::Geocentric, Some(Ayanamsha::Lahiri)).unwrap().value - to_sidereal(eph.calc_longitude(Body::Moon, jd, geo, Perspective::Geocentric, None).unwrap().value, aya)).abs() < 1e-10);
 
     // From the Sun: the adapted set works, and the ascendant has no meaning there.
     let helio = parse_body_list_for("default", Perspective::Heliocentric).unwrap();

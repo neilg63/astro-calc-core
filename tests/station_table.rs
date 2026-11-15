@@ -96,5 +96,7 @@ fn damaged_tables_are_rejected() {
     bad[r + 16..r + 32].copy_from_slice(&a);
     assert!(StationTable::from_bytes(&bad).is_err());
     assert!(StationTable::build(&eph, &[Body::Mercury], 2_460_000.0, 2_459_000.0).is_err());
+    // A span reaching outside the files (the analytical series would compute it instead).
+    #[cfg(not(feature = "analytic"))]
     assert!(StationTable::build(&eph, &[Body::Mercury], 2_300_000.0, 2_460_000.0).is_err());
 }

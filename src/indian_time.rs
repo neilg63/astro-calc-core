@@ -10,6 +10,7 @@ use std::fmt;
 use julian_day_converter::julian_day_to_weekday_index;
 
 use crate::body::Body;
+use crate::spk::CalcEngine;
 use crate::error::CalcError;
 use crate::geo::GeoPos;
 use crate::rise_set::{RiseSetOptions, TransitEvent};
@@ -44,12 +45,15 @@ pub struct IndianDay {
     /// Sunrise that ends the day.
     pub next_rise_jd: f64,
     pub kind: SolarDayKind,
+    /// The engine that produced the times.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
 }
 
 impl IndianDay {
     /// Builds a day from known sunrise, sunset and following sunrise.
     pub const fn new(jd: f64, rise_jd: f64, set_jd: f64, next_rise_jd: f64) -> Self {
-        Self { jd, rise_jd, set_jd, next_rise_jd, kind: SolarDayKind::Normal }
+        Self { jd, rise_jd, set_jd, next_rise_jd, kind: SolarDayKind::Normal, engine: CalcEngine::Jpl }
     }
 
     /// Length of the whole day, sunrise to sunrise, in (civil) days.
@@ -149,7 +153,7 @@ impl Ephemeris {
     fn last_sun_event(&self, jd: f64, geo: GeoPos, event: TransitEvent, opts: RiseSetOptions, back: f64) -> Result<Option<f64>, CalcError> {
         let mut found = None;
         let mut from = jd - back;
-        while let Some(t) = self.next_transit(Body::Sun, from, geo, event, opts, jd - from)? {
+        while let Some(t) = self.transit_after(Body::Sun, from, geo, event, opts, jd - from)? {
             if t.value() > jd {
                 break;
             }
@@ -164,15 +168,15 @@ impl Ephemeris {
     /// transits instead (see [`SolarDayKind`]).
     pub fn indian_day(&self, jd: impl Into<JdUt>, geo: GeoPos, opts: RiseSetOptions) -> Result<IndianDay, CalcError> {
         let jd = jd.into().value();
-        let next = |from: f64, ev| self.next_transit(Body::Sun, from, geo, ev, opts, 1.6).map(|o| o.map(|t| t.value()));
+        let next = |from: f64, ev| self.transit_after(Body::Sun, from, geo, ev, opts, 1.6).map(|o| o.map(|t| t.value()));
         if let Some(rise) = self.last_sun_event(jd, geo, TransitEvent::Rise, opts, 1.2)?
             && let (Some(next_rise), Some(set)) = (next(rise + 0.01, TransitEvent::Rise)?, next(rise, TransitEvent::Set)?)
             && set < next_rise
         {
-            return Ok(IndianDay { jd, rise_jd: rise, set_jd: set, next_rise_jd: next_rise, kind: SolarDayKind::Normal });
+            return Ok(IndianDay { jd, rise_jd: rise, set_jd: set, next_rise_jd: next_rise, kind: SolarDayKind::Normal, engine: self.engine_used(jd) });
         }
         // No complete sunrise–sunset–sunrise cycle: the Sun stays above or below the horizon.
-        let up = self.altitude(Body::Sun, jd, geo)? > 0.0;
+        let up = *self.altitude(Body::Sun, jd, geo)? > 0.0;
         let event = if up { TransitEvent::Ic } else { TransitEvent::Mc };
         let start = self.last_sun_event(jd, geo, event, opts, 1.2)?.unwrap_or(jd);
         let end = next(start + 0.01, event)?.unwrap_or(start + 1.0);
@@ -182,6 +186,7 @@ impl Ephemeris {
             set_jd: if up { end } else { start },
             next_rise_jd: end,
             kind: if up { SolarDayKind::PolarDay } else { SolarDayKind::PolarNight },
+            engine: self.engine_used(jd),
         })
     }
 

@@ -55,10 +55,29 @@ pub enum EphemError {
     Io(String, String),
     #[error("invalid SPK file {0}: {1}")]
     Format(String, String),
-    #[error("no ephemeris data for NAIF id {target} at JD {jd}")]
-    NoData { target: i32, jd: f64 },
+    /// The date is outside the data for a body, or no data for it is loaded. `covered` is
+    /// the span the loaded files do hold for that body (Julian Days, TDB), if any.
+    #[error("{}", no_data_message(*target, *jd, *covered))]
+    NoData { target: i32, jd: f64, covered: Option<(f64, f64)> },
+    /// The date is outside the JPL files and beyond the span of the analytical series too.
+    /// `covered` is that span (Julian Days, TDB).
+    #[error("{} (JD {jd}) is outside the JPL files and beyond the analytical series, which cover {} to {}", crate::spk::date_label(*jd), crate::spk::date_label(covered.0), crate::spk::date_label(covered.1))]
+    BeyondAnalytic { jd: f64, covered: (f64, f64) },
     #[error("invalid station table: {0}")]
     Table(String),
+}
+
+fn no_data_message(target: i32, jd: f64, covered: Option<(f64, f64)>) -> String {
+    let date = |jd: f64| crate::spk::date_label(jd);
+    match covered {
+        Some((start, end)) => format!(
+            "{} (JD {jd}) is outside the JPL ephemeris data for NAIF id {target}, which covers {} to {}",
+            date(jd),
+            date(start),
+            date(end)
+        ),
+        None => format!("no JPL ephemeris data is loaded for NAIF id {target}"),
+    }
 }
 
 /// Failure to calculate a position.
@@ -74,4 +93,21 @@ pub enum CalcError {
     NoHorizon(crate::Perspective),
     #[error("invalid sampling: days {days}, interval {interval}")]
     InvalidInterval { days: f64, interval: f64 },
+}
+
+impl CalcError {
+    /// Whether the failure is a date outside the data the engine holds for a body. The span
+    /// that is held is in [`EphemError::NoData`]'s `covered` field.
+    pub fn is_out_of_range(&self) -> bool {
+        matches!(self, CalcError::Ephem(EphemError::NoData { covered: Some(_), .. } | EphemError::BeyondAnalytic { .. }))
+    }
+
+    /// The engine that reported the failure, where one was involved.
+    pub fn engine(&self) -> Option<crate::CalcEngine> {
+        match self {
+            CalcError::Ephem(EphemError::NoData { .. }) => Some(crate::CalcEngine::Jpl),
+            CalcError::Ephem(EphemError::BeyondAnalytic { .. }) => Some(crate::CalcEngine::Analytic),
+            _ => None,
+        }
+    }
 }

@@ -38,7 +38,7 @@ fn progressed_periods_agree_with_dense_sampling() {
     let targets = targets();
     let opts = ProgressionOptions::default();
     let (from, to) = (b.birth.value(), b.birth.value() + 80.0 * TROPICAL_YEAR);
-    let periods = eph.progressed_aspects(&a, &bodies, &b, &bodies, &targets, from, to, &opts).unwrap();
+    let periods = eph.progressed_aspects(&a, &bodies, &b, &bodies, &targets, from, to, &opts).unwrap().value;
     assert!(periods.len() > 50, "only {} periods", periods.len());
 
     let lng = |s: &ChartSubject, body: Body, t: f64| {
@@ -99,7 +99,7 @@ fn natal_chart_stays_fixed_and_bad_ranges_are_rejected() {
     let b = ChartSubject::natal(2_443_815.3, geo);
     let opts = ProgressionOptions::default();
     let from = b.birth.value();
-    let periods = eph.progressed_aspects(&a, &[Body::Venus], &b, &[Body::Mars], &targets(), from, from + 60.0 * TROPICAL_YEAR, &opts).unwrap();
+    let periods = eph.progressed_aspects(&a, &[Body::Venus], &b, &[Body::Mars], &targets(), from, from + 60.0 * TROPICAL_YEAR, &opts).unwrap().value;
     let mars = eph.calc_position(Body::Mars, b.birth, geo, CoordSystem::Ecliptic, Perspective::Geocentric).unwrap().lng;
     for p in &periods {
         for &t in &p.exact_jds {

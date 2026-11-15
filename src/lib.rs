@@ -17,9 +17,12 @@
 //! * Builds for WebAssembly: turn off the default `mmap` feature and load data with
 //!   [`Ephemeris::from_bytes`].
 
+#[cfg(feature = "analytic")]
+pub mod analytic;
 pub mod aspects;
 pub mod ayanamsha;
 pub mod body;
+pub mod bulk;
 pub mod derived;
 pub mod error;
 pub mod events;
@@ -43,6 +46,7 @@ pub use aspects::{
     aspect_orbs, aspects_between, best_aspect, match_aspects, separation,
 };
 pub use ayanamsha::{Ayanamsha, to_sidereal};
+pub use bulk::{AspectCriteria, AspectHit, AspectMatch, AspectMatches, BulkCharts, ChartInput, ChartOptions, KeyedChart, KeyedError};
 pub use body::{Body, BodyKind, Catalog, parse_body_list, parse_body_list_for};
 pub use derived::{Angle, Derived, DerivedId, DerivedRegistry, Ref};
 pub use error::{BodyParseError, CalcError, DerivedError, EphemError, GeoError, TimeError};
@@ -55,7 +59,7 @@ pub use models::DeltaTModel;
 pub use pheno::{Phenomena, hg_magnitude, hg_parameters};
 pub use position::{BodyJdPos, BodyLng, BodyPos, BodyPosEqu, BodyPosExt, BodyPosHor, BodyPosSet, BodyPosition, CoordSystem, Perspective};
 pub use rise_set::{DayTransits, DiscAlignment, Horizon, Refraction, RiseSetOptions, TransitEvent, local_day_start};
-pub use spk::Ephemeris;
+pub use spk::{Calc, CalcEngine, DateRange, EphemFile, Ephemeris, scan_dir};
 pub use stars::{Star, named_stars, star_by_hip, star_by_name};
 pub use station_table::StationTable;
 pub use time::{J2000, JdTt, JdUt};

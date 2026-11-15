@@ -33,7 +33,7 @@ fn stations_match_reference_table() {
         for item in set["items"].as_array().unwrap() {
             let key = item["key"].as_str().unwrap();
             let body: Body = key.parse().unwrap();
-            let ours = eph.stations(body, from, to).unwrap();
+            let ours = eph.stations(body, from, to).unwrap().value;
             // The reference table is only as fine as its sampling: minutes for the inner
             // planets, hours for the slow ones whose speed crosses zero very gently.
             let tol_min = match key {
@@ -85,7 +85,7 @@ fn mercury_station_matches_almanac() {
     }
     // observed ΔT: Mercury stationed direct on 2024-01-02 at 03:07 UTC
     let eph = Ephemeris::open(bsp).unwrap();
-    let st = eph.stations(Body::Mercury, JdUt::from_iso("2023-12-28").unwrap(), JdUt::from_iso("2024-01-05").unwrap()).unwrap();
+    let st = eph.stations(Body::Mercury, JdUt::from_iso("2023-12-28").unwrap(), JdUt::from_iso("2024-01-05").unwrap()).unwrap().value;
     assert_eq!(st.len(), 1);
     assert_eq!(st[0].kind(), StationKind::RetroEnd);
     assert_eq!(&JdUt(st[0].jd()).to_iso().unwrap()[..16], "2024-01-02T03:07");
@@ -161,7 +161,7 @@ fn indian_day_from_ephemeris() {
         assert_eq!(d.is_day_time(), jd < d.set_jd);
         // boundaries are real sunrises/sunsets: the Sun's centre sits at the refracted horizon
         for t in [d.rise_jd, d.set_jd, d.next_rise_jd] {
-            let alt = eph.altitude(Body::Sun, t, GeoPos { alt: 0.0, ..delhi }).unwrap();
+            let alt = eph.altitude(Body::Sun, t, GeoPos { alt: 0.0, ..delhi }).unwrap().value;
             assert!((alt * 60.0 + 36.739).abs() < 0.2, "altitude {alt} at {t}");
         }
     }
@@ -280,7 +280,7 @@ fn station_sets_report_motion_and_surrounding_stations() {
     for (a, b) in by_days.stations.iter().zip(&set.stations) {
         assert!(a.kind() == b.kind() && (a.jd() - b.jd()).abs() < 1e-4, "{a:?} vs {b:?}");
     }
-    let ranged = eph.stations(Body::Mercury, jd, last + 0.01).unwrap();
+    let ranged = eph.stations(Body::Mercury, jd, last + 0.01).unwrap().value;
     assert_eq!(ranged.len(), 8);
 
     // Direct motion, slow bodies and bodies that never turn back.
@@ -292,8 +292,12 @@ fn station_sets_report_motion_and_surrounding_stations() {
     let sun = eph.next_stations(Body::Sun, jd, 4, 2).unwrap();
     assert!(sun.stations.is_empty() && sun.speed > 0.9);
     // Close to the end of the data the search returns what there is; outside it, an error.
-    let late = eph.next_stations(Body::Mercury, 2_506_300.0, 40, 1).unwrap();
-    assert!(!late.stations.is_empty() && late.stations.len() < 41);
-    assert!(eph.next_stations(Body::Mercury, 2_600_000.0, 4, 0).is_err());
+    // (With the analytical series built in, the search carries on past the files.)
+    #[cfg(not(feature = "analytic"))]
+    {
+        let late = eph.next_stations(Body::Mercury, 2_506_300.0, 40, 1).unwrap();
+        assert!(!late.stations.is_empty() && late.stations.len() < 41);
+        assert!(eph.next_stations(Body::Mercury, 2_600_000.0, 4, 0).is_err());
+    }
     assert!(eph.planetary_stations(Body::Mercury, jd, -1.0, 0).is_err());
 }

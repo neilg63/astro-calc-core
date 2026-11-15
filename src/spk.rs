@@ -24,6 +24,154 @@ const RECORD_BYTES: usize = 1024;
 /// Largest modified-difference-array table size supported (SPK types 1 and 21).
 const MAX_MDA_DIM: usize = 25;
 
+/// A span of time covered by ephemeris data, as Julian Days on the ephemeris's own time
+/// scale (TDB). That runs ahead of UT by ΔT: about a minute in the present era, hours in
+/// antiquity.
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct DateRange {
+    pub start: f64,
+    pub end: f64,
+}
+
+impl DateRange {
+    /// Whether a Julian Day falls inside the span.
+    pub fn contains(&self, jd: f64) -> bool {
+        jd >= self.start && jd <= self.end
+    }
+
+    /// Length in days.
+    pub fn days(&self) -> f64 {
+        self.end - self.start
+    }
+
+    /// The part shared with another span, if they overlap.
+    pub fn intersect(&self, other: &DateRange) -> Option<DateRange> {
+        let r = DateRange { start: self.start.max(other.start), end: self.end.min(other.end) };
+        (r.start <= r.end).then_some(r)
+    }
+
+    /// First day as a proleptic Gregorian date, `YYYY-MM-DD` (astronomical year numbering).
+    pub fn start_date(&self) -> String {
+        date_label(self.start)
+    }
+
+    /// Last day as a proleptic Gregorian date, `YYYY-MM-DD` (astronomical year numbering).
+    pub fn end_date(&self) -> String {
+        date_label(self.end)
+    }
+}
+
+impl std::fmt::Display for DateRange {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} to {}", self.start_date(), self.end_date())
+    }
+}
+
+/// A Julian Day as a proleptic Gregorian calendar date with astronomical year numbering
+/// (year 0 is 1 BC), for messages. Works for any date, unlike the chrono conversions.
+pub(crate) fn date_label(jd: f64) -> String {
+    // Fliegel & Van Flandern / Richards algorithm on the day number at noon.
+    let j = (jd + 0.5).floor() as i64;
+    let f = j + 1401 + (((4 * j + 274_277).div_euclid(146_097)) * 3).div_euclid(4) - 38;
+    let e = 4 * f + 3;
+    let g = e.rem_euclid(1461).div_euclid(4);
+    let h = 5 * g + 2;
+    let day = h.rem_euclid(153).div_euclid(5) + 1;
+    let month = (h.div_euclid(153) + 2).rem_euclid(12) + 1;
+    let year = e.div_euclid(1461) - 4716 + (12 + 2 - month).div_euclid(12);
+    if year < 0 { format!("-{:04}-{month:02}-{day:02}", -year) } else { format!("{year:04}-{month:02}-{day:02}") }
+}
+
+/// The engine that produced a result.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
+pub enum CalcEngine {
+    /// From the JPL ephemeris files loaded.
+    #[default]
+    Jpl,
+    /// From the built-in analytical series (VSOP87 and ELP/MPP02), used where the date is outside the JPL
+    /// files. Only with the `analytic` feature; without it such dates fail with
+    /// [`EphemError::NoData`] and this value is never returned.
+    Analytic,
+}
+
+impl CalcEngine {
+    /// Short key: `jpl` or `analytic`.
+    pub const fn key(self) -> &'static str {
+        match self {
+            CalcEngine::Jpl => "jpl",
+            CalcEngine::Analytic => "analytic",
+        }
+    }
+}
+
+impl std::fmt::Display for CalcEngine {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.key())
+    }
+}
+
+/// A calculated value together with the engine that produced it, for results that have no
+/// struct of their own to carry it. Dereferences to the value.
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct Calc<T> {
+    pub engine: CalcEngine,
+    pub value: T,
+}
+
+impl<T> Calc<T> {
+    pub const fn new(engine: CalcEngine, value: T) -> Self {
+        Self { engine, value }
+    }
+
+    /// The value alone.
+    pub fn into_value(self) -> T {
+        self.value
+    }
+
+    /// Applies a function to the value, keeping the engine.
+    pub fn map<U>(self, f: impl FnOnce(T) -> U) -> Calc<U> {
+        Calc { engine: self.engine, value: f(self.value) }
+    }
+}
+
+impl<T> std::ops::Deref for Calc<T> {
+    type Target = T;
+    fn deref(&self) -> &T {
+        &self.value
+    }
+}
+
+/// What one JPL ephemeris file holds.
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct EphemFile {
+    /// File name, or the label given to [`Ephemeris::add_bytes`].
+    pub name: String,
+    /// Size in bytes.
+    pub size: u64,
+    /// The span covered by every body in the file: where they all overlap.
+    pub range: DateRange,
+    /// NAIF ids of the bodies in the file, in ascending order.
+    pub targets: Vec<i32>,
+}
+
+impl EphemFile {
+    /// Whether this is a planetary file: one holding the Sun, Moon and Earth.
+    pub fn is_planetary(&self) -> bool {
+        [10, 301, 399].iter().all(|id| self.targets.contains(id))
+    }
+}
+
+/// Lists the JPL ephemeris files (`.bsp`) in a directory with the dates and bodies each
+/// holds, without building an [`Ephemeris`]. Only the files' indexes are read. Sorted by name.
+pub fn scan_dir(dir: impl AsRef<Path>) -> Result<Vec<EphemFile>, EphemError> {
+    Ok(Ephemeris::open_dir(dir)?.files)
+}
+
 #[derive(Debug, Clone, Copy)]
 struct Segment {
     file: usize,
@@ -76,7 +224,10 @@ impl SpkFile {
 
 /// One or more SPK files indexed by target body.
 pub struct Ephemeris {
-    files: Vec<SpkFile>,
+    spk: Vec<SpkFile>,
+    files: Vec<EphemFile>,
+    /// Span shared by the Sun, Moon and planets, kept up to date as files are added.
+    core_range: Option<DateRange>,
     delta_t_model: DeltaTModel,
     /// Segments by target; later files take precedence (searched first).
     by_target: HashMap<i32, Vec<Segment>>,
@@ -85,7 +236,8 @@ pub struct Ephemeris {
 impl std::fmt::Debug for Ephemeris {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Ephemeris")
-            .field("files", &self.files.len())
+            .field("files", &self.files.iter().map(|f| f.name.as_str()).collect::<Vec<_>>())
+            .field("range", &self.core_range.map(|r| r.to_string()))
             .field("targets", &self.by_target.len())
             .finish()
     }
@@ -100,7 +252,7 @@ impl Ephemeris {
     }
 
     fn empty() -> Self {
-        Ephemeris { files: Vec::new(), delta_t_model: DeltaTModel::default(), by_target: HashMap::new() }
+        Ephemeris { spk: Vec::new(), files: Vec::new(), core_range: None, delta_t_model: DeltaTModel::default(), by_target: HashMap::new() }
     }
 
     /// Builds an ephemeris from the contents of an SPK file already in memory, for platforms
@@ -119,11 +271,28 @@ impl Ephemeris {
 
     fn add_data(&mut self, name: &str, data: Data) -> Result<(), EphemError> {
         let spk = SpkFile { data };
-        let segments = read_segments(&spk, self.files.len(), name)?;
-        self.files.push(spk);
+        let segments = read_segments(&spk, self.spk.len(), name)?;
+        // Per target: the union of its segments; for the file: where all targets overlap.
+        let mut spans: HashMap<i32, (f64, f64)> = HashMap::new();
+        for seg in &segments {
+            let s = spans.entry(seg.target).or_insert((f64::INFINITY, f64::NEG_INFINITY));
+            *s = (s.0.min(seg.start_et), s.1.max(seg.end_et));
+        }
+        let start = spans.values().map(|s| s.0).fold(f64::NEG_INFINITY, f64::max);
+        let end = spans.values().map(|s| s.1).fold(f64::INFINITY, f64::min);
+        let mut targets: Vec<i32> = spans.keys().copied().collect();
+        targets.sort_unstable();
+        self.files.push(EphemFile {
+            name: Path::new(name).file_name().map_or_else(|| name.to_string(), |f| f.to_string_lossy().into_owned()),
+            size: spk.bytes().len() as u64,
+            range: DateRange { start: J2000_JD + start / DAY_S, end: J2000_JD + end / DAY_S },
+            targets,
+        });
+        self.spk.push(spk);
         for seg in segments {
             self.by_target.entry(seg.target).or_default().insert(0, seg);
         }
+        self.core_range = crate::position::core_range(self);
         Ok(())
     }
 
@@ -165,6 +334,19 @@ impl Ephemeris {
         self.add_data(&name, data)
     }
 
+    /// The files loaded, in the order they were added, with the dates and bodies each holds.
+    pub fn files(&self) -> &[EphemFile] {
+        &self.files
+    }
+
+    /// The dates for which the loaded JPL files can place the Sun, the Moon and every planet
+    /// from Mercury to Pluto: the span they all share. `None` if any of them is missing.
+    /// Small bodies loaded from separate files often cover less; see
+    /// [`body_range`](Self::body_range).
+    pub fn date_range(&self) -> Option<DateRange> {
+        self.core_range
+    }
+
     /// Chooses the ΔT model used to convert UT to TT (default: observed values).
     pub fn with_delta_t_model(mut self, model: DeltaTModel) -> Self {
         self.delta_t_model = model;
@@ -190,27 +372,83 @@ impl Ephemeris {
         Some((J2000_JD + start / DAY_S, J2000_JD + end / DAY_S))
     }
 
+    /// Time span over which a target can be placed relative to the solar-system barycentre:
+    /// the span shared by its own data and that of every centre it is chained through.
+    /// `None` if the target or part of its chain is not loaded, or the spans do not overlap.
+    pub fn target_range(&self, target: i32) -> Option<DateRange> {
+        let mut range = DateRange { start: f64::NEG_INFINITY, end: f64::INFINITY };
+        let mut body = target;
+        for _ in 0..=8 {
+            if body == 0 {
+                return Some(range);
+            }
+            let (start, end) = self.coverage(body)?;
+            range = range.intersect(&DateRange { start, end })?;
+            body = self.by_target.get(&body)?.first()?.center;
+        }
+        None
+    }
+
     /// Position (AU) and velocity (AU/day) of `target` relative to its segment centre.
     fn segment_state(&self, target: i32, tdb_jd: f64) -> Result<(i32, Vec3, Vec3), EphemError> {
         let et = (tdb_jd - J2000_JD) * DAY_S;
         let segs = self
             .by_target
             .get(&target)
-            .ok_or(EphemError::NoData { target, jd: tdb_jd })?;
+            .ok_or(EphemError::NoData { target, jd: tdb_jd, covered: None })?;
         let seg = segs
             .iter()
             .find(|s| et >= s.start_et && et <= s.end_et)
-            .ok_or(EphemError::NoData { target, jd: tdb_jd })?;
+            .ok_or_else(|| EphemError::NoData { target, jd: tdb_jd, covered: self.coverage(target) })?;
         let (p, v) = match seg.data_type {
-            1 | 21 => eval_mda(&self.files[seg.file], seg, et),
-            _ => eval_segment(&self.files[seg.file], seg, et),
+            1 | 21 => eval_mda(&self.spk[seg.file], seg, et),
+            _ => eval_segment(&self.spk[seg.file], seg, et),
         };
         Ok((seg.center, scale(p, 1.0 / AU_KM), scale(v, DAY_S / AU_KM)))
     }
 
+    /// The engine that supplies positions at a TDB Julian Day: the JPL files where they cover
+    /// the Sun, Moon and planets, otherwise the analytical series if the `analytic` feature
+    /// is on and the date is within their span, otherwise none.
+    pub(crate) fn engine_for_tdb(&self, tdb_jd: f64) -> Option<CalcEngine> {
+        if self.core_range.is_some_and(|r| r.contains(tdb_jd)) {
+            return Some(CalcEngine::Jpl);
+        }
+        #[cfg(feature = "analytic")]
+        if crate::analytic::RANGE.contains(tdb_jd) {
+            return Some(CalcEngine::Analytic);
+        }
+        None
+    }
+
+    /// An ephemeris with no JPL files, calculating everything from the built-in analytical
+    /// series. Files can still be added with [`add_file`](Self::add_file) or
+    /// [`add_bytes`](Self::add_bytes); the series then serve only the dates they do not cover.
+    #[cfg(feature = "analytic")]
+    pub fn analytic() -> Self {
+        Self::empty()
+    }
+
     /// Position (AU) and velocity (AU/day) of `target` relative to the solar-system
     /// barycentre (NAIF 0), in the ICRF, at a TDB Julian Day.
+    ///
+    /// With the `analytic` feature, a date outside the span the files share for the Sun,
+    /// Moon and planets is served by the analytical series instead, for every body alike,
+    /// so that one moment is never pieced together from two engines.
     pub fn barycentric(&self, target: i32, tdb_jd: f64) -> Result<(Vec3, Vec3), EphemError> {
+        #[cfg(feature = "analytic")]
+        if !self.core_range.is_some_and(|r| r.contains(tdb_jd)) {
+            if !crate::analytic::RANGE.contains(tdb_jd) {
+                let r = crate::analytic::RANGE;
+                return Err(EphemError::BeyondAnalytic { jd: tdb_jd, covered: (r.start, r.end) });
+            }
+            return crate::analytic::barycentric(target, tdb_jd)
+                .ok_or_else(|| EphemError::NoData { target, jd: tdb_jd, covered: self.coverage(target) });
+        }
+        self.barycentric_jpl(target, tdb_jd)
+    }
+
+    fn barycentric_jpl(&self, target: i32, tdb_jd: f64) -> Result<(Vec3, Vec3), EphemError> {
         let mut pos = [0.0; 3];
         let mut vel = [0.0; 3];
         let mut body = target;
@@ -222,7 +460,7 @@ impl Ephemeris {
             body = center;
             hops += 1;
             if hops > 8 {
-                return Err(EphemError::NoData { target, jd: tdb_jd });
+                return Err(EphemError::NoData { target, jd: tdb_jd, covered: None });
             }
         }
         Ok((pos, vel))

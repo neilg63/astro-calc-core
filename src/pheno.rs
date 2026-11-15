@@ -12,6 +12,7 @@
 //! are outdated (most visibly Pluto).
 
 use crate::body::Body;
+use crate::spk::CalcEngine;
 use crate::error::CalcError;
 use crate::geo::GeoPos;
 use crate::math::{dot, norm};
@@ -35,6 +36,9 @@ pub struct Phenomena {
     pub diameter: f64,
     /// Apparent visual magnitude.
     pub magnitude: f64,
+    /// The engine that produced the positions these are derived from.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
 }
 
 impl Ephemeris {
@@ -51,6 +55,7 @@ impl Ephemeris {
                 elongation: 0.0,
                 diameter,
                 magnitude: -26.86 + 5.0 * g.dist.log10(),
+                engine: frame.engine,
             });
         }
         let alpha = g.phase_angle;
@@ -61,6 +66,7 @@ impl Ephemeris {
             elongation: g.elongation,
             diameter,
             magnitude: magnitude(body, alpha, g.helio_dist, g.dist, g.ring_tilt_sin),
+            engine: frame.engine,
         })
     }
 

@@ -53,10 +53,12 @@ fn unsupported_inputs_are_errors() {
         eph.calc_position(Body::Chiron, 2451545.0, ROME, CoordSystem::Ecliptic, Perspective::Geocentric),
         Err(CalcError::Ephem(EphemError::NoData { target: 20_002_060, .. }))
     ));
-    assert!(matches!(
-        eph.calc_position(Body::Sun, 2200000.0, ROME, CoordSystem::Ecliptic, Perspective::Geocentric),
-        Err(CalcError::Ephem(EphemError::NoData { .. }))
-    ));
+    // A date outside the files: an error, unless the analytical series are built in.
+    let early = eph.calc_position(Body::Sun, 2200000.0, ROME, CoordSystem::Ecliptic, Perspective::Geocentric);
+    #[cfg(not(feature = "analytic"))]
+    assert!(matches!(early, Err(CalcError::Ephem(EphemError::NoData { .. }))));
+    #[cfg(feature = "analytic")]
+    assert_eq!(early.unwrap().engine, astro_calc_core::CalcEngine::Analytic);
 }
 
 #[test]

@@ -70,6 +70,23 @@ fn interpolate(table: &[(f64, f64)], x: f64) -> f64 {
     v0 + (v1 - v0) * (x - x0) / (x1 - x0)
 }
 
+/// ΔT in seconds before the observed table: the polynomial expressions of Espenak & Meeus
+/// (Five Millennium Canon of Solar Eclipses, NASA/TP-2006-214141), which follow the
+/// historical eclipse record of Morrison & Stephenson (2004) from 500 BC, and the long-term
+/// parabola before that.
+fn delta_t_historic(y: f64) -> f64 {
+    let poly = |u: f64, c: &[f64]| c.iter().rev().fold(0.0, |acc, &k| acc * u + k);
+    if y < -500.0 {
+        delta_t_parabola(y)
+    } else if y < 500.0 {
+        poly(y / 100.0, &[10583.6, -1014.41, 33.78311, -5.952053, -0.1798452, 0.022174192, 0.0090316521])
+    } else if y < 1600.0 {
+        poly((y - 1000.0) / 100.0, &[1574.2, -556.01, 71.23472, 0.319781, -0.8503463, -0.005050998, 0.0083572073])
+    } else {
+        poly(y - 1600.0, &[120.0, -0.9808, -0.01532, 1.0 / 7129.0])
+    }
+}
+
 /// ΔT = TT − UT1 in seconds, observed model (see [`DeltaTModel::Observed`]).
 pub fn delta_t(jd_ut: f64) -> f64 {
     use delta_t_table::DELTA_T_TABLE as T;
@@ -77,7 +94,9 @@ pub fn delta_t(jd_ut: f64) -> f64 {
     let (first_y, first_v) = T[0];
     let (last_y, last_v) = T[T.len() - 1];
     if y <= first_y {
-        return delta_t_parabola(y) + (first_v - delta_t_parabola(first_y));
+        // Join the historical polynomials to the table, fading the small step out over a century.
+        let step = first_v - delta_t_historic(first_y);
+        return delta_t_historic(y) + step * (1.0 - (first_y - y) / 100.0).max(0.0);
     }
     if y >= last_y {
         // Last year's mean rate plus the long-term acceleration.

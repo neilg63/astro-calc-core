@@ -17,10 +17,10 @@ fn every_option_moves_the_event_as_it_should() {
     let Some(eph) = eph() else { return };
     let london = GeoPos::new(51.5074, -0.1278, 0.0).unwrap();
     let midnight = JdUt::from_iso("2024-03-20T00:00:00").unwrap().value();
-    let rise = |body: Body, geo: GeoPos, opts: RiseSetOptions| eph.next_transit(body, midnight, geo, TransitEvent::Rise, opts, 1.5).unwrap().unwrap().value();
-    let set = |body: Body, geo: GeoPos, opts: RiseSetOptions| eph.next_transit(body, midnight, geo, TransitEvent::Set, opts, 1.5).unwrap().unwrap().value();
+    let rise = |body: Body, geo: GeoPos, opts: RiseSetOptions| eph.next_transit(body, midnight, geo, TransitEvent::Rise, opts, 1.5).unwrap().value.unwrap().value();
+    let set = |body: Body, geo: GeoPos, opts: RiseSetOptions| eph.next_transit(body, midnight, geo, TransitEvent::Set, opts, 1.5).unwrap().value.unwrap().value();
     let sun = |opts: RiseSetOptions| rise(Body::Sun, london, opts);
-    let alt = |t: f64| eph.altitude(Body::Sun, t, london).unwrap();
+    let alt = |t: f64| eph.altitude(Body::Sun, t, london).unwrap().value;
     let base = RiseSetOptions::default();
 
     // The almanac sunrise for London on 20 March 2024 is 06:02 UTC.
@@ -83,7 +83,7 @@ fn every_option_moves_the_event_as_it_should() {
     let tower = GeoPos::new(51.5074, -0.1278, 100.0).unwrap();
     let (flat, dipped) = (rise(Body::Sun, tower, base), rise(Body::Sun, tower, base.with_dip(true)));
     assert!(((flat - dipped) / SECOND - 110.0).abs() < 40.0, "dip advanced sunrise by {} s", (flat - dipped) / SECOND);
-    let dip = eph.altitude(Body::Sun, flat, tower).unwrap() - eph.altitude(Body::Sun, dipped, tower).unwrap();
+    let dip = eph.altitude(Body::Sun, flat, tower).unwrap().value - eph.altitude(Body::Sun, dipped, tower).unwrap().value;
     assert!((dip * 60.0 - 17.6).abs() < 0.01, "dip {}′", dip * 60.0);
     assert_eq!(rise(Body::Sun, london, base.with_dip(true)), rise(Body::Sun, london, base), "no height, no dip");
 

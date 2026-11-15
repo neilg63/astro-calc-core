@@ -14,7 +14,7 @@ fn main() {
         }
         let body: Body = key.parse().unwrap();
         let (from, to) = (rows[0][0] - 5.0, rows[rows.len() - 1][0] + 5.0);
-        let ours = eph.stations(body, from, to).unwrap();
+        let ours = eph.stations(body, from, to).unwrap().value;
         let theirs_n = rows.len();
         for (k, kind) in kinds.iter().enumerate() {
             let mut diffs = Vec::new();

@@ -137,6 +137,52 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+## Bulk calculation
+
+For large sets of records (births, events) the `bulk` module calculates in one call. Every
+record carries a key of the caller's choosing, which is handed back untouched, so records
+can be filtered beforehand and results matched to them afterwards.
+
+```rust
+let records = vec![
+    ChartInput::new("UniqueNameA", 2_443_121.236, GeoPos::new(44.8993, 12.39373, 0.0)?),
+    ChartInput::new("UniqueNameB", 2_440_408.892, GeoPos::new(48.1462, 11.38975, 0.0)?),
+];
+
+// A chart for each record: the default bodies, ascendant included.
+let found = eph.bulk_charts(&records, &ChartOptions::default());
+
+// Records with a body quincunx (150° ± 2°1') the first record's Mars.
+let criteria = AspectCriteria::new(&[Body::Mars], &Body::LUMINARIES_AND_PLANETS, &aspect_orbs(&[(150.0, 2.0 + 1.0 / 60.0)]));
+let found = eph.aspects_one_to_many(&records[0], &records[1..], &criteria)?;
+for m in &found.matches {
+    println!("{}: {:?} is {:+.3}° from exact", m.b, m.hits[0].body_b, m.hits[0].deviation);
+}
+```
+
+| Function | Compares |
+|---|---|
+| `bulk_charts` | nothing: positions of the chosen bodies for every record |
+| `aspects_in_pairs` | the two records of each given pair |
+| `aspects_one_to_many` | one record with each record of a list |
+| `aspects_many_to_many` | every two records of one list |
+
+The aspect searches return only the pairs that match, each with the bodies involved and the
+deviation from exact. `AspectCriteria::progressed_to` compares secondary-progressed charts
+(a day for a year) as they stand on a given date. Records need not be sorted: they are worked
+through in date order internally and returned in input order. A record that cannot be
+calculated is listed under `errors` with its key and does not fail the batch.
+
+With the `parallel` feature the work is spread over all cores with `rayon`. On an 18-core
+Apple M5 Pro, DE440s, release build:
+
+| Task | One thread | `parallel` |
+|---|---|---|
+| 10,000 charts of 13 bodies with speeds | 145 ms | 16–20 ms |
+| One record against 9,999 (1 × 10 bodies) | 54 ms | 5 ms |
+| 5,000 pairs (10 × 10 bodies) | 65 ms | 8–19 ms |
+| 2,000 records, every pair both ways (4 million) | 94 ms | 13 ms |
+
 ## Data files
 
 The library reads JPL ephemeris files in the SPK (`.bsp`) format. They are not included in
@@ -156,6 +202,52 @@ python3 -I tools/fetch_horizons_spk.py data
 ```
 
 The date range the library supports is the range of the files loaded.
+`scan_dir(dir)` lists the `.bsp` files in a directory with the dates and bodies each holds,
+without loading them for calculation; `Ephemeris::files()` gives the same for a loaded
+ephemeris. `Ephemeris::date_range()` reports the span shared by the Sun, Moon and planets,
+and `body_range(body)` the span for one body (the minor-body files are often shorter).
+
+Every calculation that uses the ephemeris reports the engine behind it, as a `CalcEngine`:
+in an `engine` field on result structs, or in a `Calc<T>` wrapper (`engine` and `value`,
+dereferencing to the value) where the result is a bare number or list. A date outside the
+data fails with an error naming the body and the dates covered; `CalcError::is_out_of_range()`
+picks those out. The engine is `CalcEngine::Jpl` unless the `analytic` feature is on (below). Functions that are pure
+mathematics (houses, angles, aspects between given positions, formula-based ayanamshas) do
+not report one.
+
+## Analytical fallback (feature `analytic`)
+
+With the optional `analytic` feature, a date outside the JPL files is calculated from
+built-in series instead of failing, and the result reports `CalcEngine::Analytic`.
+`Ephemeris::analytic()` builds an ephemeris with no files at all, which suits WebAssembly.
+
+```toml
+astro-calc-core = { version = "0.1", features = ["analytic"] }
+```
+
+- **Covered:** the Sun and Mercury to Neptune from the VSOP87 theory, and the Moon from the
+  lunar theory ELP/MPP02, for 4000 years either side of J2000. Everything built on them
+  works: the lunar nodes and apsides, all perspectives, rise and set, stations, moon
+  phases, phenomena, stars, hypothetical bodies, houses and ayanamshas.
+- **Not covered:** Pluto and the minor bodies. Outside the files these fail with an error
+  naming the dates the files hold.
+- **Accuracy inside 1850 to 2150**, against the JPL files, in apparent geocentric longitude:
+  0.1″ for the Sun and Moon, 0.2″ for Mercury and Venus, 0.7″ for Mars and Jupiter, 0.4″
+  for Saturn, 1.7″ for Uranus and 2.5″ for Neptune.
+- **Accuracy before 1850**, from four spot checks against the AstroCalc reference API at
+  AD 500, 1200, 1585 and 1700, after removing the difference in ΔT: Mercury and Venus within
+  0.4″, Mars and Jupiter within 1″, Saturn within 3″, the Moon 1.5″ at 1700 growing to 6″ at
+  AD 500. Uranus and Neptune drift much more, 3″ to 8″ around 1600 and about 40″ at AD 500,
+  because the theory was fitted to an older JPL ephemeris in which their orbits were less
+  well known. Nothing earlier than AD 500 has been checked.
+- **ΔT matters more than the series at remote dates.** Published reconstructions of the
+  Earth's rotation differ by tens of seconds before 1700 and by a minute or two in the
+  Middle Ages, and each second moves the Moon by half an arcsecond.
+- **Speed and size:** about two hundred times slower than the JPL files (about 2 ms for ten
+  bodies) and 0.9 MB larger. The embedded tables are truncations of the published series;
+  `tools/build_analytic_tables.py` rebuilds them at any level.
+- **One engine per moment:** a date outside the span the files share for the Sun, Moon and
+  planets is served entirely by the series, never pieced together from both.
 
 ## Data sources and references
 
@@ -168,6 +260,9 @@ The date range the library supports is the range of the files loaded.
 | IERS Conventions (2010) | Earth orientation models |
 | US Naval Observatory ΔT tables | Difference between Terrestrial Time and Universal Time |
 | Morrison & Stephenson (2004) | Long-term ΔT outside the observed range |
+| Bretagnon & Francou (1988), VSOP87, as distributed by IMCCE | Analytical series for the Sun and planets (feature `analytic`) |
+| Chapront & Francou (2003), ELP/MPP02, as distributed by Paris Observatory | Analytical series for the Moon (feature `analytic`) |
+| Espenak & Meeus (2006), Five Millennium Canon of Solar Eclipses | ΔT before 1657 |
 | Hipparcos, the New Reduction (van Leeuwen 2007), via NASA HEASARC | Star positions, proper motions and parallaxes |
 | [IAU Catalog of Star Names](https://www.iau.org/public/themes/naming_stars/) (IAU Working Group on Star Names) | Star names and visual magnitudes |
 | Reid & Brunthaler (2004) | Position of the Galactic Centre (Sgr A*) |
@@ -193,7 +288,8 @@ Licence terms for the transcribed tables and formulae are in [NOTICE](NOTICE).
 
 ## Not yet implemented
 
-- Parallel bulk calculation and async wrappers.
+- Async wrappers for the bulk functions.
+- Pluto in the analytical fallback (see *Analytical fallback*).
 
 ## Examples
 
@@ -201,7 +297,7 @@ Licence terms for the transcribed tables and formulae are in [NOTICE](NOTICE).
 cargo run --release --example positions
 ```
 
-`positions` is a quick start. `timing` and `stations_timing` report speeds, and
+`positions` is a quick start. `bulk` shows the bulk functions with timings, `timing` and `stations_timing` report speeds, and
 `build_station_table` generates the station table file. The other examples and the Python
 scripts in `tools/` are maintenance aids: they regenerate test fixtures and data, and are
 not part of the published crate.

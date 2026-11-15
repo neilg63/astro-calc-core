@@ -92,7 +92,7 @@ impl StationTable {
     pub fn build_all(eph: &Ephemeris, bodies: &[Body]) -> Result<Self, CalcError> {
         let (mut from, mut to) = (f64::NEG_INFINITY, f64::INFINITY);
         for id in bodies.iter().filter_map(|&b| naif_id(b)).chain([NAIF_EARTH]) {
-            let (a, b) = eph.coverage(id).ok_or(EphemError::NoData { target: id, jd: crate::time::J2000 })?;
+            let (a, b) = eph.coverage(id).ok_or(EphemError::NoData { target: id, jd: crate::time::J2000, covered: None })?;
             from = from.max(a);
             to = to.min(b);
         }
@@ -184,7 +184,7 @@ impl StationTable {
     pub fn station_set(&self, eph: &Ephemeris, body: Body, jd: impl Into<JdUt>, count: usize, stations_before: u8) -> Result<StationSet, CalcError> {
         let jd = jd.into().value();
         match self.around(body, jd, stations_before as usize, count) {
-            Some(found) => Ok(StationSet { body, jd, speed: eph.lng_speed(body, jd)?.1, stations: found.to_vec() }),
+            Some(found) => Ok(StationSet { body, jd, speed: eph.lng_speed(body, jd)?.1, stations: found.to_vec(), engine: eph.engine_used(jd) }),
             None => eph.next_stations(body, jd, count, stations_before),
         }
     }

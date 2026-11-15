@@ -17,7 +17,7 @@ use crate::error::CalcError;
 use crate::geo::GeoPos;
 use crate::math::{Vec3, add, cross, dot, mat_t_vec, mat_vec, norm, scale, sub, to_spherical, unit};
 use crate::models::{EARTH_ROT_RATE, EarthOrientation, geodetic_to_itrs, tdb_minus_tt, ut_to_tt};
-use crate::spk::{AU_KM, Ephemeris};
+use crate::spk::{AU_KM, Calc, CalcEngine, DateRange, Ephemeris};
 use crate::time::JdUt;
 
 /// Speed of light in AU per day.
@@ -195,6 +195,9 @@ pub struct BodyPos {
     pub lat_speed: f64,
     pub dist: f64,
     pub dist_speed: f64,
+    /// How the position was calculated.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
 }
 
 /// What every kind of position can report under common names: the two angles of its
@@ -211,6 +214,8 @@ pub trait BodyPosition {
     /// Distance in AU. It is the same in every coordinate system.
     fn dist(&self) -> f64;
     fn dist_speed(&self) -> f64;
+    /// How the position was calculated.
+    fn engine(&self) -> CalcEngine;
 }
 
 impl BodyPosition for BodyPos {
@@ -238,6 +243,9 @@ impl BodyPosition for BodyPos {
     fn dist_speed(&self) -> f64 {
         self.dist_speed
     }
+    fn engine(&self) -> CalcEngine {
+        self.engine
+    }
 }
 
 /// Equatorial position of one body: right ascension and declination of date, in degrees,
@@ -258,6 +266,9 @@ pub struct BodyPosEqu {
     /// Distance in AU.
     pub dist: f64,
     pub dist_speed: f64,
+    /// How the position was calculated.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
 }
 
 impl BodyPosEqu {
@@ -292,6 +303,9 @@ impl BodyPosition for BodyPosEqu {
     fn dist_speed(&self) -> f64 {
         self.dist_speed
     }
+    fn engine(&self) -> CalcEngine {
+        self.engine
+    }
 }
 
 /// Horizontal position of one body: azimuth and geometric altitude in degrees, with speeds
@@ -313,6 +327,9 @@ pub struct BodyPosHor {
     /// Distance in AU.
     pub dist: f64,
     pub dist_speed: f64,
+    /// How the position was calculated.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
 }
 
 impl BodyPosition for BodyPosHor {
@@ -339,6 +356,9 @@ impl BodyPosition for BodyPosHor {
     }
     fn dist_speed(&self) -> f64 {
         self.dist_speed
+    }
+    fn engine(&self) -> CalcEngine {
+        self.engine
     }
 }
 
@@ -370,6 +390,9 @@ pub struct BodyPosExt {
     pub alt_speed: f64,
     pub dist: f64,
     pub dist_speed: f64,
+    /// How the position was calculated.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
 }
 
 impl BodyPosExt {
@@ -397,22 +420,23 @@ impl BodyPosExt {
             alt_speed: hor.alt_speed,
             dist: ecl.dist,
             dist_speed: ecl.dist_speed,
+            engine: ecl.engine,
         }
     }
 
     /// The ecliptic part.
     pub fn ecliptic(&self) -> BodyPos {
-        BodyPos { body: self.body, lng: self.lng, lat: self.lat, lng_speed: self.lng_speed, lat_speed: self.lat_speed, dist: self.dist, dist_speed: self.dist_speed }
+        BodyPos { body: self.body, lng: self.lng, lat: self.lat, lng_speed: self.lng_speed, lat_speed: self.lat_speed, dist: self.dist, dist_speed: self.dist_speed, engine: self.engine }
     }
 
     /// The equatorial part.
     pub fn equatorial(&self) -> BodyPosEqu {
-        BodyPosEqu { body: self.body, ras: self.ras, dcl: self.dcl, ras_speed: self.ras_speed, dcl_speed: self.dcl_speed, dist: self.dist, dist_speed: self.dist_speed }
+        BodyPosEqu { body: self.body, ras: self.ras, dcl: self.dcl, ras_speed: self.ras_speed, dcl_speed: self.dcl_speed, dist: self.dist, dist_speed: self.dist_speed, engine: self.engine }
     }
 
     /// The horizontal part.
     pub fn horizontal(&self) -> BodyPosHor {
-        BodyPosHor { body: self.body, azi: self.azi, alt: self.alt, azi_speed: self.azi_speed, alt_speed: self.alt_speed, dist: self.dist, dist_speed: self.dist_speed }
+        BodyPosHor { body: self.body, azi: self.azi, alt: self.alt, azi_speed: self.azi_speed, alt_speed: self.alt_speed, dist: self.dist, dist_speed: self.dist_speed, engine: self.engine }
     }
 }
 
@@ -441,6 +465,9 @@ impl BodyPosition for BodyPosExt {
     }
     fn dist_speed(&self) -> f64 {
         self.dist_speed
+    }
+    fn engine(&self) -> CalcEngine {
+        self.engine
     }
 }
 
@@ -503,6 +530,8 @@ pub(crate) struct Frame {
     /// Sun barycentric position at `tdb` (AU).
     sun_pos: Vec3,
     perspective: Perspective,
+    /// Where the positions in this frame come from.
+    pub(crate) engine: CalcEngine,
 }
 
 impl Frame {
@@ -536,6 +565,7 @@ impl Frame {
             obs_vel,
             sun_pos,
             perspective: persp,
+            engine: eph.engine_for_tdb(tdb).unwrap_or_default(),
         })
     }
 
@@ -738,7 +768,7 @@ impl Frame {
             events.push((t, crate::math::diff_deg(mean_lng(t), lng.to_degrees()), lat, norm(p)));
         }
         if events.len() < 4 {
-            return Err(CalcError::Ephem(crate::error::EphemError::NoData { target: 301, jd: self.tdb }));
+            return Err(CalcError::Ephem(crate::error::EphemError::NoData { target: 301, jd: self.tdb, covered: eph.coverage(301) }));
         }
         // The four events nearest in time, two either side where possible.
         let after = events.partition_point(|e| e.0 <= self.tdb);
@@ -958,6 +988,7 @@ impl FrameTriple {
             lat_speed: (b2 - b0) / h2,
             dist: d1,
             dist_speed: (d2 - d0) / h2,
+            engine: m.engine,
         })
     }
 }
@@ -990,6 +1021,7 @@ impl FrameTriple {
             alt_speed,
             dist: d1,
             dist_speed: (d2 - d0) / h2,
+            engine: m.engine,
         })
     }
 }
@@ -1031,6 +1063,9 @@ pub struct BodyLng {
     pub body: Body,
     /// Ecliptic longitude in degrees, 0–360: tropical, or sidereal if an ayanamsha was applied.
     pub lng: f64,
+    /// How the longitude was calculated.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
 }
 
 /// Fails unless the perspective has a horizon: an observer on or at the centre of the Earth.
@@ -1047,7 +1082,49 @@ fn sample_times(start: f64, days: f64, interval: f64) -> Result<Vec<f64>, CalcEr
     Ok((0..n).map(|i| start + i as f64 * interval).collect())
 }
 
+/// The span the loaded files share for the Earth, Sun, Moon and planets.
+pub(crate) fn core_range(eph: &Ephemeris) -> Option<DateRange> {
+    let mut range = eph.target_range(NAIF_EARTH)?;
+    for body in Body::LUMINARIES_AND_PLANETS {
+        range = range.intersect(&eph.target_range(naif_id(body)?)?)?;
+    }
+    Some(range)
+}
+
 impl Ephemeris {
+    /// The dates for which one body can be calculated from the loaded files, as seen from
+    /// the Earth. For a body read from the files it is the span its data shares with the
+    /// Earth's and the Sun's; for the lunar nodes and apsides, the Moon's; for the rest
+    /// (stars, hypothetical bodies, the ascendant) it is the span of the Earth and Sun,
+    /// which every apparent position needs. `None` if the body is unknown or not loaded.
+    pub fn body_range(&self, body: Body) -> Option<DateRange> {
+        let base = self.target_range(NAIF_EARTH)?.intersect(&self.target_range(NAIF_SUN)?)?;
+        match source(body)?.0 {
+            Source::Naif(id) => base.intersect(&self.target_range(id)?),
+            Source::MeanNode | Source::TrueNode | Source::Apsis(_) => base.intersect(&self.target_range(301)?),
+            Source::Kepler(_) | Source::Star(_) | Source::Ascendant => Some(base),
+        }
+    }
+
+    /// The engine that calculates positions at a moment: [`CalcEngine::Jpl`] when it lies
+    /// inside [`date_range`](Self::date_range); otherwise [`CalcEngine::Analytic`] if the
+    /// `analytic` feature is on and the date is within the span of the series; otherwise
+    /// `None`, meaning they cannot be calculated at all.
+    pub fn engine_at(&self, jd: impl Into<JdUt>) -> Option<CalcEngine> {
+        let tt = ut_to_tt(self.delta_t_model(), jd.into().value());
+        self.engine_for_tdb(tt + tdb_minus_tt(tt) / 86_400.0)
+    }
+
+    /// The engine behind a result already calculated for a moment.
+    pub(crate) fn engine_used(&self, jd_ut: f64) -> CalcEngine {
+        self.engine_at(jd_ut).unwrap_or_default()
+    }
+
+    /// Wraps a value calculated for a moment with the engine that produced it.
+    pub(crate) fn calc<T>(&self, jd_ut: f64, value: T) -> Calc<T> {
+        Calc::new(self.engine_used(jd_ut), value)
+    }
+
     /// Apparent position of one body.
     pub fn calc_position(
         &self,
@@ -1070,8 +1147,9 @@ impl Ephemeris {
         geo: GeoPos,
         perspective: Perspective,
         ayanamsha: Option<crate::ayanamsha::Ayanamsha>,
-    ) -> Result<f64, CalcError> {
-        Ok(self.calc_longitudes(&[body], jd, geo, perspective, ayanamsha)?[0].lng)
+    ) -> Result<Calc<f64>, CalcError> {
+        let found = self.calc_longitudes(&[body], jd, geo, perspective, ayanamsha)?[0];
+        Ok(Calc::new(found.engine, found.lng))
     }
 
     /// Ecliptic longitudes of several bodies at one time; see [`calc_longitude`](Self::calc_longitude).
@@ -1099,7 +1177,7 @@ impl Ephemeris {
             },
             |_, lng| (lng + 180.0).rem_euclid(360.0),
         )?;
-        Ok(bodies.iter().zip(lngs).map(|(&body, lng)| BodyLng { body, lng: (lng - offset).rem_euclid(360.0) }).collect())
+        Ok(bodies.iter().zip(lngs).map(|(&body, lng)| BodyLng { body, lng: (lng - offset).rem_euclid(360.0), engine: frame.engine }).collect())
     }
 
     /// Ecliptic position of one body: longitude and latitude of date. Unlike

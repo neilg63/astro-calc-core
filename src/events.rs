@@ -2,6 +2,7 @@
 //! geocentric ecliptic positions.
 
 use crate::body::Body;
+use crate::spk::{Calc, CalcEngine};
 use crate::error::CalcError;
 use crate::geo::GeoPos;
 use crate::math::diff_deg;
@@ -103,6 +104,9 @@ pub struct StationSet {
     pub speed: f64,
     /// Stations in chronological order: any requested ones before `jd`, then those after.
     pub stations: Vec<Station>,
+    /// The engine that produced the speed and stations.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
 }
 
 impl StationSet {
@@ -168,6 +172,9 @@ impl MoonPhase {
 pub struct MoonPhaseEvent {
     pub phase: MoonPhase,
     pub jd: JdUt,
+    /// The engine that produced the time.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
 }
 
 /// Sampling step (days) for station searches: well under the shortest gap between a body's
@@ -207,8 +214,9 @@ impl Ephemeris {
     /// speed. `RetroPeak` and `Peak` mark the fastest retrograde and direct motion of each
     /// period (one of each per cycle), placed at the top of the smooth speed curve: small
     /// monthly ripples can make the instantaneous speed a day or two away fractionally higher.
-    pub fn stations(&self, body: Body, from: impl Into<JdUt>, to: impl Into<JdUt>) -> Result<Vec<Station>, CalcError> {
-        self.stations_in(body, from.into().value(), to.into().value(), true)
+    pub fn stations(&self, body: Body, from: impl Into<JdUt>, to: impl Into<JdUt>) -> Result<Calc<Vec<Station>>, CalcError> {
+        let from = from.into().value();
+        Ok(self.calc(from, self.stations_in(body, from, to.into().value(), true)?))
     }
 
     /// A body's speed at `jd` with its stations over the following `days`, preceded by the
@@ -221,7 +229,7 @@ impl Ephemeris {
         let speed = self.lng_speed(body, jd)?.1;
         let mut stations = self.stations_before(body, jd, stations_before as usize)?;
         stations.extend(self.stations_in(body, jd, jd + days, false)?.into_iter().filter(|s| s.jd() > jd));
-        Ok(StationSet { body, jd, speed, stations })
+        Ok(StationSet { body, jd, speed, stations, engine: self.engine_used(jd) })
     }
 
     /// A body's speed at `jd` with its next `count` stations, preceded by the last
@@ -235,7 +243,7 @@ impl Ephemeris {
         let span = (count / 4 + 1) as f64 * station_pad(body);
         let ahead = self.stations_in(body, jd, jd + span, false)?;
         stations.extend(ahead.into_iter().filter(|s| s.jd() > jd).take(count));
-        Ok(StationSet { body, jd, speed, stations })
+        Ok(StationSet { body, jd, speed, stations, engine: self.engine_used(jd) })
     }
 
     /// The last `count` stations at or before `jd`.
@@ -371,8 +379,9 @@ impl Ephemeris {
     }
 
     /// Geocentric Moon − Sun elongation in ecliptic longitude (degrees, 0–360) and its rate (°/day).
-    pub fn moon_elongation(&self, jd: impl Into<JdUt>) -> Result<(f64, f64), CalcError> {
-        self.elongation_at(jd.into().value(), None)
+    pub fn moon_elongation(&self, jd: impl Into<JdUt>) -> Result<Calc<(f64, f64)>, CalcError> {
+        let jd = jd.into().value();
+        Ok(self.calc(jd, self.elongation_at(jd, None)?))
     }
 
     fn next_phase_at(&self, start: f64, observer: Option<GeoPos>) -> Result<MoonPhaseEvent, CalcError> {
@@ -389,7 +398,8 @@ impl Ephemeris {
                 break;
             }
         }
-        Ok(MoonPhaseEvent { phase: MoonPhase::from_quadrant(quadrant), jd: JdUt(t.max(start)) })
+        let jd = t.max(start);
+        Ok(MoonPhaseEvent { phase: MoonPhase::from_quadrant(quadrant), jd: JdUt(jd), engine: self.engine_used(jd) })
     }
 
     fn phases_between(&self, from: f64, to: f64, observer: Option<GeoPos>) -> Result<Vec<MoonPhaseEvent>, CalcError> {

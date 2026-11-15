@@ -14,6 +14,7 @@
 //! to ~0.03′ of altitude, i.e. a fraction of a second in time).
 
 use crate::body::Body;
+use crate::spk::{Calc, CalcEngine};
 use crate::error::CalcError;
 use crate::geo::GeoPos;
 use crate::position::{Frame, Perspective};
@@ -237,6 +238,9 @@ pub struct DayTransits {
     /// Geometric altitude at `ic` and `mc` (degrees).
     pub min_alt: Option<f64>,
     pub max_alt: Option<f64>,
+    /// The engine that produced the times.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
 }
 
 /// Mean radius in km used for semi-diameters.
@@ -314,6 +318,7 @@ impl Ephemeris {
     }
 
     /// First occurrence of `event` strictly after `start`, searching up to `max_days` ahead.
+    /// The value is `None` if there is none in that time (a circumpolar body, for example).
     pub fn next_transit(
         &self,
         body: Body,
@@ -322,8 +327,20 @@ impl Ephemeris {
         event: TransitEvent,
         opts: RiseSetOptions,
         max_days: f64,
-    ) -> Result<Option<JdUt>, CalcError> {
+    ) -> Result<Calc<Option<JdUt>>, CalcError> {
         let start = start.into().value();
+        Ok(self.calc(start, self.transit_after(body, start, geo, event, opts, max_days)?))
+    }
+
+    pub(crate) fn transit_after(
+        &self,
+        body: Body,
+        start: f64,
+        geo: GeoPos,
+        event: TransitEvent,
+        opts: RiseSetOptions,
+        max_days: f64,
+    ) -> Result<Option<JdUt>, CalcError> {
         let rising = matches!(event, TransitEvent::Rise | TransitEvent::Mc);
         let crosses = |a: f64, b: f64| if rising { a < 0.0 && b >= 0.0 } else { a > 0.0 && b <= 0.0 };
         let mut t0 = start;
@@ -357,16 +374,16 @@ impl Ephemeris {
     }
 
     /// Geometric topocentric altitude (degrees) of a body's centre.
-    pub fn altitude(&self, body: Body, jd: impl Into<JdUt>, geo: GeoPos) -> Result<f64, CalcError> {
+    pub fn altitude(&self, body: Body, jd: impl Into<JdUt>, geo: GeoPos) -> Result<Calc<f64>, CalcError> {
         let frame = Frame::new(self, jd.into().value(), &geo, Perspective::Topocentric)?;
-        Ok(frame.alt_ha_dist(self, body, false)?.0.to_degrees())
+        Ok(Calc::new(frame.engine, frame.alt_ha_dist(self, body, false)?.0.to_degrees()))
     }
 
     /// Rise, set and transits for the local day containing `jd` (see [`DayTransits`]).
     pub fn day_transits(&self, body: Body, jd: impl Into<JdUt>, geo: GeoPos, opts: RiseSetOptions) -> Result<DayTransits, CalcError> {
         const SPAN: f64 = 2.0;
         let start = local_day_start(jd.into().value(), geo.lng);
-        let next = |from: f64, ev| self.next_transit(body, from, geo, ev, opts, SPAN);
+        let next = |from: f64, ev| self.transit_after(body, from, geo, ev, opts, SPAN);
         let rise = next(start, TransitEvent::Rise)?;
         let set = next(start, TransitEvent::Set)?;
         let mc = next(start, TransitEvent::Mc)?;
@@ -376,7 +393,7 @@ impl Ephemeris {
             Some(s) => next(s.value(), TransitEvent::Rise)?,
             None => None,
         };
-        let alt = |t: Option<JdUt>| t.map(|t| self.altitude(body, t, geo)).transpose();
+        let alt = |t: Option<JdUt>| t.map(|t| self.altitude(body, t, geo).map(Calc::into_value)).transpose();
         Ok(DayTransits {
             body,
             day_start: JdUt(start),
@@ -388,6 +405,7 @@ impl Ephemeris {
             next_rise,
             min_alt: alt(ic)?,
             max_alt: alt(mc)?,
+            engine: self.engine_used(start),
         })
     }
 }

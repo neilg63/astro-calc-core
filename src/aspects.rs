@@ -22,7 +22,7 @@ use crate::error::CalcError;
 use crate::geo::GeoPos;
 use crate::math::diff_deg;
 use crate::position::{BodyPos, CoordSystem, Perspective};
-use crate::spk::Ephemeris;
+use crate::spk::{Calc, Ephemeris};
 use crate::time::JdUt;
 
 /// Mean tropical year in days, the default "day for a year" ratio of secondary progressions.
@@ -319,7 +319,7 @@ impl Ephemeris {
         from: impl Into<JdUt>,
         to: impl Into<JdUt>,
         opts: &ProgressionOptions,
-    ) -> Result<Vec<AspectPeriod>, CalcError> {
+    ) -> Result<Calc<Vec<AspectPeriod>>, CalcError> {
         let (from, to) = (from.into().value(), to.into().value());
         let (span, step) = (to - from, opts.step_days);
         // Written so that NaN fails too.
@@ -379,6 +379,6 @@ impl Ephemeris {
             }
         }
         out.sort_by(|x, y| x.enter_jd.unwrap_or(from).total_cmp(&y.enter_jd.unwrap_or(from)));
-        Ok(out)
+        Ok(self.calc(from, out))
     }
 }
