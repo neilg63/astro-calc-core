@@ -1,6 +1,6 @@
 [package]
 name = "astro-calc-core"
-version = "0.1.1"
+version = "0.2.0"
 description = "Pure-Rust ephemeris core: planetary positions, angles, ayanamshas, rise/set and stations from JPL data"
 edition = "2024"
 license = "MIT OR Apache-2.0"
@@ -33,7 +33,7 @@ analytic = []
 parallel = ["dep:rayon"]
 
 [dependencies]
-aspect360 = "0.2.0"
+aspect360 = "0.1.9"
 chrono = "0.4"
 julian_day_converter = "0.4.6"
 fuzzy-datetime = "0.1.5"
