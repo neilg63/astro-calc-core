@@ -1,13 +1,13 @@
 //! Longitude-only methods, the ascendant as a body, and the `default` and `basic` sets.
 
-use std::path::PathBuf;
+mod common;
+
 use std::time::Instant;
 
 use astro_calc_core::*;
 
 fn eph() -> Option<Ephemeris> {
-    let bsp = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/de440s.bsp");
-    bsp.exists().then(|| Ephemeris::open(bsp).unwrap())
+    common::planetary()
 }
 
 fn keys(bodies: &[Body]) -> String {

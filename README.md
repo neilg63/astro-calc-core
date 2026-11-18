@@ -79,6 +79,20 @@ strings such as `1990-08-23T12` are accepted by wrapper methods and converted on
 - Geocentric positions and bodies projected onto the ecliptic, including the traditional
   Hindu rising.
 
+**Transposed positions and transits**
+
+- A transposed point is the place a body held in a source chart, typically a birth, kept
+  at that ecliptic longitude and latitude as a fixed point of the tropical zodiac and
+  carried into the sky of another time and place.
+- `calc_transposed_positions` gives such points in all three coordinate systems
+  (`BodyPosExt`). The ecliptic values are the source's; right ascension and declination use
+  the obliquity of the new date; azimuth and altitude are for the new place and moment.
+- `transposed_transits` gives their rise, set and upper and lower meridian transit for a
+  local day, with the lowest and highest altitude. The times are solved directly from the
+  sidereal time, without sampling. Horizon, refraction and dip options apply.
+- Each result is labelled as a transposed body (`tp:ma`, of kind `BodyKind::Transposed`),
+  and `Body::source` names the body it came from.
+
 **Planetary stations**
 
 - Retrograde start and end, and the fastest direct and retrograde motion of each cycle.
@@ -310,7 +324,12 @@ astro-calc-core = { version = "0.1", features = ["analytic"] }
   0.4″, Mars and Jupiter within 1″, Saturn within 3″, the Moon 1.5″ at 1700 growing to 6″ at
   AD 500. Uranus and Neptune drift much more, 3″ to 8″ around 1600 and about 40″ at AD 500,
   because the theory was fitted to an older JPL ephemeris in which their orbits were less
-  well known. Nothing earlier than AD 500 has been checked.
+  well known.
+- **Accuracy at remote dates**, from spot checks against a long JPL file (DE441) with the
+  same ΔT on both sides. At AD 1000: the Sun, Mercury and Venus within 0.4″, Jupiter 0.8″,
+  Mars 1.7″, the Moon 2.3″, Saturn 2.9″, Uranus 13″ and Neptune 15″. At 1000 BC: the Sun
+  1.5″, Mercury and Venus 2″, Mars and Saturn 5″, Jupiter 9.5″, Uranus 46″, Neptune 51″
+  and the Moon 85″. Nothing earlier than 1000 BC has been checked.
 - **ΔT matters more than the series at remote dates.** Published reconstructions of the
   Earth's rotation differ by tens of seconds before 1700 and by a minute or two in the
   Middle Ages, and each second moves the Moon by half an arcsecond.
@@ -379,7 +398,10 @@ not part of the published crate.
 cargo test --release
 ```
 
-Tests that need ephemeris files are skipped when the files are absent.
+Tests that need ephemeris files are skipped when the files are absent. They use whichever
+planetary file `data/` holds, from any `astro-calc-build` tier. The tests in
+`tests/long_range.rs` cover dates beyond DE440 (1550–2650) and run only when a longer file
+is installed (tier 3 or 4); otherwise they report that they were skipped.
 
 ## Licence
 

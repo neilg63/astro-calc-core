@@ -72,6 +72,15 @@ fn falls_back_outside_the_files() {
 fn the_join_at_the_edge_of_the_files_is_smooth() {
     let eph = jpl();
     let range = eph.date_range().unwrap();
+    // The series are sound for 4000 years either side of J2000: a file that starts earlier
+    // has no join to test. They also drift with distance from the present: against DE441
+    // at 1000 BCE Mars and Saturn are about 5″ out, where at 1550 they are within 1″.
+    let years_from_j2000 = (range.start - 2_451_545.0).abs() / 365.25;
+    if years_from_j2000 > 4_000.0 {
+        eprintln!("skipping: the planetary file starts {years_from_j2000:.0} years from J2000, beyond the series");
+        return;
+    }
+    let limit = if years_from_j2000 < 500.0 { 3.0 } else { 10.0 };
     // (Not the Moon: its speed changes too much in a day for this simple check.)
     for body in [Body::Sun, Body::Mars, Body::Saturn] {
         let a = eph.calc_position(body, range.start - 0.6, geo(), CoordSystem::Ecliptic, Perspective::Geocentric).unwrap();
@@ -80,7 +89,7 @@ fn the_join_at_the_edge_of_the_files_is_smooth() {
         // 1.2 days of motion at the mean of the two speeds, to within the series' error.
         let moved = math::diff_deg(a.lng, b.lng);
         let expected = 1.2 * 0.5 * (a.lng_speed + b.lng_speed);
-        assert!((moved - expected).abs() * 3600.0 < 3.0, "{body}: moved {moved}, expected {expected}");
+        assert!((moved - expected).abs() * 3600.0 < limit, "{body}: moved {moved}, expected {expected}");
     }
 }
 

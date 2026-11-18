@@ -1,13 +1,12 @@
 //! Every rise/set option: disc alignment, refraction, twilight, horizon height, dip,
 //! geocentric positions and projection onto the ecliptic.
 
-use std::path::PathBuf;
+mod common;
 
 use astro_calc_core::*;
 
 fn eph() -> Option<Ephemeris> {
-    let bsp = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/de440s.bsp");
-    bsp.exists().then(|| Ephemeris::open(bsp).unwrap())
+    common::planetary()
 }
 
 const SECOND: f64 = 1.0 / 86_400.0;

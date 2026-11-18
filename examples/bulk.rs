@@ -6,7 +6,7 @@ use astro_calc_core::*;
 use std::time::Instant;
 
 fn main() {
-    let eph = Ephemeris::open("data/de440s.bsp").unwrap();
+    let eph = Ephemeris::open_dir("data").unwrap();
 
     // 10,000 records at scattered dates between 1900 and 2100, keyed by a name.
     let mut seed = 42_u64;

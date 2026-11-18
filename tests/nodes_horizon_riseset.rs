@@ -1,6 +1,8 @@
 //! Lunar nodes, horizontal coordinates and rise/set/transit times against fixtures harvested
 //! from the AstroCalc API (/chart-data, /rise-set-times, /positions).
 
+mod common;
+
 use std::path::PathBuf;
 
 use astro_calc_core::*;
@@ -8,12 +10,11 @@ use serde_json::Value;
 
 fn setup() -> Option<(Ephemeris, PathBuf)> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let bsp = root.join("data/de440s.bsp");
-    if !bsp.exists() {
-        eprintln!("skipping: {} not present", bsp.display());
+    let Some(eph) = common::planetary() else {
+        eprintln!("skipping: no planetary file in data/");
         return None;
-    }
-    Some((Ephemeris::open(&bsp).unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi), root.join("tests/fixtures")))
+    };
+    Some((eph.with_delta_t_model(DeltaTModel::AstroCalcApi), root.join("tests/fixtures")))
 }
 
 fn load(dir: &std::path::Path, name: &str) -> Vec<Value> {

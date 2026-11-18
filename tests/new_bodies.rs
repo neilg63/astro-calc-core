@@ -1,5 +1,7 @@
 //! Krusinski houses, asteroid magnitudes, lunar apsides and hypothetical bodies.
 
+mod common;
+
 use std::path::PathBuf;
 
 use astro_calc_core::*;
@@ -10,8 +12,7 @@ fn root() -> PathBuf {
 }
 
 fn eph() -> Option<Ephemeris> {
-    let bsp = root().join("data/de440s.bsp");
-    bsp.exists().then(|| Ephemeris::open(bsp).unwrap())
+    common::planetary()
 }
 
 fn ecliptic(eph: &Ephemeris, body: Body, jd: f64) -> BodyPos {

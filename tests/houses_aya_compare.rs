@@ -1,6 +1,8 @@
 //! Angles, houses and ayanamshas against reference values harvested from the AstroCalc API.
 //! Run with `--nocapture` for the report.
 
+mod common;
+
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
@@ -85,12 +87,11 @@ fn polar_fallback_is_reported() {
 
 #[test]
 fn ayanamshas_match_reference() {
-    let bsp = root().join("data/de440s.bsp");
-    if !bsp.exists() {
-        eprintln!("skipping: {} not present", bsp.display());
+    let Some(eph) = common::planetary() else {
+        eprintln!("skipping: no planetary file in data/");
         return;
-    }
-    let eph = Ephemeris::open(&bsp).unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi);
+    };
+    let eph = eph.with_delta_t_model(DeltaTModel::AstroCalcApi);
     let mut worst: BTreeMap<&str, f64> = BTreeMap::new();
     for r in fixture("api_ayanamshas.json") {
         let jd = r["jd"].as_f64().unwrap();

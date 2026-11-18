@@ -96,7 +96,7 @@ name = "astro-calc-build"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "astro-calc-core 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "astro-calc-core 0.2.0",
  "base64",
  "clap",
  "indicatif",
@@ -111,6 +111,20 @@ dependencies = [
 [[package]]
 name = "astro-calc-core"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e01696383bf504f6aa59c7d5b509aece1433de3dff0ec006ff7a95e6e119633"
+dependencies = [
+ "aspect360",
+ "chrono",
+ "fuzzy-datetime",
+ "julian_day_converter",
+ "memmap2",
+ "thiserror",
+]
+
+[[package]]
+name = "astro-calc-core"
+version = "0.2.1"
 dependencies = [
  "aspect360",
  "chrono",
@@ -120,20 +134,6 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "astro-calc-core"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e01696383bf504f6aa59c7d5b509aece1433de3dff0ec006ff7a95e6e119633"
-dependencies = [
- "aspect360",
- "chrono",
- "fuzzy-datetime",
- "julian_day_converter",
- "memmap2",
  "thiserror",
 ]
 

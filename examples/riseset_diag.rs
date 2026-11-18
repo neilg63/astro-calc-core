@@ -1,7 +1,7 @@
 //! Altitude (arcmin) of each body's centre at the reference API's rise/set times, per mode.
 use astro_calc_core::*;
 fn main() {
-    let eph = Ephemeris::open("data/de440s.bsp").unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi);
+    let eph = Ephemeris::open_dir("data").unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi);
     let cases: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string("tests/fixtures/api_rise_set.json").unwrap()).unwrap();
     for key in ["su", "mo", "ju"] {
         let body: Body = key.parse().unwrap();

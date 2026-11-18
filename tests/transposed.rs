@@ -1,15 +1,12 @@
 //! Transposed positions and transits against the ephemeris itself.
 
-use std::path::PathBuf;
+mod common;
 
 use astro_calc_core::math::diff_deg;
 use astro_calc_core::*;
 
 fn eph() -> Option<Ephemeris> {
-    // Either planetary file serves: the short one or the full one.
-    let data = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data");
-    let bsp = ["de440s.bsp", "de440.bsp"].iter().map(|name| data.join(name)).find(|path| path.exists())?;
-    Some(Ephemeris::open(bsp).unwrap())
+    common::planetary()
 }
 
 const SOURCE: f64 = 2_439_302.100_694_444_5;

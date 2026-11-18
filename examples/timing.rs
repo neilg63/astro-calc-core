@@ -1,7 +1,7 @@
 use astro_calc_core::*;
 use std::time::Instant;
 fn main() {
-    let eph = Ephemeris::open("data/de440s.bsp").unwrap();
+    let eph = Ephemeris::open_dir("data").unwrap();
     let bodies: Vec<Body> = parse_body_list("su,mo,me,ve,ma,ju,sa,ur,ne,pl").unwrap();
     let geo: GeoPos = "45.22,11.228".parse().unwrap();
     let t = Instant::now();

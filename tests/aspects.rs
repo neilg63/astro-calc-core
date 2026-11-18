@@ -1,12 +1,11 @@
 //! Aspect matching and the progressed-chart period search.
 
-use std::path::PathBuf;
+mod common;
 
 use astro_calc_core::*;
 
 fn eph() -> Option<Ephemeris> {
-    let bsp = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/de440s.bsp");
-    bsp.exists().then(|| Ephemeris::open(bsp).unwrap())
+    common::planetary()
 }
 
 fn targets() -> Vec<AspectOrb> {

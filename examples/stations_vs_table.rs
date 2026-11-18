@@ -4,7 +4,7 @@ use astro_calc_core::*;
 fn main() {
     let path = std::env::args().nth(1).expect("path to table json");
     let table: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
-    let eph = Ephemeris::open("data/de440s.bsp").unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi);
+    let eph = Ephemeris::open_dir("data").unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi);
     let kinds = [StationKind::RetroStart, StationKind::RetroPeak, StationKind::RetroEnd, StationKind::Peak];
     println!("body kind          n  missing   median    p95     max (minutes) | max speed diff | max lng diff (\")");
     for (key, rows) in table.as_object().unwrap() {

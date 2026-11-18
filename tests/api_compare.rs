@@ -1,11 +1,13 @@
 //! Compares calc_positions against reference values harvested from the AstroCalc API.
 //! Run with `--nocapture` to see the per-body report.
-//! Needs `data/de440s.bsp`; skipped otherwise.
+//! Needs a planetary file in `data/`; skipped otherwise.
+
+mod common;
 
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
-use astro_calc_core::{Body, CoordSystem, DeltaTModel, Ephemeris, GeoPos, Perspective};
+use astro_calc_core::{Body, CoordSystem, DeltaTModel, GeoPos, Perspective};
 use serde_json::Value;
 
 const BODIES: [&str; 10] = ["su", "mo", "me", "ve", "ma", "ju", "sa", "ur", "ne", "pl"];
@@ -39,12 +41,11 @@ impl Stat {
 #[test]
 fn positions_match_reference_api() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let bsp = root.join("data/de440s.bsp");
-    if !bsp.exists() {
-        eprintln!("skipping: {} not present", bsp.display());
+    let Some(eph) = common::planetary() else {
+        eprintln!("skipping: no planetary file in data/");
         return;
-    }
-    let eph = Ephemeris::open(&bsp).unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi);
+    };
+    let eph = eph.with_delta_t_model(DeltaTModel::AstroCalcApi);
     let cases: Vec<Value> =
         serde_json::from_str(&std::fs::read_to_string(root.join("tests/fixtures/api_chart_data.json")).unwrap())
             .unwrap();

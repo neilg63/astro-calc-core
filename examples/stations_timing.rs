@@ -1,7 +1,7 @@
 use astro_calc_core::*;
 use std::time::Instant;
 fn main() {
-    let eph = Ephemeris::open("data/de440s.bsp").unwrap();
+    let eph = Ephemeris::open_dir("data").unwrap();
     let jd = JdUt::from_iso("2026-11-11T12:00:00").unwrap();
     for body in [Body::Mercury, Body::Venus, Body::Mars, Body::Jupiter, Body::Pluto] {
         let t = Instant::now();

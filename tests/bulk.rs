@@ -1,12 +1,11 @@
 //! Bulk charts and aspect searches between charts.
 
-use std::path::PathBuf;
+mod common;
 
 use astro_calc_core::*;
 
 fn eph() -> Option<Ephemeris> {
-    let bsp = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/de440s.bsp");
-    bsp.exists().then(|| Ephemeris::open(bsp).unwrap())
+    common::planetary()
 }
 
 /// `n` records at scattered dates between 1900 and 2100 and scattered places, unsorted.

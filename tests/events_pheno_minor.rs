@@ -1,6 +1,8 @@
 //! Stations, lunar phases, the Indian day, minor bodies and phenomena, against fixtures
 //! harvested from the AstroCalc API and a few published almanac values.
 
+mod common;
+
 use std::path::{Path, PathBuf};
 
 use astro_calc_core::*;
@@ -16,8 +18,7 @@ fn data() -> PathBuf {
 
 /// Planetary ephemeris only, with the reference API's ΔT.
 fn eph() -> Option<Ephemeris> {
-    let bsp = data().join("de440s.bsp");
-    bsp.exists().then(|| Ephemeris::open(bsp).unwrap().with_delta_t_model(DeltaTModel::AstroCalcApi))
+    common::planetary().map(|eph| eph.with_delta_t_model(DeltaTModel::AstroCalcApi))
 }
 
 fn fixture(name: &str) -> Vec<Value> {
@@ -79,12 +80,8 @@ fn stations_match_reference_table() {
 
 #[test]
 fn mercury_station_matches_almanac() {
-    let bsp = data().join("de440s.bsp");
-    if !bsp.exists() {
-        return;
-    }
     // observed ΔT: Mercury stationed direct on 2024-01-02 at 03:07 UTC
-    let eph = Ephemeris::open(bsp).unwrap();
+    let Some(eph) = common::planetary() else { return };
     let st = eph.stations(Body::Mercury, JdUt::from_iso("2023-12-28").unwrap(), JdUt::from_iso("2024-01-05").unwrap()).unwrap().value;
     assert_eq!(st.len(), 1);
     assert_eq!(st[0].kind(), StationKind::RetroEnd);
@@ -187,7 +184,7 @@ fn indian_day_from_ephemeris() {
 #[test]
 fn minor_bodies_match_reference() {
     let dir = data();
-    if !dir.join("de440s.bsp").exists() || !dir.join("chiron.bsp").exists() {
+    if common::planetary_file().is_none() || !dir.join("chiron.bsp").exists() {
         eprintln!("skipping: small-body SPK files not present (tools/fetch_horizons_spk.py)");
         return;
     }
@@ -251,11 +248,7 @@ fn phenomena_match_reference() {
 
 #[test]
 fn station_sets_report_motion_and_surrounding_stations() {
-    let bsp = data().join("de440s.bsp");
-    if !bsp.exists() {
-        return;
-    }
-    let eph = Ephemeris::open(bsp).unwrap();
+    let Some(eph) = common::planetary() else { return };
     // Mercury was retrograde from 2023-12-13 until 2024-01-02.
     let jd = JdUt::from_iso("2023-12-25T12:00:00").unwrap().value();
     let set = eph.next_stations(Body::Mercury, jd, 8, 3).unwrap();
@@ -295,9 +288,11 @@ fn station_sets_report_motion_and_surrounding_stations() {
     // (With the analytical series built in, the search carries on past the files.)
     #[cfg(not(feature = "analytic"))]
     {
-        let late = eph.next_stations(Body::Mercury, 2_506_300.0, 40, 1).unwrap();
+        // Measured from the end of whichever planetary file is installed.
+        let end = eph.date_range().unwrap().end;
+        let late = eph.next_stations(Body::Mercury, end - 52.0, 40, 1).unwrap();
         assert!(!late.stations.is_empty() && late.stations.len() < 41);
-        assert!(eph.next_stations(Body::Mercury, 2_600_000.0, 4, 0).is_err());
+        assert!(eph.next_stations(Body::Mercury, end + 1_000.0, 4, 0).is_err());
     }
     assert!(eph.planetary_stations(Body::Mercury, jd, -1.0, 0).is_err());
 }

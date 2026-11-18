@@ -1,12 +1,11 @@
-//! Behaviour of the public position API. Needs `data/de440s.bsp`; skipped otherwise.
+//! Behaviour of the public position API. Needs a planetary file in `data/`; skipped otherwise.
 
-use std::path::PathBuf;
+mod common;
 
 use astro_calc_core::*;
 
 fn eph() -> Option<Ephemeris> {
-    let p = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/de440s.bsp");
-    p.exists().then(|| Ephemeris::open(p).unwrap())
+    common::planetary()
 }
 
 const ROME: GeoPos = GeoPos { lat: 41.9, lng: 12.5, alt: 20.0 };
@@ -54,7 +53,9 @@ fn unsupported_inputs_are_errors() {
         Err(CalcError::Ephem(EphemError::NoData { target: 20_002_060, .. }))
     ));
     // A date outside the files: an error, unless the analytical series are built in.
-    let early = eph.calc_position(Body::Sun, 2200000.0, ROME, CoordSystem::Ecliptic, Perspective::Geocentric);
+    // (A year before whichever planetary file is installed.)
+    let before = eph.date_range().unwrap().start - 365.0;
+    let early = eph.calc_position(Body::Sun, before, ROME, CoordSystem::Ecliptic, Perspective::Geocentric);
     #[cfg(not(feature = "analytic"))]
     assert!(matches!(early, Err(CalcError::Ephem(EphemError::NoData { .. }))));
     #[cfg(feature = "analytic")]

@@ -1,5 +1,8 @@
 //! Verifies the SPK reader against JPL's own reference values (testpo.440).
-//! Needs `data/de440s.bsp` and `data/testpo.440` at the crate root; skipped otherwise.
+//! Needs a DE440 planetary file (`de440s.bsp` or `de440.bsp`) and `data/testpo.440`; skipped
+//! otherwise. The reference values are DE440's own, so other ephemerides are not checked.
+
+mod common;
 
 use std::path::PathBuf;
 
@@ -25,11 +28,11 @@ fn naif(code: i32) -> Option<i32> {
 #[test]
 fn de440s_matches_testpo() {
     let dir = data_dir();
-    let (bsp, testpo) = (dir.join("de440s.bsp"), dir.join("testpo.440"));
-    if !bsp.exists() || !testpo.exists() {
-        eprintln!("skipping: data files not present in {}", dir.display());
+    let testpo = dir.join("testpo.440");
+    let Some(bsp) = common::planetary_file().filter(|path| path.file_name().is_some_and(|name| name.to_string_lossy().starts_with("de440")) && testpo.exists()) else {
+        eprintln!("skipping: no DE440 file with testpo.440 in {}", dir.display());
         return;
-    }
+    };
     let eph = Ephemeris::open(&bsp).unwrap();
     let (start, end) = eph.coverage(399).unwrap();
     let text = std::fs::read_to_string(&testpo).unwrap();
@@ -61,10 +64,10 @@ fn de440s_matches_testpo() {
 /// Data passed in as bytes (as on WebAssembly) gives the same results as an opened file.
 #[test]
 fn from_bytes_matches_opened_file() {
-    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/de440s.bsp");
-    if !path.exists() {
+    // The whole file is read into memory: not for the multi-gigabyte long-range files.
+    let Some(path) = common::planetary_file().filter(|path| std::fs::metadata(path).is_ok_and(|m| m.len() < 500_000_000)) else {
         return;
-    }
+    };
     let opened = Ephemeris::open(&path).unwrap();
     let loaded = Ephemeris::from_bytes(std::fs::read(&path).unwrap()).unwrap();
     assert_eq!(opened.targets(), loaded.targets());
