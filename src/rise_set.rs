@@ -178,6 +178,40 @@ impl RiseSetOptions {
             ignore_latitude: false,
         }
     }
+
+    /// The geometric altitude (degrees) at which a point without a disc, such as a star or
+    /// a degree of the zodiac, rises and sets under these options, for an observer `height`
+    /// metres above the ground: the horizon, less refraction and dip.
+    pub fn point_altitude(&self, height: f64) -> f64 {
+        self.target_altitude(0.0, height)
+    }
+
+    /// Geometric altitude (degrees) of the centre of a disc of semi-diameter `sd`
+    /// (arcminutes) at the moment of rising or setting.
+    fn target_altitude(&self, sd: f64, height: f64) -> f64 {
+        let opts = self;
+        let base = match opts.horizon {
+            Horizon::CivilTwilight => return -6.0,
+            Horizon::NauticalTwilight => return -12.0,
+            Horizon::AstronomicalTwilight => return -18.0,
+            Horizon::Level => 0.0,
+            Horizon::Altitude(alt) => alt,
+        };
+        let refr = match opts.refraction {
+            Refraction::Off => 0.0,
+            Refraction::Standard => refraction_at(base),
+            // Meeus, Astronomical Algorithms ch. 16: proportional to pressure, inversely to
+            // absolute temperature, relative to 1010 hPa and 10 °C.
+            Refraction::Atmosphere { pressure, temperature } => refraction_at(base) * (pressure / 1010.0) * (283.0 / (273.0 + temperature)),
+        };
+        let limb = match opts.disc {
+            DiscAlignment::UpperLimb => -sd,
+            DiscAlignment::Center => 0.0,
+            DiscAlignment::LowerLimb => sd,
+        };
+        let dip = if opts.dip { horizon_dip(height, opts.refraction != Refraction::Off) } else { 0.0 };
+        base + (limb - refr - dip) / 60.0
+    }
 }
 
 /// Refraction (arcminutes) at an apparent altitude (degrees), scaled so that the horizon
@@ -276,33 +310,13 @@ pub fn local_day_start(jd: f64, lng: f64) -> f64 {
 impl Ephemeris {
     /// Geometric altitude (degrees) of the body's centre at the moment of rising or setting.
     fn horizon_target(&self, body: Body, opts: &RiseSetOptions, dist_au: f64, height: f64) -> f64 {
-        let base = match opts.horizon {
-            Horizon::CivilTwilight => return -6.0,
-            Horizon::NauticalTwilight => return -12.0,
-            Horizon::AstronomicalTwilight => return -18.0,
-            Horizon::Level => 0.0,
-            Horizon::Altitude(alt) => alt,
-        };
-        let refr = match opts.refraction {
-            Refraction::Off => 0.0,
-            Refraction::Standard => refraction_at(base),
-            // Meeus, Astronomical Algorithms ch. 16: proportional to pressure, inversely to
-            // absolute temperature, relative to 1010 hPa and 10 °C.
-            Refraction::Atmosphere { pressure, temperature } => refraction_at(base) * (pressure / 1010.0) * (283.0 / (273.0 + temperature)),
-        };
         let sd = match (opts.fixed_disc, body) {
             (true, Body::Sun) => FIXED_SD_SUN,
             (true, Body::Moon) => FIXED_SD_MOON,
             _ if dist_au > 0.0 => (radius_km(body) / (dist_au * AU_KM)).asin().to_degrees() * 60.0,
             _ => 0.0,
         };
-        let limb = match opts.disc {
-            DiscAlignment::UpperLimb => -sd,
-            DiscAlignment::Center => 0.0,
-            DiscAlignment::LowerLimb => sd,
-        };
-        let dip = if opts.dip { horizon_dip(height, opts.refraction != Refraction::Off) } else { 0.0 };
-        base + (limb - refr - dip) / 60.0
+        opts.target_altitude(sd, height)
     }
 
     /// Signed function whose zero crossings in the right direction are the event.

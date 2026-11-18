@@ -213,3 +213,21 @@ fn iso_strings_are_completed_and_converted_once() {
     assert_eq!(JdUt::from_iso("2450094.5").unwrap().value(), 2450094.5);
     assert!(matches!(JdUt::from_iso("not a date"), Err(TimeError::Parse(_))));
 }
+
+#[test]
+fn transposed_points_remember_their_source() {
+    let derived = Body::Derived(DerivedId(7));
+    let sources = Body::NAMED.iter().copied().chain([Body::catalog(Catalog::Hipparcos, 32_349), Body::catalog(Catalog::Hypothetical, 3), derived]);
+    for source in sources {
+        let point = Body::transposed(source);
+        assert_eq!((point.kind(), point.source(), point.key()), (BodyKind::Transposed, Some(source), None));
+        assert_ne!(point, source);
+        // The string form round-trips, and transposing twice changes nothing.
+        assert_eq!(point.to_string(), format!("tp:{source}"));
+        assert_eq!(point.to_string().parse::<Body>().unwrap(), point);
+        assert_eq!(Body::transposed(point), point);
+    }
+    assert_eq!("Transposed:Jupiter".parse::<Body>().unwrap(), Body::transposed(Body::Jupiter));
+    assert_eq!("tp:hip:32349".parse::<Body>().unwrap().source(), Some(Body::catalog(Catalog::Hipparcos, 32_349)));
+    assert!("tp:nothing".parse::<Body>().is_err() && Body::Sun.source().is_none());
+}

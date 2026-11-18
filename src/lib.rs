@@ -40,6 +40,7 @@ mod star_table;
 pub mod stars;
 pub mod station_table;
 pub mod time;
+pub mod transposed;
 
 pub use aspects::{
     AspectOrb, AspectPeriod, AspectResult, BodyAspect, ChartKind, ChartSubject, ProgressionOptions, TROPICAL_YEAR, aspect_orb,
@@ -47,7 +48,7 @@ pub use aspects::{
 };
 pub use ayanamsha::{Ayanamsha, to_sidereal};
 pub use bulk::{AspectCriteria, AspectHit, AspectMatch, AspectMatches, BulkCharts, ChartInput, ChartOptions, KeyedChart, KeyedError};
-pub use body::{Body, BodyKind, Catalog, parse_body_list, parse_body_list_for};
+pub use body::{Body, BodyKind, Catalog, SourceTag, parse_body_list, parse_body_list_for};
 pub use derived::{Angle, Derived, DerivedId, DerivedRegistry, Ref};
 pub use error::{BodyParseError, CalcError, DerivedError, EphemError, GeoError, TimeError};
 pub use events::{JdSpeed, MoonPhase, MoonPhaseEvent, Station, StationKind, StationSet};
@@ -63,6 +64,7 @@ pub use spk::{Calc, CalcEngine, DateRange, EphemFile, Ephemeris, scan_dir};
 pub use stars::{Star, named_stars, star_by_hip, star_by_name};
 pub use station_table::StationTable;
 pub use time::{J2000, JdTt, JdUt};
+pub use transposed::{TransposedTransits, transposed_point_transit_days, transposed_point_transits, transposed_position};
 
 #[cfg(test)]
 mod tests;

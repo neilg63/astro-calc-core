@@ -7,9 +7,12 @@
 //! * Lesser-known minor bodies and stars use [`Body::Catalog`] with a structured catalogue id.
 //! * User-defined points use [`Body::Derived`], a handle into a
 //!   [`DerivedRegistry`](crate::derived::DerivedRegistry) that holds the recipe.
+//! * The place a body held in another chart, carried into this one, is
+//!   [`Body::Transposed`], which remembers its source body.
 //!
 //! The string form round-trips: `Display` writes the two-letter key (`"ju"`), `prefix:id`
-//! for catalogue objects (`"hip:32349"`) or `derived:n`, and `FromStr` parses all of them
+//! for catalogue objects (`"hip:32349"`), `derived:n` or `tp:` before the source of a
+//! transposed point (`"tp:ju"`, `"tp:hip:32349"`), and `FromStr` parses all of them
 //! plus full-name aliases, case-insensitively.
 
 use std::fmt;
@@ -90,6 +93,18 @@ impl fmt::Display for Catalog {
     }
 }
 
+/// Which kind of body a transposed point came from: a named body, a catalogue or a derived
+/// point. Made and read only through [`Body::transposed`] and [`Body::source`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct SourceTag(u8);
+
+impl SourceTag {
+    const NAMED: u8 = 0;
+    /// Catalogues follow, in the order of [`Catalog::ALL`].
+    const FIRST_CATALOG: u8 = 1;
+    const DERIVED: u8 = Self::FIRST_CATALOG + Catalog::ALL.len() as u8;
+}
+
 /// Broad classification, used to dispatch to the right data source.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BodyKind {
@@ -111,6 +126,9 @@ pub enum BodyKind {
     Derived,
     /// Chart angles, which depend on the time and the place (the ascendant).
     Angle,
+    /// The place a body held in another chart, carried into this one: a fixed point of the
+    /// zodiac, not a live body. [`Body::source`] names the body it came from.
+    Transposed,
 }
 
 /// A celestial body or calculated point.
@@ -170,6 +188,10 @@ pub enum Body {
     Catalog { catalog: Catalog, id: u64 },
     /// A user-defined point; its recipe lives in a `DerivedRegistry`.
     Derived(DerivedId),
+    /// The place a body held in another chart, carried into this one as a fixed point of
+    /// the zodiac. Make one with [`Body::transposed`] and read the body it came from with
+    /// [`Body::source`].
+    Transposed { tag: SourceTag, id: u64 },
 }
 
 impl Body {
@@ -301,6 +323,31 @@ impl Body {
         list
     }
 
+    /// The transposed place of `source`, of kind [`BodyKind::Transposed`]: it remembers the
+    /// body it came from. A point that is already transposed is returned as it is.
+    pub fn transposed(source: Body) -> Self {
+        let (tag, id) = match source {
+            Body::Transposed { .. } => return source,
+            Body::Catalog { catalog, id } => {
+                let at = Catalog::ALL.iter().position(|c| *c == catalog).expect("every catalogue is listed");
+                (SourceTag::FIRST_CATALOG + at as u8, id)
+            }
+            Body::Derived(id) => (SourceTag::DERIVED, u64::from(id.0)),
+            named => (SourceTag::NAMED, Body::NAMED.iter().position(|b| *b == named).expect("named variants are listed") as u64),
+        };
+        Body::Transposed { tag: SourceTag(tag), id }
+    }
+
+    /// The body a transposed point came from; `None` for anything else.
+    pub fn source(&self) -> Option<Body> {
+        let Body::Transposed { tag, id } = *self else { return None };
+        match tag.0 {
+            SourceTag::NAMED => Body::NAMED.get(usize::try_from(id).ok()?).copied(),
+            SourceTag::DERIVED => Some(Body::Derived(DerivedId(u32::try_from(id).ok()?))),
+            catalog => Catalog::ALL.get(usize::from(catalog.checked_sub(SourceTag::FIRST_CATALOG)?)).map(|&catalog| Body::Catalog { catalog, id }),
+        }
+    }
+
     /// Shorthand for a catalogue object.
     pub const fn catalog(catalog: Catalog, id: u64) -> Self {
         Body::Catalog { catalog, id }
@@ -352,7 +399,7 @@ impl Body {
             Poseidon => "po",
             Isis => "is",
             Ascendant => "as",
-            Catalog { .. } | Derived(_) => return None,
+            Catalog { .. } | Derived(_) | Transposed { .. } => return None,
         })
     }
 
@@ -402,7 +449,7 @@ impl Body {
             Poseidon => "Poseidon",
             Isis => "Isis",
             Ascendant => "Ascendant",
-            Catalog { .. } | Derived(_) => return None,
+            Catalog { .. } | Derived(_) | Transposed { .. } => return None,
         })
     }
 
@@ -417,6 +464,7 @@ impl Body {
             MeanNode | TrueNode | MeanSouthNode | SouthNode | MeanApogee | OscuApogee
             | IntpApogee | IntpPerigee => BodyKind::LunarPoint,
             Ascendant => BodyKind::Angle,
+            Transposed { .. } => BodyKind::Transposed,
             Chiron | Pholus | Ceres | Pallas | Juno | Vesta => BodyKind::MinorBody,
             Io | Europa | Ganymede | Callisto | Titan | Triton | Charon => BodyKind::Satellite,
             Cupido | Hades | Zeus | Kronos | Apollon | Admetos | Vulkanus | Poseidon | Isis => {
@@ -450,6 +498,10 @@ impl fmt::Display for Body {
         match self {
             Body::Catalog { catalog, id } => write!(f, "{}:{}", catalog.prefix(), id),
             Body::Derived(id) => write!(f, "derived:{}", id.0),
+            Body::Transposed { .. } => match self.source() {
+                Some(source) => write!(f, "tp:{source}"),
+                None => f.write_str("tp:?"),
+            },
             named => f.write_str(named.key().expect("named variants have keys")),
         }
     }
@@ -464,6 +516,9 @@ impl FromStr for Body {
             return Err(BodyParseError::Empty);
         }
         if let Some((prefix, id)) = s.split_once(':') {
+            if ["tp", "transposed"].iter().any(|p| prefix.trim().eq_ignore_ascii_case(p)) {
+                return id.parse().map(Body::transposed);
+            }
             let id_num: u64 = id
                 .trim()
                 .parse()
