@@ -205,6 +205,63 @@ impl Houses {
     }
 }
 
+/// The 36 Gauquelin sectors: cusps 1–36 as ecliptic longitudes in degrees.
+///
+/// Michel Gauquelin divided the diurnal circle into 36 sectors numbered in the direction of
+/// the daily motion, clockwise in a chart: sector 1 begins at the ascendant, sector 10 at the
+/// MC, sector 19 at the descendant and sector 28 at the IC. Longitudes therefore decrease
+/// from one cusp to the next. The cusps divide each semi-arc in time into nine parts, as
+/// Placidus divides it into three, so cusps 4, 7, 13, 16 … are the Placidus cusps 12, 11, 9,
+/// 8 ….
+///
+/// These are cusps on the ecliptic. A body with ecliptic latitude rises and sets at other
+/// times than its degree does, and its sector in Gauquelin's own sense follows from its own
+/// rising, culmination and setting; [`GauquelinSectors::sector_of`] places a longitude only.
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct GauquelinSectors {
+    #[cfg_attr(feature = "serde", serde(with = "sector_cusps"))]
+    pub cusps: [f64; 36],
+    /// `Porphyry` where the semi-arcs are undefined (the ecliptic can be circumpolar) and each
+    /// quadrant was divided into nine equal parts of longitude instead.
+    pub fallback: Option<HouseSystem>,
+}
+
+impl GauquelinSectors {
+    /// Conventional one-letter code, beside those of [`HouseSystem`].
+    pub const CODE: char = 'G';
+    pub const NAME: &'static str = "Gauquelin Sectors";
+
+    /// Sector number (1–36) containing an ecliptic longitude.
+    pub fn sector_of(&self, lng: f64) -> u8 {
+        for i in 0..36 {
+            let start = self.cusps[i];
+            // Sectors run clockwise: towards smaller longitudes.
+            let span = (start - self.cusps[(i + 1) % 36]).rem_euclid(360.0);
+            if (start - lng).rem_euclid(360.0) < span {
+                return i as u8 + 1;
+            }
+        }
+        1
+    }
+}
+
+/// An array of 36 is beyond serde's derived array support: it is written as a sequence.
+#[cfg(feature = "serde")]
+mod sector_cusps {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    pub fn serialize<S: Serializer>(cusps: &[f64; 36], s: S) -> Result<S::Ok, S::Error> {
+        cusps.as_slice().serialize(s)
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<[f64; 36], D::Error> {
+        let list = Vec::<f64>::deserialize(d)?;
+        let len = list.len();
+        list.try_into().map_err(|_| serde::de::Error::invalid_length(len, &"36 sector cusps"))
+    }
+}
+
 /// The ascendant in degrees for a given ARMC, true obliquity and latitude (all radians).
 pub(crate) fn ascendant_from(ramc: f64, eps: f64, phi: f64) -> f64 {
     Sky { ramc, eps, phi }.asc()
@@ -404,6 +461,33 @@ impl Sky {
         Houses { system, cusps, fallback }
     }
 
+    /// Gauquelin sectors. The eastern cusps come from the semi-arc construction used for
+    /// Placidus, at ninths: sectors 2–9 lie above the horizon between the ascendant and the
+    /// MC, 29–36 below it between the IC and the ascendant. The western cusps are opposite.
+    fn gauquelin(&self) -> GauquelinSectors {
+        let (asc, mc) = (self.asc(), self.mc());
+        let opp = |x: f64| norm_deg(x + 180.0);
+        let mut cusps = [0.0; 36];
+        let fallback = self.is_polar().then_some(HouseSystem::Porphyry);
+        // Quadrants in longitude, for the fallback: MC to ascendant, and ascendant to IC.
+        let east = (asc - mc).rem_euclid(360.0);
+        let below = 180.0 - east;
+        for k in 1..9 {
+            let f = k as f64 / 9.0;
+            // k ninths of the way down from the MC towards the ascendant, and up from the IC.
+            let (upper, lower) = match fallback {
+                Some(_) => (norm_deg(mc + f * east), norm_deg(opp(mc) - f * below)),
+                None => (self.placidus(f, true), self.placidus(f, false)),
+            };
+            cusps[9 - k] = upper;
+            cusps[27 + k] = lower;
+            cusps[27 - k] = opp(upper);
+            cusps[9 + k] = opp(lower);
+        }
+        (cusps[0], cusps[9], cusps[18], cusps[27]) = (asc, mc, opp(asc), opp(mc));
+        GauquelinSectors { cusps, fallback }
+    }
+
     /// Horizon (azimuthal) houses: cusp k is the ecliptic point on the vertical circle at
     /// azimuth A₁₀ ± 30°·(10 − k), on the half-circle through that azimuth's horizon point.
     /// A₁₀ is the meridian side on which the MC culminates; the sequence runs clockwise
@@ -461,29 +545,35 @@ impl Sky {
         (l.sin() * self.eps.cos()).atan2(l.cos())
     }
 
-    /// Placidus cusp at semi-arc fraction `f` (1/3 or 2/3) above (`upper`) or below the horizon,
-    /// on the eastern side. Iterates on the cusp's declination.
+    /// Placidus cusp at semi-arc fraction `f` (thirds for Placidus, ninths for the Gauquelin
+    /// sectors) above (`upper`) or below the horizon, on the eastern side.
+    ///
+    /// The cusp's right ascension depends on its own declination, so it is the root of
+    /// `g(α) = target(α) − α`. Plain substitution converges ever more slowly towards the polar
+    /// circles; the secant method reaches the root in a few steps at every latitude.
     fn placidus(&self, f: f64, upper: bool) -> f64 {
         let r = self.ramc;
-        let ra_for = |lng: f64| {
-            let ad = (self.phi.tan() * self.decl(lng).tan()).clamp(-1.0, 1.0).asin();
-            if upper {
-                r + f * (FRAC_PI_2 + ad)
-            } else {
-                r + PI - f * (FRAC_PI_2 - ad)
-            }
+        // The right ascension the cusp should have, given the declination of the point at `ra`.
+        let gap = |ra: f64| {
+            let ad = (self.phi.tan() * self.decl(self.lng_from_ra(ra)).tan()).clamp(-1.0, 1.0).asin();
+            let target = if upper { r + f * (FRAC_PI_2 + ad) } else { r + PI - f * (FRAC_PI_2 - ad) };
+            target - ra
         };
-        // Start from the equal-division right ascension.
-        let mut lng = self.lng_from_ra(if upper { r + f * FRAC_PI_2 } else { r + PI - f * FRAC_PI_2 });
-        for _ in 0..50 {
-            let next = self.lng_from_ra(ra_for(lng));
-            let delta = crate::math::diff_deg(lng, next).abs();
-            lng = next;
-            if delta < 1e-10 {
+        // Start from the equal-division right ascension, and one substitution on from it.
+        let mut a0 = if upper { r + f * FRAC_PI_2 } else { r + PI - f * FRAC_PI_2 };
+        let mut g0 = gap(a0);
+        let mut a1 = a0 + g0;
+        for _ in 0..60 {
+            let g1 = gap(a1);
+            if g1.abs() < 1e-14 {
                 break;
             }
+            let secant = a1 - g1 * (a1 - a0) / (g1 - g0);
+            // A flat or wild step falls back to substitution.
+            let next = if secant.is_finite() && (secant - a1).abs() < FRAC_PI_2 { secant } else { a1 + g1 };
+            (a0, g0, a1) = (a1, g1, next);
         }
-        lng
+        self.lng_from_ra(a1)
     }
 }
 
@@ -530,4 +620,40 @@ pub fn houses(jd: impl Into<JdUt>, geo: GeoPos, system: HouseSystem) -> Houses {
 pub fn house_sets(jd: impl Into<JdUt>, geo: GeoPos, systems: &[HouseSystem]) -> (Angles, Vec<Houses>) {
     let sky = Sky::new(jd.into().value(), &geo);
     (sky.angles(), systems.iter().map(|&s| sky.houses(s)).collect())
+}
+
+/// The 36 Gauquelin sectors for a UT Julian Day and place.
+pub fn gauquelin_sectors(jd: impl Into<JdUt>, geo: GeoPos) -> GauquelinSectors {
+    Sky::new(jd.into().value(), &geo).gauquelin()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// How far an eastern sector cusp is from the semi-arc relation that defines it, in
+    /// degrees of right ascension: `k` ninths from the MC (`upper`) or from the IC.
+    fn residual(sky: &Sky, lng: f64, k: usize, upper: bool) -> f64 {
+        let f = k as f64 / 9.0;
+        let ad = (sky.phi.tan() * sky.decl(lng).tan()).asin();
+        let want = if upper { sky.ramc + f * (FRAC_PI_2 + ad) } else { sky.ramc + PI - f * (FRAC_PI_2 - ad) };
+        crate::math::diff_deg(want.to_degrees(), sky.ra_of(lng).to_degrees()).abs()
+    }
+
+    #[test]
+    fn gauquelin_cusps_satisfy_their_definition() {
+        let mut worst = 0.0_f64;
+        for lat in [-64.5_f64, -40.0, 0.0, 28.6, 51.5, 60.17, 64.5, 66.0] {
+            for step in 0..72 {
+                let sky = Sky { ramc: (step as f64 * 5.0 + 1.3).to_radians(), eps: 23.4367_f64.to_radians(), phi: lat.to_radians() };
+                let g = sky.gauquelin();
+                assert_eq!(g.fallback, None);
+                for k in 1..9 {
+                    worst = worst.max(residual(&sky, g.cusps[9 - k], k, true)).max(residual(&sky, g.cusps[27 + k], k, false));
+                }
+            }
+        }
+        eprintln!("worst residual {worst:e} deg");
+        assert!(worst < 1e-7, "worst residual {worst} deg");
+    }
 }

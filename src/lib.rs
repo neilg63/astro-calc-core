@@ -54,7 +54,7 @@ pub use error::{BodyParseError, CalcError, DerivedError, EphemError, GeoError, T
 pub use events::{JdSpeed, MoonPhase, MoonPhaseEvent, Station, StationKind, StationSet};
 pub use geo::GeoPos;
 pub use hypothetical::{Equinox, OrbitalElements};
-pub use houses::{Angles, HouseSystem, Houses, angles, ascendant, house_sets, houses};
+pub use houses::{Angles, GauquelinSectors, HouseSystem, Houses, angles, ascendant, gauquelin_sectors, house_sets, houses};
 pub use indian_time::{IndianDay, SolarDayKind};
 pub use models::DeltaTModel;
 pub use pheno::{Phenomena, hg_magnitude, hg_parameters};

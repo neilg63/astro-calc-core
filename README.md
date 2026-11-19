@@ -61,6 +61,8 @@ strings such as `1990-08-23T12` are accepted by wrapper methods and converted on
 - House systems: Whole Sign, Equal, Vehlow, Porphyry, Placidus, Koch, Alcabitius, Campanus,
   Regiomontanus, Topocentric (Polich/Page), Morinus, Meridian, Horizontal and
   Krusinski-Pisa-Goelzer.
+- The 36 Gauquelin sectors (`gauquelin_sectors`), as ecliptic cusps numbered clockwise from
+  the ascendant.
 
 **Ayanamshas**
 
@@ -361,6 +363,7 @@ astro-calc-core = { version = "0.1", features = ["analytic"] }
 | Chapront et al., as given in Meeus ch. 47 and 50 | Mean lunar node, perigee and anomaly |
 | Neely (1988) | Orbital elements of the Uranian points |
 | Krusinski (1995) | The Krusinski-Pisa-Goelzer house system |
+| Gauquelin, *L'influence des astres* (1955) and later works | The sectors of the diurnal circle |
 | *Explanatory Supplement to the Astronomical Almanac*, 3rd ed. | The apparent-position pipeline |
 | Holden, *The Elements of House Division*; Meeus, *Astronomical Algorithms* | House systems and general reference |
 
@@ -375,6 +378,11 @@ Licence terms for the transcribed tables and formulae are in [NOTICE](NOTICE).
   reference. The other seven use the same method with published elements but have not been
   independently checked.
 - The Krusinski house system has been tested for its defining properties only.
+- The Gauquelin sectors are cusps on the ecliptic. A body with ecliptic latitude belongs, in
+  Gauquelin's own sense, to the sector given by its own rising, culmination and setting,
+  which is not calculated. Beyond the polar circles, where the semi-arcs are undefined, each
+  quadrant is divided into nine equal parts of longitude; this fallback has no independent
+  reference.
 
 ## Not yet implemented
 
