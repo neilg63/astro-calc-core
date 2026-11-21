@@ -64,11 +64,11 @@ fn progressed_periods_agree_with_dense_sampling() {
     // every moment well inside a period is in orb.
     let fine: Vec<f64> = (0..).map(|i| from + i as f64 * 7.0).take_while(|&t| t <= to).collect();
     let (mut hits, mut missed) = (0, 0);
-    for (ia, &ba) in bodies.iter().enumerate() {
+    // Chart B's longitudes are the same for every body of chart A: one series per body.
+    let series_b: Vec<Vec<f64>> = bodies.iter().map(|&bb| fine.iter().map(|&t| lng(&b, bb, t)).collect()).collect();
+    for &ba in &bodies {
         let la: Vec<f64> = fine.iter().map(|&t| lng(&a, ba, t)).collect();
-        for &bb in &bodies[..] {
-            let _ = ia;
-            let lb: Vec<f64> = fine.iter().map(|&t| lng(&b, bb, t)).collect();
+        for (&bb, lb) in bodies.iter().zip(&series_b) {
             for (i, &t) in fine.iter().enumerate() {
                 for m in match_aspects(la[i], lb[i], &targets) {
                     hits += 1;
