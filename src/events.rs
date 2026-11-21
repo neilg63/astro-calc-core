@@ -177,6 +177,233 @@ pub struct MoonPhaseEvent {
     pub engine: CalcEngine,
 }
 
+/// The two halves of the lunar month.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum Paksha {
+    /// The bright half: new moon to full moon, the Moon waxing.
+    Shukla,
+    /// The dark half: full moon to new moon, the Moon waning.
+    Krishna,
+}
+
+impl Paksha {
+    pub const fn name(self) -> &'static str {
+        match self {
+            Paksha::Shukla => "Shukla",
+            Paksha::Krishna => "Krishna",
+        }
+    }
+}
+
+/// A tithi, the lunar day of the Indian calendar: one of thirty equal 12° steps of the
+/// Moon − Sun elongation, numbered 1 to 30 from the new moon. It lasts from about 19 to 26
+/// hours. The elongation is a difference of longitudes, so no ayanamsha is involved.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct Tithi(u8);
+
+impl Tithi {
+    /// Degrees of elongation in one tithi.
+    pub const SPAN: f64 = 12.0;
+
+    const NAMES: [&'static str; 14] = [
+        "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami", "Shashthi", "Saptami", "Ashtami", "Navami", "Dashami", "Ekadashi", "Dwadashi",
+        "Trayodashi", "Chaturdashi",
+    ];
+
+    /// The tithi with this number, 1 to 30.
+    pub const fn new(num: u8) -> Option<Self> {
+        if num >= 1 && num <= 30 { Some(Self(num)) } else { None }
+    }
+
+    /// The tithi in force at a Moon − Sun elongation in degrees.
+    pub fn from_elongation(elongation: f64) -> Self {
+        Self(((elongation.rem_euclid(360.0) / Self::SPAN) as u8).min(29) + 1)
+    }
+
+    /// 1 to 30, counted from the new moon.
+    pub const fn num(self) -> u8 {
+        self.0
+    }
+
+    pub const fn paksha(self) -> Paksha {
+        if self.0 <= 15 { Paksha::Shukla } else { Paksha::Krishna }
+    }
+
+    /// The day within its paksha, 1 to 15.
+    pub const fn day(self) -> u8 {
+        (self.0 - 1) % 15 + 1
+    }
+
+    /// The name without the paksha: Pratipada to Chaturdashi, then Purnima (the 15th, ending
+    /// at the full moon) or Amavasya (the 30th, ending at the new moon).
+    pub const fn name(self) -> &'static str {
+        match self.0 {
+            15 => "Purnima",
+            30 => "Amavasya",
+            _ => Self::NAMES[(self.day() - 1) as usize],
+        }
+    }
+
+    /// The elongation at which it begins, in degrees.
+    pub const fn start_angle(self) -> f64 {
+        (self.0 - 1) as f64 * Self::SPAN
+    }
+
+    /// The elongation at which it ends, in degrees (360 for the 30th).
+    pub const fn end_angle(self) -> f64 {
+        self.0 as f64 * Self::SPAN
+    }
+
+    /// The principal phase at which it begins: the new moon for the 1st, the full moon for
+    /// the 16th. The quarters fall in the middle of the 8th and the 23rd, not at a boundary.
+    pub const fn phase_at_start(self) -> Option<MoonPhase> {
+        match self.0 {
+            1 => Some(MoonPhase::New),
+            16 => Some(MoonPhase::Full),
+            _ => None,
+        }
+    }
+}
+
+/// The beginning of a tithi.
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct TithiEvent {
+    /// The tithi that begins.
+    pub tithi: Tithi,
+    pub jd: JdUt,
+    /// The engine that produced the time.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
+}
+
+/// The eleven karana names. Seven of them recur eight times in a lunar month; four occur once.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum KaranaName {
+    Bava,
+    Balava,
+    Kaulava,
+    Taitila,
+    Gara,
+    Vanija,
+    Vishti,
+    Shakuni,
+    Chatushpada,
+    Naga,
+    Kimstughna,
+}
+
+impl KaranaName {
+    pub const fn name(self) -> &'static str {
+        match self {
+            KaranaName::Bava => "Bava",
+            KaranaName::Balava => "Balava",
+            KaranaName::Kaulava => "Kaulava",
+            KaranaName::Taitila => "Taitila",
+            KaranaName::Gara => "Gara",
+            KaranaName::Vanija => "Vanija",
+            KaranaName::Vishti => "Vishti",
+            KaranaName::Shakuni => "Shakuni",
+            KaranaName::Chatushpada => "Chatushpada",
+            KaranaName::Naga => "Naga",
+            KaranaName::Kimstughna => "Kimstughna",
+        }
+    }
+
+    /// Whether it is one of the seven recurring (movable) karanas.
+    pub const fn is_recurring(self) -> bool {
+        (self as u8) < 7
+    }
+}
+
+/// A karana, half a tithi: one of sixty equal 6° steps of the Moon − Sun elongation, numbered
+/// 1 to 60 from the new moon. The four principal phases all fall on karana boundaries.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct Karana(u8);
+
+impl Karana {
+    /// Degrees of elongation in one karana.
+    pub const SPAN: f64 = 6.0;
+
+    /// The karana with this number, 1 to 60.
+    pub const fn new(num: u8) -> Option<Self> {
+        if num >= 1 && num <= 60 { Some(Self(num)) } else { None }
+    }
+
+    /// The karana in force at a Moon − Sun elongation in degrees.
+    pub fn from_elongation(elongation: f64) -> Self {
+        Self(((elongation.rem_euclid(360.0) / Self::SPAN) as u8).min(59) + 1)
+    }
+
+    /// 1 to 60, counted from the new moon.
+    pub const fn num(self) -> u8 {
+        self.0
+    }
+
+    /// The tithi it belongs to.
+    pub const fn tithi(self) -> Tithi {
+        Tithi((self.0 - 1) / 2 + 1)
+    }
+
+    /// Whether it is the first half of its tithi.
+    pub const fn is_first_half(self) -> bool {
+        self.0 % 2 == 1
+    }
+
+    /// Its name: Kimstughna for the 1st, the seven recurring names in turn for the 2nd to the
+    /// 57th, then Shakuni, Chatushpada and Naga.
+    pub const fn name(self) -> KaranaName {
+        match self.0 {
+            1 => KaranaName::Kimstughna,
+            58 => KaranaName::Shakuni,
+            59 => KaranaName::Chatushpada,
+            60 => KaranaName::Naga,
+            n => match (n - 2) % 7 {
+                0 => KaranaName::Bava,
+                1 => KaranaName::Balava,
+                2 => KaranaName::Kaulava,
+                3 => KaranaName::Taitila,
+                4 => KaranaName::Gara,
+                5 => KaranaName::Vanija,
+                _ => KaranaName::Vishti,
+            },
+        }
+    }
+
+    /// The elongation at which it begins, in degrees.
+    pub const fn start_angle(self) -> f64 {
+        (self.0 - 1) as f64 * Self::SPAN
+    }
+
+    /// The principal phase at which it begins, if any: the 1st at the new moon, the 16th at
+    /// the first quarter, the 31st at the full moon and the 46th at the last quarter.
+    pub const fn phase_at_start(self) -> Option<MoonPhase> {
+        match self.0 {
+            1 => Some(MoonPhase::New),
+            16 => Some(MoonPhase::FirstQuarter),
+            31 => Some(MoonPhase::Full),
+            46 => Some(MoonPhase::LastQuarter),
+            _ => None,
+        }
+    }
+}
+
+/// The beginning of a karana.
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct KaranaEvent {
+    /// The karana that begins.
+    pub karana: Karana,
+    pub jd: JdUt,
+    /// The engine that produced the time.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub engine: CalcEngine,
+}
+
 /// Sampling step (days) for station searches: well under the shortest gap between a body's
 /// consecutive stations.
 fn station_step(body: Body) -> f64 {
@@ -384,12 +611,15 @@ impl Ephemeris {
         Ok(self.calc(jd, self.elongation_at(jd, None)?))
     }
 
-    fn next_phase_at(&self, start: f64, observer: Option<GeoPos>) -> Result<MoonPhaseEvent, CalcError> {
+    /// The first moment at or after `start` when the Moon − Sun elongation is a whole number
+    /// of `span` degrees (which must divide 360). Returns that number, from 0 at the new moon
+    /// up to `360 / span − 1`, and the time.
+    fn next_elongation_step(&self, start: f64, span: f64, observer: Option<GeoPos>) -> Result<(u32, f64), CalcError> {
         let (e, _) = self.elongation_at(start, observer)?;
-        let quadrant = (e / 90.0).ceil() as i64;
-        let target = (quadrant as f64 * 90.0).rem_euclid(360.0);
+        let step = (e / span).ceil();
+        let target = (step * span).rem_euclid(360.0);
         // first estimate from the mean synodic rate, then Newton steps with the actual rate
-        let mut t = start + (quadrant as f64 * 90.0 - e) / 12.190_749;
+        let mut t = start + (step * span - e) / 12.190_749;
         for _ in 0..20 {
             let (e, rate) = self.elongation_at(t, observer)?;
             let dt = diff_deg(e, target) / rate;
@@ -398,21 +628,78 @@ impl Ephemeris {
                 break;
             }
         }
-        let jd = t.max(start);
-        Ok(MoonPhaseEvent { phase: MoonPhase::from_quadrant(quadrant), jd: JdUt(jd), engine: self.engine_used(jd) })
+        Ok(((step as u32) % (360.0 / span).round() as u32, t.max(start)))
     }
 
-    fn phases_between(&self, from: f64, to: f64, observer: Option<GeoPos>) -> Result<Vec<MoonPhaseEvent>, CalcError> {
+    /// Every such moment between two times, in order.
+    fn elongation_steps_between(&self, from: f64, to: f64, span: f64, observer: Option<GeoPos>) -> Result<Vec<(u32, f64)>, CalcError> {
+        // The elongation never gains more than about 15° a day, so the next step is at least
+        // span / 15 days on: resume the search a little short of that.
+        let skip = span / 20.0;
         let mut t = from;
         let mut out = Vec::new();
         loop {
-            let ev = self.next_phase_at(t, observer)?;
-            if ev.jd.value() > to {
+            let (step, jd) = self.next_elongation_step(t, span, observer)?;
+            if jd > to {
                 return Ok(out);
             }
-            out.push(ev);
-            t = ev.jd.value() + 1.0; // phases are at least ~6.5 days apart
+            out.push((step, jd));
+            t = jd + skip;
         }
+    }
+
+    fn next_phase_at(&self, start: f64, observer: Option<GeoPos>) -> Result<MoonPhaseEvent, CalcError> {
+        let (quadrant, jd) = self.next_elongation_step(start, 90.0, observer)?;
+        Ok(MoonPhaseEvent { phase: MoonPhase::from_quadrant(quadrant as i64), jd: JdUt(jd), engine: self.engine_used(jd) })
+    }
+
+    fn phases_between(&self, from: f64, to: f64, observer: Option<GeoPos>) -> Result<Vec<MoonPhaseEvent>, CalcError> {
+        let steps = self.elongation_steps_between(from, to, 90.0, observer)?;
+        Ok(steps.into_iter().map(|(q, jd)| MoonPhaseEvent { phase: MoonPhase::from_quadrant(q as i64), jd: JdUt(jd), engine: self.engine_used(jd) }).collect())
+    }
+
+    fn tithi_event(&self, (step, jd): (u32, f64)) -> TithiEvent {
+        TithiEvent { tithi: Tithi(step as u8 + 1), jd: JdUt(jd), engine: self.engine_used(jd) }
+    }
+
+    fn karana_event(&self, (step, jd): (u32, f64)) -> KaranaEvent {
+        KaranaEvent { karana: Karana(step as u8 + 1), jd: JdUt(jd), engine: self.engine_used(jd) }
+    }
+
+    /// The tithi in force at a moment, from the geocentric elongation.
+    pub fn tithi_at(&self, jd: impl Into<JdUt>) -> Result<Calc<Tithi>, CalcError> {
+        let jd = jd.into().value();
+        Ok(self.calc(jd, Tithi::from_elongation(self.elongation_at(jd, None)?.0)))
+    }
+
+    /// The first beginning of a tithi at or after `jd` (geocentric, as tithis always are).
+    pub fn next_tithi(&self, jd: impl Into<JdUt>) -> Result<TithiEvent, CalcError> {
+        Ok(self.tithi_event(self.next_elongation_step(jd.into().value(), Tithi::SPAN, None)?))
+    }
+
+    /// The beginnings of all tithis between two times. The 1st begins at the new moon and the
+    /// 16th at the full moon, at the times [`moon_phases`](Self::moon_phases) gives.
+    pub fn tithis(&self, from: impl Into<JdUt>, to: impl Into<JdUt>) -> Result<Vec<TithiEvent>, CalcError> {
+        let steps = self.elongation_steps_between(from.into().value(), to.into().value(), Tithi::SPAN, None)?;
+        Ok(steps.into_iter().map(|s| self.tithi_event(s)).collect())
+    }
+
+    /// The karana in force at a moment, from the geocentric elongation.
+    pub fn karana_at(&self, jd: impl Into<JdUt>) -> Result<Calc<Karana>, CalcError> {
+        let jd = jd.into().value();
+        Ok(self.calc(jd, Karana::from_elongation(self.elongation_at(jd, None)?.0)))
+    }
+
+    /// The first beginning of a karana at or after `jd` (geocentric).
+    pub fn next_karana(&self, jd: impl Into<JdUt>) -> Result<KaranaEvent, CalcError> {
+        Ok(self.karana_event(self.next_elongation_step(jd.into().value(), Karana::SPAN, None)?))
+    }
+
+    /// The beginnings of all karanas between two times: every tithi boundary and its midpoint,
+    /// the four principal phases among them.
+    pub fn karanas(&self, from: impl Into<JdUt>, to: impl Into<JdUt>) -> Result<Vec<KaranaEvent>, CalcError> {
+        let steps = self.elongation_steps_between(from.into().value(), to.into().value(), Karana::SPAN, None)?;
+        Ok(steps.into_iter().map(|s| self.karana_event(s)).collect())
     }
 
     /// The first principal lunar phase at or after `jd` (geocentric, the astronomical convention).

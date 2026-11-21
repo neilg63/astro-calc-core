@@ -94,6 +94,67 @@ fn mercury_station_matches_almanac() {
 }
 
 #[test]
+fn tithi_and_karana_numbering() {
+    let t = |n| Tithi::new(n).unwrap();
+    assert!(Tithi::new(0).is_none() && Tithi::new(31).is_none() && Karana::new(61).is_none());
+    assert_eq!((t(1).name(), t(1).paksha(), t(1).day(), t(1).phase_at_start()), ("Pratipada", Paksha::Shukla, 1, Some(MoonPhase::New)));
+    assert_eq!((t(15).name(), t(15).paksha(), t(15).end_angle()), ("Purnima", Paksha::Shukla, 180.0));
+    assert_eq!((t(16).name(), t(16).paksha(), t(16).day(), t(16).phase_at_start()), ("Pratipada", Paksha::Krishna, 1, Some(MoonPhase::Full)));
+    assert_eq!((t(23).name(), t(23).day(), t(30).name(), t(30).start_angle()), ("Ashtami", 8, "Amavasya", 348.0));
+    for (elongation, tithi, karana) in [(0.0, 1, 1), (11.999, 1, 2), (12.0, 2, 3), (90.0, 8, 16), (179.9, 15, 30), (180.0, 16, 31), (359.999, 30, 60), (360.0, 1, 1), (-0.5, 30, 60)] {
+        assert_eq!(Tithi::from_elongation(elongation).num(), tithi, "{elongation}");
+        assert_eq!(Karana::from_elongation(elongation).num(), karana, "{elongation}");
+    }
+    // The first karana and the last three occur once; the seven others take turns in between.
+    let names: Vec<&str> = (1..=60).map(|n| Karana::new(n).unwrap().name().name()).collect();
+    assert_eq!((names[0], names[1], names[7], names[8]), ("Kimstughna", "Bava", "Vishti", "Bava"));
+    assert_eq!(names[56..], ["Vishti", "Shakuni", "Chatushpada", "Naga"]);
+    assert_eq!(names.iter().filter(|n| **n == "Bava").count(), 8);
+    let k = Karana::new(16).unwrap();
+    assert_eq!((k.tithi().num(), k.is_first_half(), k.phase_at_start()), (8, false, Some(MoonPhase::FirstQuarter)));
+    assert!(KaranaName::Vishti.is_recurring() && !KaranaName::Naga.is_recurring());
+}
+
+#[test]
+fn tithis_and_karanas_follow_the_elongation() {
+    let Some(eph) = eph() else { return };
+    let from = JdUt::from_iso("2024-01-01").unwrap().value();
+    let to = from + 90.0;
+    let tithis = eph.tithis(from, to).unwrap();
+    // About 30 to a synodic month of 29.53 days; each lasts between 19 and 27 hours.
+    assert!((90..=93).contains(&tithis.len()), "{}", tithis.len());
+    for pair in tithis.windows(2) {
+        let hours = (pair[1].jd.value() - pair[0].jd.value()) * 24.0;
+        assert!((19.0..27.0).contains(&hours), "{hours}");
+        assert_eq!(pair[1].tithi.num(), pair[0].tithi.num() % 30 + 1);
+    }
+    for ev in &tithis {
+        // Exact at the boundary, and in force just after it.
+        let e = eph.moon_elongation(ev.jd).unwrap().value.0;
+        let off = (e - ev.tithi.start_angle() + 180.0).rem_euclid(360.0) - 180.0;
+        assert!(off.abs() < 1e-6, "{} {off}", ev.tithi.num());
+        assert_eq!(eph.tithi_at(ev.jd.value() + 0.01).unwrap().value, ev.tithi);
+    }
+    assert_eq!(eph.next_tithi(from).unwrap(), tithis[0]);
+    // The 1st and the 16th begin at the new and the full moon; the karanas add the quarters.
+    let phases = eph.moon_phases(from, to).unwrap();
+    let karanas = eph.karanas(from, to).unwrap();
+    assert_eq!(eph.next_karana(from).unwrap(), karanas[0]);
+    assert_eq!(karanas.iter().filter(|k| k.karana.is_first_half()).count(), tithis.len());
+    for phase in &phases {
+        let at = |jd: JdUt| (jd.value() - phase.jd.value()).abs() < 1e-7;
+        let k = karanas.iter().find(|k| k.karana.phase_at_start() == Some(phase.phase) && at(k.jd));
+        assert!(k.is_some(), "{phase:?}");
+        let t = tithis.iter().find(|t| t.tithi.phase_at_start() == Some(phase.phase) && at(t.jd));
+        assert_eq!(t.is_some(), matches!(phase.phase, MoonPhase::New | MoonPhase::Full), "{phase:?}");
+    }
+    // Purnima of January 2024 ended at the full moon of the 25th, 17:54 UTC.
+    let full = tithis.iter().find(|t| t.tithi.num() == 16).unwrap();
+    let almanac = JdUt::from_iso("2024-01-25T17:54:00").unwrap().value();
+    assert!((full.jd.value() - almanac).abs() < 1.0 / 1440.0, "{:?}", full.jd.to_iso());
+}
+
+#[test]
 fn moon_phases_match_reference() {
     let Some(eph) = eph() else { return };
     let mut worst = 0.0f64;

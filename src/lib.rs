@@ -51,7 +51,7 @@ pub use bulk::{AspectCriteria, AspectHit, AspectMatch, AspectMatches, BulkCharts
 pub use body::{Body, BodyKind, Catalog, SourceTag, parse_body_list, parse_body_list_for};
 pub use derived::{Angle, Derived, DerivedId, DerivedRegistry, Ref};
 pub use error::{BodyParseError, CalcError, DerivedError, EphemError, GeoError, TimeError};
-pub use events::{JdSpeed, MoonPhase, MoonPhaseEvent, Station, StationKind, StationSet};
+pub use events::{JdSpeed, Karana, KaranaEvent, KaranaName, MoonPhase, MoonPhaseEvent, Paksha, Station, StationKind, StationSet, Tithi, TithiEvent};
 pub use geo::GeoPos;
 pub use hypothetical::{Equinox, OrbitalElements};
 pub use houses::{Angles, GauquelinSectors, HouseSystem, Houses, angles, ascendant, gauquelin_sectors, house_sets, houses};

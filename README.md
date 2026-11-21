@@ -107,6 +107,13 @@ strings such as `1990-08-23T12` are accepted by wrapper methods and converted on
 
 - New, first quarter, full and last quarter, geocentric or topocentric.
 
+**Tithis and karanas**
+
+- The thirty lunar days (tithis) of the Indian calendar and their sixty halves (karanas):
+  the one in force at a moment, and the times each begins, with number, paksha and name.
+- Both follow the same Moon − Sun elongation as the phases, in 12° and 6° steps, so the new
+  and full moon are tithi boundaries and all four phases are karana boundaries.
+
 **Indian solar day**
 
 - Sunrise-to-sunrise days with muhurta, ghati, vighati and lipta, and positions at sunrise
