@@ -357,3 +357,63 @@ fn station_sets_report_motion_and_surrounding_stations() {
     }
     assert!(eph.planetary_stations(Body::Mercury, jd, -1.0, 0).is_err());
 }
+
+#[test]
+fn moon_nakshatra_ingresses_follow_the_sidereal_longitude() {
+    let Some(eph) = eph() else { return };
+    let span = 360.0 / 27.0;
+    let aya = Some(Ayanamsha::TrueCitra);
+    let lng = |jd: f64| eph.calc_longitude(Body::Moon, jd, GeoPos::default(), Perspective::Geocentric, aya).unwrap().value;
+    let from = JdUt::from_iso("2024-01-01").unwrap().value();
+    let to = from + 60.0;
+    let crossings = eph.longitude_crossings(Body::Moon, from, to, span, aya).unwrap();
+    // 27 to a sidereal month of 27.32 days; each lasts between 20 and 27 hours.
+    assert!((58..=60).contains(&crossings.len()), "{}", crossings.len());
+    for pair in crossings.windows(2) {
+        let hours = (pair[1].jd.value() - pair[0].jd.value()) * 24.0;
+        assert!((20.0..27.5).contains(&hours), "{hours}");
+        assert_eq!(pair[1].into, (pair[0].into + 1) % 27);
+    }
+    for c in &crossings {
+        // Exact at the boundary, and inside the division just after it.
+        let off = (lng(c.jd.value()) - c.lng + 180.0).rem_euclid(360.0) - 180.0;
+        assert!(c.direct && off.abs() < 1e-5, "{} {off}", c.into);
+        assert_eq!(c.lng, c.into as f64 * span);
+        assert_eq!((lng(c.jd.value() + 0.01) / span) as u32, c.into);
+    }
+    assert_eq!(eph.next_longitude_crossing(Body::Moon, from, span, aya, 5.0).unwrap(), Some(crossings[0]));
+    // By count: the same crossings, as many as asked for, or as many as the days allowed hold.
+    assert_eq!(eph.next_longitude_crossings(Body::Moon, from, 27, span, aya, 60.0).unwrap(), crossings[..27]);
+    assert_eq!(eph.next_longitude_crossings(Body::Moon, from, 100, span, aya, 60.0).unwrap(), crossings);
+    assert!(eph.next_longitude_crossings(Body::Moon, from, 0, span, aya, 60.0).unwrap().is_empty());
+    // A stay runs from one crossing to the next.
+    let stay = eph.longitude_stay(Body::Moon, crossings[3].jd.value() + 0.4, span, aya, 5.0).unwrap();
+    assert_eq!(stay.division, crossings[3].into);
+    let (entered, left) = (stay.entered.unwrap(), stay.left.unwrap());
+    assert!((entered.jd.value() - crossings[3].jd.value()).abs() < 1e-6 && (left.jd.value() - crossings[4].jd.value()).abs() < 1e-6);
+    assert_eq!((entered.into, left.into), (crossings[3].into, crossings[4].into));
+    // Nothing is found beyond the days allowed.
+    assert_eq!(eph.next_longitude_crossing(Body::Moon, crossings[3].jd.value() + 0.01, span, aya, 0.2).unwrap(), None);
+}
+
+#[test]
+fn a_retrograde_planet_leaves_a_sign_the_way_it_came() {
+    let Some(eph) = eph() else { return };
+    // Mercury entered Capricorn on 2023-12-01, turned retrograde on the 13th and was back
+    // in Sagittarius from the 23rd until 2024-01-14.
+    let from = JdUt::from_iso("2023-11-15").unwrap().value();
+    let crossings = eph.longitude_crossings(Body::Mercury, from, from + 75.0, 30.0, None).unwrap();
+    let seen: Vec<(u32, bool, f64)> = crossings.iter().map(|c| (c.into, c.direct, c.lng)).collect();
+    assert_eq!(seen, [(9, true, 270.0), (8, false, 270.0), (9, true, 270.0)]);
+    let days: Vec<String> = crossings.iter().map(|c| c.jd.to_iso().unwrap()[..10].to_string()).collect();
+    assert_eq!(days, ["2023-12-01", "2023-12-23", "2024-01-14"]);
+    // In mid-December it is in Capricorn between the first two.
+    let stay = eph.longitude_stay(Body::Mercury, JdUt::from_iso("2023-12-10").unwrap(), 30.0, None, 400.0).unwrap();
+    let near = |a: LongitudeCrossing, b: LongitudeCrossing| (a.jd.value() - b.jd.value()).abs() < 1e-6 && (a.into, a.direct) == (b.into, b.direct);
+    assert!(stay.division == 9 && near(stay.entered.unwrap(), crossings[0]) && near(stay.left.unwrap(), crossings[1]));
+    // A slow planet's stay is found over years, by longer steps.
+    let pluto = eph.longitude_stay(Body::Pluto, JdUt::from_iso("2015-06-01").unwrap(), 30.0, None, 20_000.0).unwrap();
+    assert_eq!(pluto.division, 9);
+    assert_eq!(pluto.entered.unwrap().jd.to_iso().unwrap()[..10], *"2008-11-27");
+    assert_eq!(pluto.left.unwrap().jd.to_iso().unwrap()[..10], *"2023-03-23");
+}

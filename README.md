@@ -114,6 +114,13 @@ strings such as `1990-08-23T12` are accepted by wrapper methods and converted on
 - Both follow the same Moon − Sun elongation as the phases, in 12° and 6° steps, so the new
   and full moon are tithi boundaries and all four phases are karana boundaries.
 
+**Ingresses**
+
+- The moments a body moves from one equal division of the zodiac into the next, tropical or
+  sidereal: signs (30°), nakshatras (13°20′), padas or any other span that divides the circle.
+- A body's present stay in a division (when it came in, when it leaves), the next crossing,
+  the next so many, or every crossing between two times. Retrograde re-entries are found and marked.
+
 **Indian solar day**
 
 - Sunrise-to-sunrise days with muhurta, ghati, vighati and lipta, and positions at sunrise
